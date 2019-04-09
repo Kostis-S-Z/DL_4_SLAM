@@ -33,6 +33,17 @@ _DEFAULT_SIGMA = 20.0
 _DEFAULT_ETA = 0.1
 
 
+TRAINING_PERC = 0.20  # Control how much (%) of the training data to actually use for training
+EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
+
+TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
+
+# A few notes on this:
+#   - we still use ALL of the test data to evaluate the model
+#   - on my desktop PC (8gb RAM, i7 CPU) i manage to load 50% of the training data but my pc crashes during training
+#       due to overload
+#   - I suggest using 20-30% of the data to train for now... maybe even less for a laptop
+
 def main():
     """
     Executes the baseline model. This loads the training data, training labels, and dev data, then trains a logistic
@@ -125,6 +136,11 @@ def load_data(filename):
                 if num_exercises % 100000 == 0:
                     print('Loaded ' + str(len(data)) + ' instances across ' + str(num_exercises) + ' exercises...')
                 instance_properties = dict()
+
+                # Load only the specified amount of data indicated
+                if num_exercises >= TRAINING_DATA_USE:
+                    print('Stop loading training data...')
+                    break
 
             # If the line starts with #, then we're beginning a new exercise
             elif line[0] == '#':

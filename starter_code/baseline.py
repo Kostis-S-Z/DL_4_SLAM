@@ -43,8 +43,8 @@ TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercis
 #   - on my desktop PC (8gb RAM, i7 CPU) i manage to load 50% of the training data but it crashes during training
 #       due to overload
 #   - I suggest using 20-30% of the data to train for now... maybe even less for a laptop
-#   - Minimum amount you can train is 14%
-
+#   - Minimum amount you can train is 14% (for en_es 14% is too little. 20% is fine)
+#
 
 def main():
     """

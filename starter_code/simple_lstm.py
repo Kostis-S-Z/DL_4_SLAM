@@ -13,21 +13,35 @@ class SimpleLstm:
         for var, default in var_defaults.items():
             setattr(self, var, kwargs.get(var, default))
 
-    def train(self, feature_dicts, labels):
+
+    def train(self, oh_features, labels):
         """
         train the RNN
         """
-        for i in range(len(feature_dicts)):
+        for i in range(len(labels)):
             print("WORD ", i)
-            print(feature_dicts[i])
-            print(labels[i])
+            print("one hot features", oh_features[i])
+            print("label: ", labels[i])
 
-        feature_matr = self.oh_enc(feature_dicts)
-        self.train_lstm(feature_matr, labels)
-        print("Done training (if there was actually training code yet")
+        self.train_lstm(oh_features, labels)
+        print("Done straining (if there was actually training code yet")
 
-    def oh_enc(self, feature_dicts):
-        one_hot_vec = np.ones((3,3))
+    def oh_enc(self, feature_dicts, count_dict, start_index_in_dict):
+        print(feature_dicts)
+        print("count_dict", count_dict)
+        print("start_index_in_dict", start_index_in_dict)
+        one_hot_vec = np.zeros((len(feature_dicts),sum([pair[0] for pair in count_dict.values()])))
+
+        for i, feature_dict in enumerate(feature_dicts):
+            for feature_and_value in feature_dict.keys():
+                feature, feature_value = feature_and_value.split(":")
+                print("feature and value", feature, feature_value)
+                index = start_index_in_dict[feature] + count_dict[feature][1][feature_value]
+                print("index of our 1!!! ", index)
+                one_hot_vec[i, index] = 1
+                print(one_hot_vec)
+
+
         return one_hot_vec
 
     def train_lstm(self, feature_matr, labels):

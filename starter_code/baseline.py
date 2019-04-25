@@ -39,6 +39,12 @@ EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
 
+
+partOfSpeech_dict = {}
+dependency_label_dict = {}
+
+
+
 # A few notes on this:
 #   - we still use ALL of the test data to evaluate the model
 #   - on my desktop PC (8gb RAM, i7 CPU) i manage to load 50% of the training data but it crashes during training
@@ -78,6 +84,7 @@ def main():
     # Replace the code between this and the next comment block with your own.          #
     ####################################################################################
 
+
     lstm1 = simple_lstm.SimpleLstm()
     features_list = []
     labels_list = []
@@ -85,7 +92,9 @@ def main():
         features_list.append(training_data[i].to_features())
         labels_list.append(training_labels[training_data[i].instance_id])
 
-    lstm1.train(features_list, labels_list)
+    count_dict, start_index_in_dict= count_features()
+    oh_features = lstm1.oh_enc(features_list, count_dict, start_index_in_dict)
+    lstm1.train(oh_features, labels_list)
 
 
     # training_instances = [LogisticRegressionInstance(features=instance_data.to_features(),label=training_labels[instance_data.instance_id],name=instance_data.instance_id) for instance_data in training_data]
@@ -110,6 +119,7 @@ def main():
 
 
 def load_data(filename):
+
     """
     This method loads and returns the data in filename. If the data is labelled training data, it returns labels too.
 
@@ -203,14 +213,27 @@ def load_data(filename):
                     instance_properties['morphological_features'][key] = value
 
                 instance_properties['dependency_label'] = line[4]
+
                 instance_properties['dependency_edge_head'] = int(line[5])
                 if training:
                     label = float(line[6])
                     labels[instance_properties['instance_id']] = label
                 data.append(InstanceData(instance_properties=instance_properties))
 
+
+
+                # save which features are in the dataset
+                # the one hot encoding needs to know which features are in the dataset to determine its size
+                if line[2] not in partOfSpeech_dict:
+                    partOfSpeech_dict[line[2]] = len(partOfSpeech_dict)
+                if line[4] not in dependency_label_dict:
+                    dependency_label_dict[line[4]] = dependency_label_dict
+
         print('Done loading ' + str(len(data)) + ' instances across ' + str(num_exercises) +
               ' exercises.\n')
+
+
+
 
     if training:
         return data, labels
@@ -266,17 +289,28 @@ class InstanceData(object):
         #print("\n -- to features -- \n")
         to_return = dict()
 
-        to_return['bias'] = 1.0
-        to_return['user:' + self.user] = 1.0
-        to_return['format:' + self.format] = 1.0
-        to_return['token:' + self.token.lower()] = 1.0
+        # to_return['bias'] = 1.0
+        # to_return['user:' + self.user] = 1.0
+        # to_return['format:' + self.format] = 1.0
+        # to_return['token:' + self.token.lower()] = 1.0
 
         to_return['part_of_speech:' + self.part_of_speech] = 1.0
-        for morphological_feature in self.morphological_features:
-            to_return['morphological_feature:' + morphological_feature] = 1.0
+        # for morphological_feature in self.morphological_features:
+        #     to_return['morphological_feature:' + morphological_feature] = 1.0
         to_return['dependency_label:' + self.dependency_label] = 1.0
         #print("one-hot feature matrix: ", to_return)
         return to_return
+
+def count_features():
+    count_dict = {}
+    count_dict["part_of_speech"] = (len(partOfSpeech_dict), partOfSpeech_dict)
+    count_dict["dependency_label"] = (len(dependency_label_dict), dependency_label_dict)
+    start_index_in_dict = {}
+    start_index_in_dict["part_of_speech"] = 0
+    start_index_in_dict["dependency_label"] = len(partOfSpeech_dict)
+
+    return count_dict, start_index_in_dict
+
 
 
 class LogisticRegressionInstance(namedtuple('Instance', ['features', 'label', 'name'])):

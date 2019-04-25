@@ -22,6 +22,7 @@ from io import open
 import math
 import os
 from random import shuffle, uniform
+import simple_lstm
 
 from future.builtins import range
 from future.utils import iteritems
@@ -68,7 +69,7 @@ def main():
 
     # Assert that the train course matches the test course
     assert os.path.basename(args.train)[:5] == os.path.basename(args.test)[:5]
-
+    print("\n -- Loading data -- \n")
     training_data, training_labels = load_data(args.train)
     test_data = load_data(args.test)
 
@@ -77,28 +78,34 @@ def main():
     # Replace the code between this and the next comment block with your own.          #
     ####################################################################################
 
-    training_instances = [LogisticRegressionInstance(features=instance_data.to_features(),
-                                                     label=training_labels[instance_data.instance_id],
-                                                     name=instance_data.instance_id
-                                                     ) for instance_data in training_data]
+    lstm1 = simple_lstm.SimpleLstm()
+    # HERE IS AN ERROR
+    # WE STILL HAVE TO INPUT THE RIGHT THINGS
+    # FEATURES, LABELS, NAMES
+    lstm1.train(([instance_data.to_features(), training_labels[instance_data.instance_id]) for instance_data in training_data])
 
-    test_instances = [LogisticRegressionInstance(features=instance_data.to_features(),
-                                                 label=None,
-                                                 name=instance_data.instance_id
-                                                 ) for instance_data in test_data]
-
-    logistic_regression_model = LogisticRegression()
-    logistic_regression_model.train(training_instances, iterations=10)
-
-    predictions = logistic_regression_model.predict_test_set(test_instances)
+    # training_instances = [LogisticRegressionInstance(features=instance_data.to_features(),
+    #                                                  label=training_labels[instance_data.instance_id],
+    #                                                  name=instance_data.instance_id
+    #                                                  ) for instance_data in training_data]
+    #
+    # test_instances = [LogisticRegressionInstance(features=instance_data.to_features(),
+    #                                              label=None,
+    #                                              name=instance_data.instance_id
+    #                                              ) for instance_data in test_data]
+    #
+    # logistic_regression_model = LogisticRegression()
+    # logistic_regression_model.train(training_instances, iterations=10)
+    #
+    # predictions = logistic_regression_model.predict_test_set(test_instances)
 
     ####################################################################################
     # This ends the baseline model code; now we just write predictions.                #
     ####################################################################################
 
-    with open(args.pred, 'wt') as f:
-        for instance_id, prediction in iteritems(predictions):
-            f.write(instance_id + ' ' + str(prediction) + '\n')
+    # with open(args.pred, 'wt') as f:
+    #     for instance_id, prediction in iteritems(predictions):
+    #         f.write(instance_id + ' ' + str(prediction) + '\n')
 
 
 def load_data(filename):
@@ -129,8 +136,15 @@ def load_data(filename):
     instance_properties = dict()
 
     with open(filename, 'rt') as f:
+        num_lines = 0
         for line in f:
+            #TODO : NOT LIMIT THIS NUMBER OF LINES TO ONLY 8. THIS IS ONLY FOR DEBUGGING PURPOSES
+            if num_lines > 8:
+                break
+            num_lines += 1
+
             line = line.strip()
+
 
             # If there's nothing in the line, then we're done with the exercise. Print if needed, otherwise continue
             if len(line) == 0:
@@ -246,6 +260,7 @@ class InstanceData(object):
             to_return: a representation of the features we'll use for logistic regression in a dict. A key/feature is a
                 key/value pair of the original 'instance_properties' dict, and we encode this feature as 1.0 for 'hot'.
         """
+        #print("\n -- to features -- \n")
         to_return = dict()
 
         to_return['bias'] = 1.0
@@ -257,7 +272,7 @@ class InstanceData(object):
         for morphological_feature in self.morphological_features:
             to_return['morphological_feature:' + morphological_feature] = 1.0
         to_return['dependency_label:' + self.dependency_label] = 1.0
-
+        #print("one-hot feature matrix: ", to_return)
         return to_return
 
 

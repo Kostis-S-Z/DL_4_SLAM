@@ -40,6 +40,7 @@ EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
 
 
+# dictionaries of features for the one hot encoding
 partOfSpeech_dict = {}
 dependency_label_dict = {}
 
@@ -86,15 +87,16 @@ def main():
 
 
     lstm1 = simple_lstm.SimpleLstm()
-    features_list = []
+    train_data_new = []
     labels_list = []
     for i in range(len(training_data)):
-        features_list.append(training_data[i].to_features())
+        # just filter some features and change their format
+        train_data_new.append(training_data[i].to_features())
         labels_list.append(training_labels[training_data[i].instance_id])
 
-    count_dict, start_index_in_dict= count_features()
-    oh_features = lstm1.oh_enc(features_list, count_dict, start_index_in_dict)
-    lstm1.train(oh_features, labels_list)
+    feature_dict, n_features = build_feature_dict()
+    train_1h = lstm1.one_hot_encode(train_data_new, feature_dict, n_features)
+    lstm1.train(train_1h, labels_list)
 
 
     # training_instances = [LogisticRegressionInstance(features=instance_data.to_features(),label=training_labels[instance_data.instance_id],name=instance_data.instance_id) for instance_data in training_data]
@@ -227,7 +229,8 @@ def load_data(filename):
                 if line[2] not in partOfSpeech_dict:
                     partOfSpeech_dict[line[2]] = len(partOfSpeech_dict)
                 if line[4] not in dependency_label_dict:
-                    dependency_label_dict[line[4]] = dependency_label_dict
+                    dependency_label_dict[line[4]] = len(dependency_label_dict)
+
 
         print('Done loading ' + str(len(data)) + ' instances across ' + str(num_exercises) +
               ' exercises.\n')
@@ -301,15 +304,28 @@ class InstanceData(object):
         #print("one-hot feature matrix: ", to_return)
         return to_return
 
-def count_features():
-    count_dict = {}
-    count_dict["part_of_speech"] = (len(partOfSpeech_dict), partOfSpeech_dict)
-    count_dict["dependency_label"] = (len(dependency_label_dict), dependency_label_dict)
-    start_index_in_dict = {}
-    start_index_in_dict["part_of_speech"] = 0
-    start_index_in_dict["dependency_label"] = len(partOfSpeech_dict)
+def build_feature_dict():
 
-    return count_dict, start_index_in_dict
+    # Some explenation to feature_index_dict:
+    # the keys are different features_attributes (eg part of speech, dependency value, token... )
+    # -> but each feature_attributes can again have different feature_values (eg part of speech: Noun, Verb, ...)
+    # The value of the dict for each key is a Tuple (x, dict) from which we can clcualte the position of the 1 (for the feature_value) in the one hot encoding
+    # # x is start index of from where feature_attribute begins
+    # # from dict in (x, dict) we get the index of the feature_value (for the corresponding feature_attribute) which we later add to x
+
+    feature_dict = {}
+
+    nfeat_partOfSpeech = len(partOfSpeech_dict)
+    nfeat_dependency_label = len(dependency_label_dict)
+
+    # eg: "part_of_speech" attribute starts at index 0 and where 'NOUN" value starts, we can find in the partOfSpeech_dict
+    feature_dict["part_of_speech"] = (0, partOfSpeech_dict)
+    feature_dict["dependency_label"] = (nfeat_partOfSpeech, dependency_label_dict)
+
+    # calculate the whole amount of feature_values
+    n_features = nfeat_partOfSpeech + nfeat_dependency_label # + ... for other feature_attributes
+
+    return feature_dict, n_features
 
 
 

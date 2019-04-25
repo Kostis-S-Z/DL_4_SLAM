@@ -26,21 +26,22 @@ class SimpleLstm:
         self.train_lstm(oh_features, labels)
         print("Done straining (if there was actually training code yet")
 
-    def oh_enc(self, feature_dicts, count_dict, start_index_in_dict):
-        print(feature_dicts)
-        print("count_dict", count_dict)
-        print("start_index_in_dict", start_index_in_dict)
-        one_hot_vec = np.zeros((len(feature_dicts),sum([pair[0] for pair in count_dict.values()])))
+    def one_hot_encode(self, training_data, feature_index_dict, n_features):
+        """
+        !!!WE ARE MISSING OUT A LOT OF TRAINING INSTANCES BECAUSE THEY ARE NOT INCLUDED IN training_data!!!
+        print("amount of training instances:", len(training_data))
+        """
 
-        for i, feature_dict in enumerate(feature_dicts):
-            for feature_and_value in feature_dict.keys():
-                feature, feature_value = feature_and_value.split(":")
-                print("feature and value", feature, feature_value)
-                index = start_index_in_dict[feature] + count_dict[feature][1][feature_value]
-                print("index of our 1!!! ", index)
+        one_hot_vec = np.zeros((len(training_data),n_features))
+
+        # for all training examples compute one hot encoding
+        for i, training_example in enumerate(training_data):
+            for train_feature in training_example.keys():
+                feature_attribute, feature_value = train_feature.split(":")
+                index_attribute = feature_index_dict[feature_attribute][0]
+                index_value = feature_index_dict[feature_attribute][1][feature_value]
+                index = index_attribute + index_value
                 one_hot_vec[i, index] = 1
-                print(one_hot_vec)
-
 
         return one_hot_vec
 

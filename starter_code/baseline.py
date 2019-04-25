@@ -82,12 +82,16 @@ def main():
     # HERE IS AN ERROR
     # WE STILL HAVE TO INPUT THE RIGHT THINGS
     # FEATURES, LABELS, NAMES
-    lstm1.train(([instance_data.to_features(), training_labels[instance_data.instance_id]) for instance_data in training_data])
+    features_list = []
+    labels_list = []
+    for i in range(len(training_data)):
+        features_list.append(training_data[i].to_features())
+        labels_list.append(training_labels[training_data[i].instance_id])
 
-    # training_instances = [LogisticRegressionInstance(features=instance_data.to_features(),
-    #                                                  label=training_labels[instance_data.instance_id],
-    #                                                  name=instance_data.instance_id
-    #                                                  ) for instance_data in training_data]
+    lstm1.train(features_list, labels_list)
+
+
+    # training_instances = [LogisticRegressionInstance(features=instance_data.to_features(),label=training_labels[instance_data.instance_id],name=instance_data.instance_id) for instance_data in training_data]
     #
     # test_instances = [LogisticRegressionInstance(features=instance_data.to_features(),
     #                                              label=None,
@@ -139,7 +143,7 @@ def load_data(filename):
         num_lines = 0
         for line in f:
             #TODO : NOT LIMIT THIS NUMBER OF LINES TO ONLY 8. THIS IS ONLY FOR DEBUGGING PURPOSES
-            if num_lines > 8:
+            if num_lines > 12:
                 break
             num_lines += 1
 

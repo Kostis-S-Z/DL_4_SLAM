@@ -13,23 +13,17 @@ class SimpleLstm:
         for var, default in var_defaults.items():
             setattr(self, var, kwargs.get(var, default))
 
-    def train(self, feature_dicts, labels, names):
+    def train(self, feature_dicts, labels):
         """
         train the RNN
         """
-        for i in range(30):
-            print("--------------- WORD ", i, "--------------------")
-            print("features: ")
-            print(training_data[i * 10].to_features())
-            print("label: ")
-            print(training_labels[training_data[i * 10].instance_id])
-            print("name: ")
-            print(training_data[i * 10].instance_id)
-            print("labels 1 to 40: ")
-            print(training_labels[training_data[j].instance_id])
+        for i in range(len(feature_dicts)):
+            print("WORD ", i)
+            print(feature_dicts[i])
+            print(labels[i])
 
         feature_matr = self.oh_enc(feature_dicts)
-        self._train_lstm(feature_matr, labels)
+        self.train_lstm(feature_matr, labels)
         print("Done training (if there was actually training code yet")
 
     def oh_enc(self, feature_dicts):

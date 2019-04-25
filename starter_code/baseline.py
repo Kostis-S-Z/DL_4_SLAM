@@ -79,9 +79,6 @@ def main():
     ####################################################################################
 
     lstm1 = simple_lstm.SimpleLstm()
-    # HERE IS AN ERROR
-    # WE STILL HAVE TO INPUT THE RIGHT THINGS
-    # FEATURES, LABELS, NAMES
     features_list = []
     labels_list = []
     for i in range(len(training_data)):
@@ -142,7 +139,9 @@ def load_data(filename):
     with open(filename, 'rt') as f:
         num_lines = 0
         for line in f:
-            #TODO : NOT LIMIT THIS NUMBER OF LINES TO ONLY 8. THIS IS ONLY FOR DEBUGGING PURPOSES
+            #TODO : NOT LIMIT THIS NUMBER OF LINES TO ONLY 12. THIS IS ONLY FOR DEBUGGING PURPOSES
+            # This gives slightly less than 12 samples - the first lines are comments and the first line of an
+            # exercise describes the exercise
             if num_lines > 12:
                 break
             num_lines += 1

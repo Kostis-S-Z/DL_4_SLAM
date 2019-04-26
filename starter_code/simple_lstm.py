@@ -1,4 +1,8 @@
 import numpy as np
+import keras
+from keras.models import Sequential
+from keras.layers import Dense, Activation, Embedding, LSTM
+
 
 class SimpleLstm:
 
@@ -14,17 +18,12 @@ class SimpleLstm:
             setattr(self, var, kwargs.get(var, default))
 
 
-    def train(self, oh_features, labels):
+    def train(self, features_one_hot, labels):
         """
         train the RNN
         """
-        for i in range(len(labels)):
-            print("WORD ", i)
-            print("one hot features", oh_features[i])
-            print("label: ", labels[i])
-
-        self.train_lstm(oh_features, labels)
-        print("Done straining (if there was actually training code yet")
+        labels = np.array(labels)
+        self.train_lstm(features_one_hot, labels)
 
     def one_hot_encode(self, training_data, feature_index_dict, n_features):
         """
@@ -45,17 +44,20 @@ class SimpleLstm:
 
         return one_hot_vec
 
-    def train_lstm(self, feature_matr, labels):
-        pass
-        pass
+    def train_lstm(self, X_train, y_train):
         """
-        embed_dim = 128
-        lstm_out = 200
-        batch_size = 32
-
+        shape X_train = (n, one_hot_m)
+        shape y_train = (n, )
+        """
+        timesteps = 1
+        lstm_layer_size = 10
+        X_train = np.reshape(X_train, (X_train.shape[0], 1, X_train.shape[1]))
         model = Sequential()
-        model.add(Embedding(50, embed_dim,input_length = X.shape[1], dropout = 0.2))
-        model.add(LSTM(lstm_out, dropout_U = 0.2, dropout_W = 0.2))
-        model.add(Dense(2,activation='softmax'))
-        model.compile(loss = 'categorical_crossentropy', optimizer='adam',metrics = ['accuracy'])
-        """
+        model.add(LSTM(lstm_layer_size, return_sequences=False, input_shape = (timesteps, X_train.shape[2])))
+        model.add(Dense(1, activation='sigmoid', input_shape = (0, lstm_layer_size)))
+        # binary because we're doing binary classification (correct / incorrect
+        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        model.fit(X_train, y_train, validation_data=(X_train, y_train), epochs=3, batch_size=4)
+        Y_pred = model.predict(X_train)
+        print("prediction: ", Y_pred)
+        print(model.summary())

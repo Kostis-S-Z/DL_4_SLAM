@@ -1,7 +1,7 @@
 import numpy as np
 import keras
 from keras.models import Sequential
-from keras.layers import Dense, Activation, Embedding, LSTM
+from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed
 
 
 class SimpleLstm:
@@ -49,11 +49,26 @@ class SimpleLstm:
         shape X_train = (n, one_hot_m)
         shape y_train = (n, )
         """
-        timesteps = 1
+        timesteps = 2
         lstm_layer_size = 10
-        X_train = np.reshape(X_train, (X_train.shape[0], 1, X_train.shape[1]))
+        # should be: (batch_size/ num_examples, num_timesteps, num_feats (m))
+        X_train2 = np.zeros((X_train.shape[0], 2, X_train.shape[1]))
+        X_train2[:,1,:] = X_train
+        X_train2[:,0,:] = X_train
+        X_train = X_train2
+        #X_train = np.reshape(X_train, (X_train.shape[0], 1, X_train.shape[1]))
+
         model = Sequential()
+        # ensure that the LSTM cell returns all of the outputs from the unrolled LSTM cell through time. If this
+        # argument is left out, the LSTM cell will simply provide the output of the LSTM cell from the last time step.
+        # return_sequences = True. We want this because we want to output correct/incorrect for each word, not just
+        # at the end of the exercise one correct/incorrect
         model.add(LSTM(lstm_layer_size, return_sequences=False, input_shape = (timesteps, X_train.shape[2])))
+        # This function adds an independent layer for each time step in the recurrent model. So, for instance, if we
+        # have 10 time steps in a model, a TimeDistributed layer operating on a Dense layer would produce 10 independent
+        # Dense layers, one for each time step.
+        #, input_shape = (0, lstm_layer_size)
+        #model.add(TimeDistributed(Dense(X_train.shape[2], activation='sigmoid')))
         model.add(Dense(1, activation='sigmoid', input_shape = (0, lstm_layer_size)))
         # binary because we're doing binary classification (correct / incorrect
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])

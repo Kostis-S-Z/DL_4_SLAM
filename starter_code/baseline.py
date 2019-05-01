@@ -39,12 +39,12 @@ EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
 
+NUM_LINES_LIM = 100 #limit the number of lines that are read in (debugging purposes)
+MODEL = 'LSTM' # which model to train. Choose 'LSTM' or 'LOGREG'
 
 # dictionaries of features for the one hot encoding
 partOfSpeech_dict = {}
 dependency_label_dict = {}
-
-
 
 # A few notes on this:
 #   - we still use ALL of the test data to evaluate the model
@@ -76,16 +76,24 @@ def main():
 
     # Assert that the train course matches the test course
     assert os.path.basename(args.train)[:5] == os.path.basename(args.test)[:5]
+
+    # Load data
     print("\n -- Loading data -- \n")
     training_data, training_labels = load_data(args.train)
     test_data = load_data(args.test)
 
-    ####################################################################################
-    # Here is the delineation between loading the data and running the baseline model. #
-    # Replace the code between this and the next comment block with your own.          #
-    ####################################################################################
+    # Train model
+    print("\n -- Training model: ", MODEL, " -- \n")
+    if MODEL == 'LSTM':
+        lstm(training_data, training_labels, test_data, args.pred)
+    elif MODEL == 'LOGREG':
+        logreg(training_data, training_labels, test_data, args.pred)
 
 
+def lstm(training_data, training_labels, test_data, args_pred):
+    """
+    Train an LSTM model
+    """
     lstm1 = simple_lstm.SimpleLstm()
     train_data_new = []
     labels_list = []
@@ -95,29 +103,41 @@ def main():
         labels_list.append(training_labels[training_data[i].instance_id])
 
     feature_dict, n_features = build_feature_dict()
-    train_1h = lstm1.one_hot_encode(train_data_new, feature_dict, n_features)
-    lstm1.train(train_1h, labels_list)
-
-
-    # training_instances = [LogisticRegressionInstance(features=instance_data.to_features(),label=training_labels[instance_data.instance_id],name=instance_data.instance_id) for instance_data in training_data]
-    #
-    # test_instances = [LogisticRegressionInstance(features=instance_data.to_features(),
-    #                                              label=None,
-    #                                              name=instance_data.instance_id
-    #                                              ) for instance_data in test_data]
-    #
-    # logistic_regression_model = LogisticRegression()
-    # logistic_regression_model.train(training_instances, iterations=10)
-    #
-    # predictions = logistic_regression_model.predict_test_set(test_instances)
-
-    ####################################################################################
-    # This ends the baseline model code; now we just write predictions.                #
-    ####################################################################################
-
-    # with open(args.pred, 'wt') as f:
+    X_train = lstm1.one_hot_encode(train_data_new, feature_dict, n_features)
+    # 0 is nothing, 1 is progress bar and 2 is line per epoch
+    lstm1.train(X_train, labels_list, verbose=0)
+    predictions = lstm1.predict(X_train)
+    # ###################################################################################
+    # This ends the LSTM model code; now we just write predictions.                #
+    # ###################################################################################
+    # with open(args_pred, 'wt') as f:
     #     for instance_id, prediction in iteritems(predictions):
     #         f.write(instance_id + ' ' + str(prediction) + '\n')
+
+
+def logreg(training_data, training_labels, test_data, args_pred):
+    """
+    Train the provided baseline logistic regression model
+    """
+    training_instances = [LogisticRegressionInstance(features=instance_data.to_features(),label=training_labels[instance_data.instance_id],name=instance_data.instance_id) for instance_data in training_data]
+
+    test_instances = [LogisticRegressionInstance(features=instance_data.to_features(),
+                                                 label=None,
+                                                 name=instance_data.instance_id
+                                                 ) for instance_data in test_data]
+
+    logistic_regression_model = LogisticRegression()
+    logistic_regression_model.train(training_instances, iterations=10)
+
+    predictions = logistic_regression_model.predict_test_set(test_instances)
+
+    # ###################################################################################
+    # This ends the baseline model code; now we just write predictions.                #
+    # ###################################################################################
+    #
+    with open(args_pred, 'wt') as f:
+        for instance_id, prediction in iteritems(predictions):
+            f.write(instance_id + ' ' + str(prediction) + '\n')
 
 
 def load_data(filename):
@@ -154,7 +174,7 @@ def load_data(filename):
             #TODO : NOT LIMIT THIS NUMBER OF LINES TO ONLY 12. THIS IS ONLY FOR DEBUGGING PURPOSES
             # This gives slightly less than 12 samples - the first lines are comments and the first line of an
             # exercise describes the exercise
-            if num_lines > 12:
+            if num_lines > 100:
                 break
             num_lines += 1
 

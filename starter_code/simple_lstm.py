@@ -18,7 +18,7 @@ class SimpleLstm:
             setattr(self, var, kwargs.get(var, default))
 
         self.model = Sequential()
-        self.timesteps = 32
+        self.timesteps = 22
 
 
     def one_hot_encode(self, training_data, feature_index_dict, n_features):
@@ -78,11 +78,17 @@ class SimpleLstm:
             print(self.model.summary())
 
 
-    def predict(self, X):
+    def predict(self, X, ids):
         """
         make predictions for one-hot encoded feature vector X using the model.
         Ofcourse, it is useful if the model is trained before making predictions.
         """
+        print("shape X: ", X.shape)
         X = self.data_in_time(X)
         Y =self.model.predict(X)
-        return Y
+        print("shape Y: ", Y.shape)
+        print("length id_list: ", len(ids))
+        pred_dict = {}
+        for i in range(len(ids)-self.timesteps):
+            pred_dict[ids[i+self.timesteps]] = float(Y[i])
+        return pred_dict

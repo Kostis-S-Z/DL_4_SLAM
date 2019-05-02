@@ -33,15 +33,14 @@ _DEFAULT_SIGMA = 20.0
 # Eta is the learning rate/step size for SGD. Larger means larger step size.
 _DEFAULT_ETA = 0.1
 
-
 TRAINING_PERC = 0.20  # Control how much (%) of the training data to actually use for training
 EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
 
-NUM_LINES_LIM = 100 #limit the number of lines that are read in (debugging purposes)
-MODEL = 'LOGREG' # which model to train. Choose 'LSTM' or 'LOGREG'
-VERBOSE = 1 # 0, 1 or 2. The more verbose, the more print statements
+NUM_LINES_LIM = 50 #limit the number of lines that are read in (debugging purposes)
+MODEL = 'LSTM' # which model to train. Choose 'LSTM' or 'LOGREG'
+VERBOSE = 0 # 0, 1 or 2. The more verbose, the more print statements
 
 # dictionaries of features for the one hot encoding
 partOfSpeech_dict = {}
@@ -102,24 +101,27 @@ def lstm(training_data, training_labels, test_data, args_pred):
     lstm1 = simple_lstm.SimpleLstm()
     train_data_new = []
     labels_list = []
+    id_list = []
+    # print("training data ")
+    # print(training_data)
     for i in range(len(training_data)):
         # just filter some features and change their format
         train_data_new.append(training_data[i].to_features())
         labels_list.append(training_labels[training_data[i].instance_id])
-
+        id_list.append(training_data[i].instance_id)
     feature_dict, n_features = build_feature_dict()
     X_train = lstm1.one_hot_encode(train_data_new, feature_dict, n_features)
     # 0 is nothing, 1 is progress bar and 2 is line per epoch
     lstm1.train(X_train, labels_list, verbose=VERBOSE)
-    predictions = lstm1.predict(X_train)
+    predictions = lstm1.predict(X_train, id_list)
     print("\n predictions lstm")
     print(predictions)
     # ###################################################################################
     # This ends the LSTM model code; now we just write predictions.                #
     # ###################################################################################
-    # with open(args_pred, 'wt') as f:
-    #     for instance_id, prediction in iteritems(predictions):
-    #         f.write(instance_id + ' ' + str(prediction) + '\n')
+    with open(args_pred, 'wt') as f:
+        for instance_id, prediction in iteritems(predictions):
+            f.write(instance_id + ' ' + str(prediction) + '\n')
 
 
 def logreg(training_data, training_labels, test_data, args_pred):

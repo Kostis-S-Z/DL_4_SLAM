@@ -40,6 +40,7 @@ class SimpleLstm:
 
         return one_hot_vec
 
+
     def data_in_time(self, data_X, data_y=None):
         list = []
         for i in range(len(data_X) - self.timesteps + 1):
@@ -51,6 +52,7 @@ class SimpleLstm:
             return data_X, data_y
         else:
             return data_X
+
 
     def train(self, X_train, y_train, verbose=2):
         """
@@ -75,6 +77,7 @@ class SimpleLstm:
         if verbose > 0:
             print(self.model.summary())
 
+
     def predict(self, X):
         """
         make predictions for one-hot encoded feature vector X using the model.
@@ -83,5 +86,3 @@ class SimpleLstm:
         X = self.data_in_time(X)
         Y =self.model.predict(X)
         return Y
-
-

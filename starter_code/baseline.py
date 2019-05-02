@@ -40,7 +40,8 @@ EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
 
 NUM_LINES_LIM = 100 #limit the number of lines that are read in (debugging purposes)
-MODEL = 'LSTM' # which model to train. Choose 'LSTM' or 'LOGREG'
+MODEL = 'LOGREG' # which model to train. Choose 'LSTM' or 'LOGREG'
+VERBOSE = 1 # 0, 1 or 2. The more verbose, the more print statements
 
 # dictionaries of features for the one hot encoding
 partOfSpeech_dict = {}
@@ -78,12 +79,14 @@ def main():
     assert os.path.basename(args.train)[:5] == os.path.basename(args.test)[:5]
 
     # Load data
-    print("\n -- Loading data -- \n")
+    if VERBOSE > 0:
+        print("\n -- Loading data -- \n")
     training_data, training_labels = load_data(args.train)
     test_data = load_data(args.test)
 
     # Train model
-    print("\n -- Training model: ", MODEL, " -- \n")
+    if VERBOSE > 0:
+        print("\n -- Training model: ", MODEL, " -- \n")
     if MODEL == 'LSTM':
         lstm(training_data, training_labels, test_data, args.pred)
     elif MODEL == 'LOGREG':
@@ -93,7 +96,9 @@ def main():
 def lstm(training_data, training_labels, test_data, args_pred):
     """
     Train an LSTM model
+    NOTE: LSTM doesn't use all of the examples because they are not in training_data
     """
+
     lstm1 = simple_lstm.SimpleLstm()
     train_data_new = []
     labels_list = []
@@ -105,8 +110,10 @@ def lstm(training_data, training_labels, test_data, args_pred):
     feature_dict, n_features = build_feature_dict()
     X_train = lstm1.one_hot_encode(train_data_new, feature_dict, n_features)
     # 0 is nothing, 1 is progress bar and 2 is line per epoch
-    lstm1.train(X_train, labels_list, verbose=0)
+    lstm1.train(X_train, labels_list, verbose=VERBOSE)
     predictions = lstm1.predict(X_train)
+    print("\n predictions lstm")
+    print(predictions)
     # ###################################################################################
     # This ends the LSTM model code; now we just write predictions.                #
     # ###################################################################################
@@ -135,6 +142,8 @@ def logreg(training_data, training_labels, test_data, args_pred):
     # This ends the baseline model code; now we just write predictions.                #
     # ###################################################################################
     #
+    print("\n predictions logreg")
+    print(predictions)
     with open(args_pred, 'wt') as f:
         for instance_id, prediction in iteritems(predictions):
             f.write(instance_id + ' ' + str(prediction) + '\n')
@@ -165,7 +174,8 @@ def load_data(filename):
         labels = dict()
 
     num_exercises = 0
-    print('Loading instances...')
+    if VERBOSE > 1:
+        print('Loading instances...')
     instance_properties = dict()
 
     with open(filename, 'rt') as f:
@@ -185,12 +195,14 @@ def load_data(filename):
             if len(line) == 0:
                 num_exercises += 1
                 if num_exercises % 100000 == 0:
-                    print('Loaded ' + str(len(data)) + ' instances across ' + str(num_exercises) + ' exercises...')
+                    if VERBOSE > 1:
+                        print('Loaded ' + str(len(data)) + ' instances across ' + str(num_exercises) + ' exercises...')
                 instance_properties = dict()
 
                 # Load only the specified amount of data indicated
                 if num_exercises >= TRAINING_DATA_USE:
-                    print('Stop loading training data...')
+                    if VERBOSE > 0:
+                        print('Stop loading training data...')
                     break
 
             # If the line starts with #, then we're beginning a new exercise
@@ -251,8 +263,8 @@ def load_data(filename):
                 if line[4] not in dependency_label_dict:
                     dependency_label_dict[line[4]] = len(dependency_label_dict)
 
-
-        print('Done loading ' + str(len(data)) + ' instances across ' + str(num_exercises) +
+        if VERBOSE > 1:
+            print('Done loading ' + str(len(data)) + ' instances across ' + str(num_exercises) +
               ' exercises.\n')
 
 

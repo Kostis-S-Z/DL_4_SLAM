@@ -1,0 +1,18 @@
+Uniform random values between 0 and 1
+Metrics:        avglogloss=1.001        auroc=0.501     accuracy=0.499      gitF1=0.222
+
+
+Logistic regression with 1 epoch and 20% of the training data
+Metrics:        avglogloss=0.402        auroc=0.611     accuracy=0.857      F1=0.000
+
+
+Logistic regression with 10 epochs and 20% of the training data
+Metrics:        avglogloss=0.401        auroc=0.613     accuracy=0.857      F1=0.000
+
+
+Logistic regression with 10 epochs and 15% of the training data
+Metrics:        avglogloss=0.401        auroc=0.612     accuracy=0.857  F1=0.000
+
+
+Logistic regression with 20 epochs and 20% of the training data
+Metrics:        avglogloss=0.401        auroc=0.614     accuracy=0.857      F1=0.000

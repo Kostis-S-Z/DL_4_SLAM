@@ -17,30 +17,26 @@ code does not depend on any other Python libraries besides future.
 """
 
 import argparse
-from collections import defaultdict, namedtuple
 from io import open
-import math
 import os
-from random import shuffle, uniform
 import simple_lstm
 
 from future.builtins import range
 from future.utils import iteritems
 
-# Sigma is the L2 prior variance, regularizing the baseline model. Smaller sigma means more regularization.
-_DEFAULT_SIGMA = 20.0
+from preprocess_data import reformat_data
+from log_reg import LogisticRegressionInstance, LogisticRegression
 
-# Eta is the learning rate/step size for SGD. Larger means larger step size.
-_DEFAULT_ETA = 0.1
 
-TRAINING_PERC = 0.20  # Control how much (%) of the training data to actually use for training
+MAX = 10000000  # Placeholder value to work as an on/off if statement
+
+TRAINING_PERC = 0.01  # Control how much (%) of the training data to actually use for training
 EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
 
-NUM_LINES_LIM = 50 #limit the number of lines that are read in (debugging purposes)
-MODEL = 'LSTM' # which model to train. Choose 'LSTM' or 'LOGREG'
-VERBOSE = 0 # 0, 1 or 2. The more verbose, the more print statements
+MODEL = 'LSTM'  # which model to train. Choose 'LSTM' or 'LOGREG'
+VERBOSE = 2  # 0, 1 or 2. The more verbose, the more print statements
 
 # dictionaries of features for the one hot encoding
 partOfSpeech_dict = {}
@@ -52,7 +48,8 @@ dependency_label_dict = {}
 #       due to overload
 #   - I suggest using 20-30% of the data to train for now... maybe even less for a laptop
 #   - Minimum amount you can train is 14% (for en_es 14% is too little. 20% is fine)
-#
+#   Total instances: 2.622.957, Total exercises: 824.012, Total lines in the file: 4.866.081
+
 
 def main():
     """
@@ -77,87 +74,143 @@ def main():
     # Assert that the train course matches the test course
     assert os.path.basename(args.train)[:5] == os.path.basename(args.test)[:5]
 
-    # Load data
-    if VERBOSE > 0:
-        print("\n -- Loading data -- \n")
-    training_data, training_labels = load_data(args.train)
-    test_data = load_data(args.test)
+    # test random
+    train_part_test_all(args.train, args.test, args.pred)
 
-    # Train model
+    # train_in_chunks(args.train)
+
+
+def train_in_chunks(train_path):
+    """
+    Train a model with a chunk of the data, then save the weights, the load another chunk, load the weights and
+    resume training. This is done to go make it possible to train a full model in system with limited memory.
+
+    The chunks are split evenly, except the last one. The last one will contain a bit more.
+    e.g when split 15% the last batch will contain ~200.000 exercises where as the others ~125.000
+
+    Possible problem with this approach(!): If you are using learning rate decay or something else that is
+    dependent on the iterations of the epochs of the model during training then it will reset it!
+    For example, if you start with lr=0.1 and decay it over time then when you start the second big_batch
+    the learning rate will start from 0.1 again! (and you will lose some progress)
+    """
     if VERBOSE > 0:
-        print("\n -- Training model: ", MODEL, " -- \n")
+        print("\n -- Training with chunks -- \n")
+
+    num_chunks = int(1 / TRAINING_PERC)
+
+    start_line = 0
+    total_instances = 0
+    total_exercises = 0
+    for chunk in range(num_chunks - 1):
+        if VERBOSE > 0:
+            print("Training with chunk", chunk + 1)
+
+        # Start loading data from the last point
+        training_data, training_labels, end_line, instance_count, num_exercises = load_data(train_path,
+                                                                                            start_from_line=start_line)
+
+        total_instances += instance_count
+        total_exercises += num_exercises
+
+        # Make the ending line of this batch, the starting point of the next batch
+        start_line = end_line
+
+    if VERBOSE > 0:
+        print("Last batch")
+    # the last batch should contain more than the previous batches
+    # by setting the end_line to a number higher than the number of lines in the file
+    # the reader will read until the end of file and will exit
+    training_data, training_labels, end_line, instance_count, num_exercises = load_data(train_path,
+                                                                                        start_from_line=start_line,
+                                                                                        end_line=MAX)
+    total_instances += instance_count
+    total_exercises += num_exercises
+
+    if VERBOSE > 0:
+        print("total instances: {} total exercises: {} line: {}".format(total_instances, total_exercises, end_line))
+
+
+def train_part_test_all(train_path, test_path, pred_path):
+    """
+    Train with only one part of the data and test on all of the data
+    """
+
+    # The global variables partOfSpeech_dict, dependency_label_dict are dependent on the order you load the data
+    # so if you load the training and then the test these variables will contain stuff of features of the test
+    # and the features of the training will be lost
+
     if MODEL == 'LSTM':
-        lstm(training_data, training_labels, test_data, args.pred)
+        predictions = lstm(train_path, test_path)
     elif MODEL == 'LOGREG':
-        logreg(training_data, training_labels, test_data, args.pred)
+        predictions = log_reg(train_path, test_path)
+
+    with open(pred_path, 'wt') as f:
+        for instance_id, prediction in iteritems(predictions):
+            f.write(instance_id + ' ' + str(prediction) + '\n')
+
+    return predictions
 
 
-def lstm(training_data, training_labels, test_data, args_pred):
+def lstm(train_path, test_path):
     """
     Train an LSTM model
     NOTE: LSTM doesn't use all of the examples because they are not in training_data
     """
 
-    lstm1 = simple_lstm.SimpleLstm()
-    train_data_new = []
-    labels_list = []
-    id_list = []
-    # print("training data ")
-    # print(training_data)
-    for i in range(len(training_data)):
-        # just filter some features and change their format
-        train_data_new.append(training_data[i].to_features())
-        labels_list.append(training_labels[training_data[i].instance_id])
-        id_list.append(training_data[i].instance_id)
-    feature_dict, n_features = build_feature_dict()
-    X_train = lstm1.one_hot_encode(train_data_new, feature_dict, n_features)
+    training_data, training_labels, _, _, _ = load_data(train_path)
+    training_data, training_labels, train_id = reformat_data(training_data, partOfSpeech_dict,
+                                                             dependency_label_dict, labels_dict=training_labels)
+
+    test_data = load_data(test_path)
+    test_data, _, test_id = reformat_data(test_data, partOfSpeech_dict, dependency_label_dict)
+
+    x_train = training_data
+    labels_list = training_labels
+
     # 0 is nothing, 1 is progress bar and 2 is line per epoch
-    lstm1.train(X_train, labels_list, verbose=VERBOSE)
-    predictions = lstm1.predict(X_train, id_list)
-    print("\n predictions lstm")
-    print(predictions)
-    # ###################################################################################
-    # This ends the LSTM model code; now we just write predictions.                #
-    # ###################################################################################
-    with open(args_pred, 'wt') as f:
-        for instance_id, prediction in iteritems(predictions):
-            f.write(instance_id + ' ' + str(prediction) + '\n')
+    lstm1 = simple_lstm.SimpleLstm()
+    lstm1.train(x_train, labels_list, verbose=VERBOSE)
+
+    predictions = lstm1.predict(test_data, test_id)
+
+    return predictions
 
 
-def logreg(training_data, training_labels, test_data, args_pred):
+def log_reg(train_path, test_path):
     """
     Train the provided baseline logistic regression model
     """
-    training_instances = [LogisticRegressionInstance(features=instance_data.to_features(),label=training_labels[instance_data.instance_id],name=instance_data.instance_id) for instance_data in training_data]
+    epochs = 10
+
+    training_data, training_labels, _, _, _ = load_data(train_path)
+
+    training_instances = [LogisticRegressionInstance(features=instance_data.to_features(),
+                                                     label=training_labels[instance_data.instance_id],
+                                                     name=instance_data.instance_id) for instance_data in training_data]
+
+    test_data = load_data(test_path)
 
     test_instances = [LogisticRegressionInstance(features=instance_data.to_features(),
                                                  label=None,
-                                                 name=instance_data.instance_id
-                                                 ) for instance_data in test_data]
+                                                 name=instance_data.instance_id) for instance_data in test_data]
 
     logistic_regression_model = LogisticRegression()
-    logistic_regression_model.train(training_instances, iterations=10)
+    logistic_regression_model.train(training_instances, iterations=epochs)
 
     predictions = logistic_regression_model.predict_test_set(test_instances)
 
-    # ###################################################################################
-    # This ends the baseline model code; now we just write predictions.                #
-    # ###################################################################################
-    #
-    print("\n predictions logreg")
-    print(predictions)
-    with open(args_pred, 'wt') as f:
-        for instance_id, prediction in iteritems(predictions):
-            f.write(instance_id + ' ' + str(prediction) + '\n')
+    # print("\n Predictions Logistic Regression \n", predictions)
+    return predictions
 
 
-def load_data(filename):
-
+def load_data(filename, start_from_line=0, end_line=0):
     """
     This method loads and returns the data in filename. If the data is labelled training data, it returns labels too.
 
     Parameters:
         filename: the location of the training or test data you want to load.
+        start_from_line: specific number of line to start reading the data
+        end_line: specific number of line to stop reading the data
 
     Returns:
         data: a list of InstanceData objects from that data type and track.
@@ -171,27 +224,42 @@ def load_data(filename):
     training = False
     if filename.find('train') != -1:
         training = True
-
+        if VERBOSE > 1:
+            print('Loading training instances...')
+    else:
+        if VERBOSE > 1:
+            print('Loading testing instances...')
     if training:
         labels = dict()
 
     num_exercises = 0
-    if VERBOSE > 1:
-        print('Loading instances...')
+    instance_count = 0
     instance_properties = dict()
 
+    first = True
     with open(filename, 'rt') as f:
+        # Total number of lines 971.852
         num_lines = 0
         for line in f:
-            #TODO : NOT LIMIT THIS NUMBER OF LINES TO ONLY 12. THIS IS ONLY FOR DEBUGGING PURPOSES
-            # This gives slightly less than 12 samples - the first lines are comments and the first line of an
-            # exercise describes the exercise
-            if num_lines > 100:
+            """
+            DO NOT LIMIT THIS NUMBER OF LINES TO ONLY 12. THIS IS ONLY FOR DEBUGGING PURPOSES
+            This gives slightly less than 12 samples - the first lines are comments and the first line of an
+            exercise describes the exercise
+            if num_lines > NUM_LINES_LIM:
                 break
+            """
+
+            # The line counter starts from 1
             num_lines += 1
-
+            # If you want to start loading data after a specific point in the file
+            # You have to go through all the lines until that point and ignore them (pass)
+            if num_lines < start_from_line + 1:
+                continue
+            else:
+                if first and VERBOSE > 1:
+                    print("Starting to load from line", num_lines)
+                    first = False
             line = line.strip()
-
 
             # If there's nothing in the line, then we're done with the exercise. Print if needed, otherwise continue
             if len(line) == 0:
@@ -201,8 +269,10 @@ def load_data(filename):
                         print('Loaded ' + str(len(data)) + ' instances across ' + str(num_exercises) + ' exercises...')
                 instance_properties = dict()
 
-                # Load only the specified amount of data indicated
-                if num_exercises >= TRAINING_DATA_USE:
+                # Load only the specified amount of data indicated based on BOTH the num of exercise and the last line
+                # If end_line = 0, then only the first condition needs to be met
+                # If end_line = MAX, then this is never true, and the loading will stop when there are no more data
+                if num_exercises >= TRAINING_DATA_USE and num_lines > end_line:
                     if VERBOSE > 0:
                         print('Stop loading training data...')
                     break
@@ -230,6 +300,7 @@ def load_data(filename):
             # Otherwise we're parsing a new Instance for the current exercise
             else:
                 line = line.split()
+                instance_count += 1
                 if training:
                     assert len(line) == 7
                 else:
@@ -256,8 +327,6 @@ def load_data(filename):
                     labels[instance_properties['instance_id']] = label
                 data.append(InstanceData(instance_properties=instance_properties))
 
-
-
                 # save which features are in the dataset
                 # the one hot encoding needs to know which features are in the dataset to determine its size
                 if line[2] not in partOfSpeech_dict:
@@ -267,13 +336,10 @@ def load_data(filename):
 
         if VERBOSE > 1:
             print('Done loading ' + str(len(data)) + ' instances across ' + str(num_exercises) +
-              ' exercises.\n')
-
-
-
+                  ' exercises.\n')
 
     if training:
-        return data, labels
+        return data, labels, num_lines, instance_count, num_exercises
     else:
         return data
 
@@ -337,96 +403,6 @@ class InstanceData(object):
         to_return['dependency_label:' + self.dependency_label] = 1.0
         #print("one-hot feature matrix: ", to_return)
         return to_return
-
-def build_feature_dict():
-
-    # Some explenation to feature_index_dict:
-    # the keys are different features_attributes (eg part of speech, dependency value, token... )
-    # -> but each feature_attributes can again have different feature_values (eg part of speech: Noun, Verb, ...)
-    # The value of the dict for each key is a Tuple (x, dict) from which we can clcualte the position of the 1 (for the feature_value) in the one hot encoding
-    # # x is start index of from where feature_attribute begins
-    # # from dict in (x, dict) we get the index of the feature_value (for the corresponding feature_attribute) which we later add to x
-
-    feature_dict = {}
-
-    nfeat_partOfSpeech = len(partOfSpeech_dict)
-    nfeat_dependency_label = len(dependency_label_dict)
-
-    # eg: "part_of_speech" attribute starts at index 0 and where 'NOUN" value starts, we can find in the partOfSpeech_dict
-    feature_dict["part_of_speech"] = (0, partOfSpeech_dict)
-    feature_dict["dependency_label"] = (nfeat_partOfSpeech, dependency_label_dict)
-
-    # calculate the whole amount of feature_values
-    n_features = nfeat_partOfSpeech + nfeat_dependency_label # + ... for other feature_attributes
-
-    return feature_dict, n_features
-
-
-
-class LogisticRegressionInstance(namedtuple('Instance', ['features', 'label', 'name'])):
-    """
-    A named tuple for packaging together the instance features, label, and name.
-    """
-    def __new__(cls, features, label, name):
-        if label:
-            if not isinstance(label, (int, float)):
-                raise TypeError('LogisticRegressionInstance label must be a number.')
-            label = float(label)
-        if not isinstance(features, dict):
-            raise TypeError('LogisticRegressionInstance features must be a dict.')
-        return super(LogisticRegressionInstance, cls).__new__(cls, features, label, name)
-
-
-class LogisticRegression(object):
-    """
-    An L2-regularized logistic regression object trained using stochastic gradient descent.
-    """
-
-    def __init__(self, sigma=_DEFAULT_SIGMA, eta=_DEFAULT_ETA):
-        super(LogisticRegression, self).__init__()
-        self.sigma = sigma  # L2 prior variance
-        self.eta = eta  # initial learning rate
-        self.weights = defaultdict(lambda: uniform(-1.0, 1.0)) # weights initialize to random numbers
-        self.fcounts = None # this forces smaller steps for things we've seen often before
-
-    def predict_instance(self, instance):
-        """
-        This computes the logistic function of the dot product of the instance features and the weights.
-        We truncate predictions at ~10^(-7) and ~1 - 10^(-7).
-        """
-        a = min(17., max(-17., sum([float(self.weights[k]) * instance.features[k] for k in instance.features])))
-        return 1. / (1. + math.exp(-a))
-
-    def error(self, instance):
-        return instance.label - self.predict_instance(instance)
-
-    def reset(self):
-        self.fcounts = defaultdict(int)
-
-    def training_update(self, instance):
-        if self.fcounts is None:
-            self.reset()
-        err = self.error(instance)
-        for k in instance.features:
-            rate = self.eta / math.sqrt(1 + self.fcounts[k])
-            # L2 regularization update
-            if k != 'bias':
-                self.weights[k] -= rate * self.weights[k] / self.sigma ** 2
-            # error update
-            self.weights[k] += rate * err * instance.features[k]
-            # increment feature count for learning rate
-            self.fcounts[k] += 1
-
-    def train(self, train_set, iterations=10):
-        for it in range(iterations):
-            print('Training iteration ' + str(it+1) + '/' + str(iterations) + '...')
-            shuffle(train_set)
-            for instance in train_set:
-                self.training_update(instance)
-        print('\n')
-
-    def predict_test_set(self, test_set):
-        return {instance.name: self.predict_instance(instance) for instance in test_set}
 
 
 if __name__ == '__main__':

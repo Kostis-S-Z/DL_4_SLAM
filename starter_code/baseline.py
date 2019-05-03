@@ -46,7 +46,7 @@ pred_path = en_es_predictions
 
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
-TRAINING_PERC = 0.01  # Control how much (%) of the training data to actually use for training
+TRAINING_PERC = 0.15  # Control how much (%) of the training data to actually use for training
 EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
@@ -88,13 +88,12 @@ def main():
 
     # Assert that the train course matches the test course
     assert os.path.basename(args.train)[:5] == os.path.basename(args.test)[:5]
-
     """
 
     # test random
-    train_part_test_all()
+    # train_part_test_all()
 
-    # train_in_chunks()
+    model = train_in_chunks()
 
 
 def train_in_chunks():
@@ -104,16 +103,13 @@ def train_in_chunks():
 
     The chunks are split evenly, except the last one. The last one will contain a bit more.
     e.g when split 15% the last batch will contain ~200.000 exercises where as the others ~125.000
-
-    Possible problem with this approach(!): If you are using learning rate decay or something else that is
-    dependent on the iterations of the epochs of the model during training then it will reset it!
-    For example, if you start with lr=0.1 and decay it over time then when you start the second big_batch
-    the learning rate will start from 0.1 again! (and you will lose some progress)
     """
     if VERBOSE > 0:
         print("\n -- Training with chunks -- \n")
 
-    num_chunks = int(1 / TRAINING_PERC)
+    # num_chunks = int(1 / TRAINING_PERC)
+    num_chunks = 3  # DEBUG: use if you want to test a really small part of the data
+    use_last_batch = False
 
     start_line = 0
     total_instances = 0
@@ -126,26 +122,54 @@ def train_in_chunks():
         training_data, training_labels, end_line, instance_count, num_exercises = load_data(train_path,
                                                                                             start_from_line=start_line)
 
+        training_data, training_labels, train_id = reformat_data(training_data, partOfSpeech_dict,
+                                                                 dependency_label_dict, labels_dict=training_labels)
+
+        model = simple_lstm.SimpleLstm()
+
+        # If its the first chunk then you haven't trained a model yet and start from scratch
+        # otherwise resume from an already saved one
+        if chunk != 0:
+            trained_model = model.load_model()
+            model.train(training_data, training_labels, model=trained_model, verbose=VERBOSE)
+        else:
+            model.train(training_data, training_labels, verbose=VERBOSE)
+
+        model.save_model()
+
         total_instances += instance_count
         total_exercises += num_exercises
 
         # Make the ending line of this batch, the starting point of the next batch
         start_line = end_line
 
-    if VERBOSE > 0:
-        print("Last batch")
-    # the last batch should contain more than the previous batches
-    # by setting the end_line to a number higher than the number of lines in the file
-    # the reader will read until the end of file and will exit
-    training_data, training_labels, end_line, instance_count, num_exercises = load_data(train_path,
-                                                                                        start_from_line=start_line,
-                                                                                        end_line=MAX)
-    total_instances += instance_count
-    total_exercises += num_exercises
+    predictions = model.predict(training_data, train_id)
+
+    with open(pred_path, 'wt') as f:
+        for instance_id, prediction in iteritems(predictions):
+            f.write(instance_id + ' ' + str(prediction) + '\n')
+
+    if use_last_batch:
+
+        if VERBOSE > 0:
+            print("Last batch")
+        # the last batch should contain more than the previous batches
+        # by setting the end_line to a number higher than the number of lines in the file
+        # the reader will read until the end of file and will exit
+        training_data, training_labels, end_line, instance_count, num_exercises = load_data(train_path,
+                                                                                            start_from_line=start_line,
+                                                                                            end_line=MAX)
+
+        training_data, training_labels, train_id = reformat_data(training_data, partOfSpeech_dict,
+                                                                 dependency_label_dict, labels_dict=training_labels)
+
+        total_instances += instance_count
+        total_exercises += num_exercises
 
     if VERBOSE > 0:
         print("total instances: {} total exercises: {} line: {}".format(total_instances, total_exercises, end_line))
 
+    return model
 
 def train_part_test_all():
     """
@@ -160,10 +184,6 @@ def train_part_test_all():
         predictions = lstm()
     else:
         predictions = log_reg()
-
-    with open(pred_path, 'wt') as f:
-        for instance_id, prediction in iteritems(predictions):
-            f.write(instance_id + ' ' + str(prediction) + '\n')
 
     return predictions
 
@@ -183,6 +203,8 @@ def lstm():
 
     x_train = training_data
     labels_list = training_labels
+
+    print(training_data.shape, test_data.shape)
 
     # 0 is nothing, 1 is progress bar and 2 is line per epoch
     lstm1 = simple_lstm.SimpleLstm()

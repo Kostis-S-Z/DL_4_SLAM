@@ -183,12 +183,12 @@ def evaluate_metrics(actual, predicted):
     avg_log_loss = compute_avg_log_loss(actual, predicted)
     auroc = compute_auroc(actual, predicted)
     true_pos, false_pos, true_neg, false_neg, precision, recall, F1 = compute_f1(actual, predicted)
-
+    ratio_maj = (true_neg + false_pos)/len(actual)
     return {'correctly predicted 1 (tp)': true_pos, 'incorrectly predicted 1 (fp)': false_pos,
             'correctly predicted 0 (tn)': true_neg,
             'incorrectly predicted 0 (fn)': false_neg,
             'precision:  tp / (tp+fp)': precision, 'recall:  tp / (tp+fn)': recall, 'F1': F1,
-            'accuracy': acc,
+            'ratio majority class':ratio_maj, 'accuracy': acc,
             'avglogloss': avg_log_loss,
             'auroc': auroc }
 

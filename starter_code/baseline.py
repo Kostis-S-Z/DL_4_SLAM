@@ -17,8 +17,9 @@ code does not depend on any other Python libraries besides future.
 """
 
 import argparse
-from io import open
 import os
+from io import open
+from pathlib import Path
 import simple_lstm
 
 from future.builtins import range
@@ -27,6 +28,21 @@ from future.utils import iteritems
 from preprocess_data import reformat_data
 from log_reg import LogisticRegressionInstance, LogisticRegression
 
+directory = str(Path.cwd().parent)  # Get the parent directory of the current working directory
+data_directory = directory + "/data"
+
+data_en_es = data_directory + "/data_en_es"
+
+data_en_es_train = data_en_es + "/en_es.slam.20190204.train"
+data_en_es_test = data_en_es + "/en_es.slam.20190204.dev"
+data_en_es_key = data_en_es + "/en_es.slam.20190204.dev.key"
+
+en_es_predictions = "en_es_predictions.pred"
+
+train_path = data_en_es_train
+test_path = data_en_es_test
+key_path = data_en_es_key
+pred_path = en_es_predictions
 
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
@@ -57,9 +73,8 @@ def main():
     regression model, then dumps predictions to the specified file.
 
     Modify the middle of this code, between the two commented blocks, to create your own model.
-    """
-
     parser = argparse.ArgumentParser(description='Duolingo shared task baseline model')
+
     parser.add_argument('--train', help='Training file name', required=True)
     parser.add_argument('--test', help='Test file name, to make predictions on', required=True)
     parser.add_argument('--pred', help='Output file name for predictions, defaults to test_name.pred')
@@ -74,13 +89,15 @@ def main():
     # Assert that the train course matches the test course
     assert os.path.basename(args.train)[:5] == os.path.basename(args.test)[:5]
 
+    """
+
     # test random
-    train_part_test_all(args.train, args.test, args.pred)
+    train_part_test_all()
 
-    # train_in_chunks(args.train)
+    # train_in_chunks()
 
 
-def train_in_chunks(train_path):
+def train_in_chunks():
     """
     Train a model with a chunk of the data, then save the weights, the load another chunk, load the weights and
     resume training. This is done to go make it possible to train a full model in system with limited memory.
@@ -130,7 +147,7 @@ def train_in_chunks(train_path):
         print("total instances: {} total exercises: {} line: {}".format(total_instances, total_exercises, end_line))
 
 
-def train_part_test_all(train_path, test_path, pred_path):
+def train_part_test_all():
     """
     Train with only one part of the data and test on all of the data
     """
@@ -140,9 +157,9 @@ def train_part_test_all(train_path, test_path, pred_path):
     # and the features of the training will be lost
 
     if MODEL == 'LSTM':
-        predictions = lstm(train_path, test_path)
-    elif MODEL == 'LOGREG':
-        predictions = log_reg(train_path, test_path)
+        predictions = lstm()
+    else:
+        predictions = log_reg()
 
     with open(pred_path, 'wt') as f:
         for instance_id, prediction in iteritems(predictions):
@@ -151,7 +168,7 @@ def train_part_test_all(train_path, test_path, pred_path):
     return predictions
 
 
-def lstm(train_path, test_path):
+def lstm():
     """
     Train an LSTM model
     NOTE: LSTM doesn't use all of the examples because they are not in training_data
@@ -176,7 +193,7 @@ def lstm(train_path, test_path):
     return predictions
 
 
-def log_reg(train_path, test_path):
+def log_reg():
     """
     Train the provided baseline logistic regression model
     """

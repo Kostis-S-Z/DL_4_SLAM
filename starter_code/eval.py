@@ -8,14 +8,13 @@ import os
 from future.builtins import range
 from future.utils import iterkeys, iteritems
 
+from baseline import pred_path, key_path
+
 
 def main():
     """
     Evaluates your predictions. This loads the dev labels and your predictions, and then evaluates them, printing the
     results for a variety of metrics to the screen.
-    """
-
-    test_metrics()
 
     parser = argparse.ArgumentParser(description='Duolingo shared task evaluation script')
     parser.add_argument('--pred', help='Predictions file name', required=True)
@@ -24,12 +23,15 @@ def main():
     args = parser.parse_args()
 
     assert os.path.isfile(args.pred)
+    """
+
+    test_metrics()
 
     print('\nLoading labels for exercises...')
-    labels = load_labels(args.key)
+    labels = load_labels(key_path)
 
     print('Loading predictions for exercises...')
-    predictions = load_labels(args.pred)
+    predictions = load_labels(pred_path)
 
     actual = []
     predicted = []
@@ -88,6 +90,21 @@ def compute_acc(actual, predicted):
             acc += 1.
     acc /= num
     return acc
+
+
+def count_class_balance(true_labels):
+    """
+    Count the (im)balance between the binary classification
+    """
+    class1 = 0
+    class2 = 0
+    for a_label in true_labels:
+        if a_label >= 0.5:
+            class1 += 1
+        else:
+            class2 += 1
+
+    print("1: {} \n 0: {} \n out of {}".format(class1, class2, class1 + class2))
 
 
 def compute_avg_log_loss(actual, predicted):

@@ -1,3 +1,7 @@
+1 (mistakes): 55358 - 14.2%
+0 (correct): 332016 - 85.7%
+out of 387374
+
 Uniform random values between 0 and 1
 Metrics:        avglogloss=1.001        auroc=0.501     accuracy=0.499      gitF1=0.222
 

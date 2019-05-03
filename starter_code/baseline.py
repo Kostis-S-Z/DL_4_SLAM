@@ -33,13 +33,13 @@ _DEFAULT_SIGMA = 20.0
 # Eta is the learning rate/step size for SGD. Larger means larger step size.
 _DEFAULT_ETA = 0.1
 
-TRAINING_PERC = 0.20  # Control how much (%) of the training data to actually use for training
+TRAINING_PERC = 0.00005  # Control how much (%) of the training data to actually use for training
 EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
 
 NUM_LINES_LIM = 50 #limit the number of lines that are read in (debugging purposes)
-MODEL = 'LSTM' # which model to train. Choose 'LSTM' or 'LOGREG'
+MODEL = 'LOGREG' # which model to train. Choose 'LSTM' or 'LOGREG'
 VERBOSE = 0 # 0, 1 or 2. The more verbose, the more print statements
 
 # dictionaries of features for the one hot encoding
@@ -61,6 +61,8 @@ def main():
 
     Modify the middle of this code, between the two commented blocks, to create your own model.
     """
+
+    print("# exercises to train on: ", TRAINING_DATA_USE)
 
     parser = argparse.ArgumentParser(description='Duolingo shared task baseline model')
     parser.add_argument('--train', help='Training file name', required=True)
@@ -114,14 +116,16 @@ def lstm(training_data, training_labels, test_data, args_pred):
     # 0 is nothing, 1 is progress bar and 2 is line per epoch
     lstm1.train(X_train, labels_list, verbose=VERBOSE)
     predictions = lstm1.predict(X_train, id_list)
-    print("\n predictions lstm")
-    print(predictions)
+
+    # print("\n predictions lstm")
+    # print(predictions)
     # ###################################################################################
     # This ends the LSTM model code; now we just write predictions.                #
     # ###################################################################################
     with open(args_pred, 'wt') as f:
         for instance_id, prediction in iteritems(predictions):
             f.write(instance_id + ' ' + str(prediction) + '\n')
+    print("number of prediction: ", len(predictions))
 
 
 def logreg(training_data, training_labels, test_data, args_pred):
@@ -144,8 +148,9 @@ def logreg(training_data, training_labels, test_data, args_pred):
     # This ends the baseline model code; now we just write predictions.                #
     # ###################################################################################
     #
-    print("\n predictions logreg")
-    print(predictions)
+    print("number of prediction: ", len(predictions))
+    # print("\n predictions logreg")
+    # print(predictions)
     with open(args_pred, 'wt') as f:
         for instance_id, prediction in iteritems(predictions):
             f.write(instance_id + ' ' + str(prediction) + '\n')
@@ -186,8 +191,8 @@ def load_data(filename):
             #TODO : NOT LIMIT THIS NUMBER OF LINES TO ONLY 12. THIS IS ONLY FOR DEBUGGING PURPOSES
             # This gives slightly less than 12 samples - the first lines are comments and the first line of an
             # exercise describes the exercise
-            if num_lines > 100:
-                break
+            # if num_lines > NUM_LINES_LIM:
+            #     break
             num_lines += 1
 
             line = line.strip()
@@ -335,7 +340,7 @@ class InstanceData(object):
         # for morphological_feature in self.morphological_features:
         #     to_return['morphological_feature:' + morphological_feature] = 1.0
         to_return['dependency_label:' + self.dependency_label] = 1.0
-        #print("one-hot feature matrix: ", to_return)
+        print("one-hot feature matrix: ", to_return)
         return to_return
 
 def build_feature_dict():

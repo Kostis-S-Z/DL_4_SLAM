@@ -20,6 +20,7 @@ import argparse
 from collections import defaultdict, namedtuple
 from io import open
 import math
+from six.moves import cPickle as pickle
 import os
 from random import shuffle, uniform
 import simple_lstm
@@ -38,13 +39,18 @@ EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
 
-NUM_LINES_LIM = 50 #limit the number of lines that are read in (debugging purposes)
-MODEL = 'LOGREG' # which model to train. Choose 'LSTM' or 'LOGREG'
+NUM_LINES_LIM = 5000 #limit the number of lines that are read in (debugging purposes)
+MODEL = 'LSTM' # which model to train. Choose 'LSTM' or 'LOGREG'
 VERBOSE = 0 # 0, 1 or 2. The more verbose, the more print statements
 
 # dictionaries of features for the one hot encoding
-partOfSpeech_dict = {}
-dependency_label_dict = {}
+n_partOfSpeech_dict = {}
+n_dependency_label_dict = {}
+n_format_dict = {}
+n_token_dict = {}
+
+# set this variable to 1 of you want to count the features in the training set, build the dictionary and save result to file
+COUNT_FEATURES = 0
 
 # A few notes on this:
 #   - we still use ALL of the test data to evaluate the model
@@ -79,11 +85,23 @@ def main():
     # Assert that the train course matches the test course
     assert os.path.basename(args.train)[:5] == os.path.basename(args.test)[:5]
 
+    # loads the already existing feature counts from file
+    if COUNT_FEATURES:
+        if os.path.isfile("featureDicts.p"):
+            load_feature_dict()
+        else:
+            print("no dictionary file exists, create new feature dictionaries")
+
     # Load data
     if VERBOSE > 0:
         print("\n -- Loading data -- \n")
     training_data, training_labels = load_data(args.train)
     test_data = load_data(args.test)
+
+    # save count-feature-dict in file and exit
+    if COUNT_FEATURES:
+        save_feature_dict()
+        exit()
 
     # Train model
     if VERBOSE > 0:
@@ -112,6 +130,7 @@ def lstm(training_data, training_labels, test_data, args_pred):
         labels_list.append(training_labels[training_data[i].instance_id])
         id_list.append(training_data[i].instance_id)
     feature_dict, n_features = build_feature_dict()
+    exit()
     X_train = lstm1.one_hot_encode(train_data_new, feature_dict, n_features)
     # 0 is nothing, 1 is progress bar and 2 is line per epoch
     lstm1.train(X_train, labels_list, verbose=VERBOSE)
@@ -157,7 +176,6 @@ def logreg(training_data, training_labels, test_data, args_pred):
 
 
 def load_data(filename):
-
     """
     This method loads and returns the data in filename. If the data is labelled training data, it returns labels too.
 
@@ -188,11 +206,12 @@ def load_data(filename):
     with open(filename, 'rt') as f:
         num_lines = 0
         for line in f:
+            #print(line)
             #TODO : NOT LIMIT THIS NUMBER OF LINES TO ONLY 12. THIS IS ONLY FOR DEBUGGING PURPOSES
             # This gives slightly less than 12 samples - the first lines are comments and the first line of an
             # exercise describes the exercise
-            # if num_lines > NUM_LINES_LIM:
-            #     break
+            if num_lines > NUM_LINES_LIM:
+                break
             num_lines += 1
 
             line = line.strip()
@@ -263,12 +282,40 @@ def load_data(filename):
 
 
 
-                # save which features are in the dataset
-                # the one hot encoding needs to know which features are in the dataset to determine its size
-                if line[2] not in partOfSpeech_dict:
-                    partOfSpeech_dict[line[2]] = len(partOfSpeech_dict)
-                if line[4] not in dependency_label_dict:
-                    dependency_label_dict[line[4]] = len(dependency_label_dict)
+                # remember which features appear in the dataset
+                if COUNT_FEATURES:
+                    if line[1] not in n_token_dict:
+                        #print(line[1], "\nnot in", token_dict)
+                        n_token_dict[line[1]] = 1
+                    else:
+                        #print(line[1], "\nalready in", token_dict)
+                        n_token_dict[line[1]] += 1
+
+                    if line[2] not in n_partOfSpeech_dict:
+                        n_partOfSpeech_dict[line[2]] = len(n_partOfSpeech_dict)
+                    else:
+                        #print(line[2], "\nalready in", n_partOfSpeech_dict)
+                        n_partOfSpeech_dict[line[2]] += 1
+
+                    if line[4] not in n_dependency_label_dict:
+                        #print(line[4], "\nnot in", n_dependency_label_dict)
+                        n_dependency_label_dict[line[4]] = 1#, len(n_dependency_label_dict)]
+                    else:
+                        #print(line[4], "\nalready in", n_dependency_label_dict)
+                        n_dependency_label_dict[line[4]]+= 1
+
+                    if instance_properties['format'] not in n_format_dict:
+                        #print(instance_properties['format'], "\nnot in", n_format_dict)
+                        n_format_dict[instance_properties['format']] = 1
+                    else:
+                        #print(instance_properties['format'], "\nalready in", n_format_dict)
+                        n_format_dict[instance_properties['format']] += 1
+
+
+
+
+
+            #print("instance_properties", instance_properties, "\n")
 
         if VERBOSE > 1:
             print('Done loading ' + str(len(data)) + ' instances across ' + str(num_exercises) +
@@ -334,39 +381,114 @@ class InstanceData(object):
         # to_return['bias'] = 1.0
         # to_return['user:' + self.user] = 1.0
         # to_return['format:' + self.format] = 1.0
-        # to_return['token:' + self.token.lower()] = 1.0
+        to_return['token:' + self.token.lower()] = 1.0
 
         to_return['part_of_speech:' + self.part_of_speech] = 1.0
         # for morphological_feature in self.morphological_features:
         #     to_return['morphological_feature:' + morphological_feature] = 1.0
         to_return['dependency_label:' + self.dependency_label] = 1.0
-        print("one-hot feature matrix: ", to_return)
+        #print("one-hot feature matrix: ", to_return)
         return to_return
 
 def build_feature_dict():
+    print("Building feature dict .... ")
 
-    # Some explenation to feature_index_dict:
+    # load the feature-count-dict from file
+    load_feature_dict()
+
+    # convert feature-count-dict to feature-index-dict
+    token_dict = convert_to_index_dict(n_token_dict, 10)
+    partOfSpeech_dict = convert_to_index_dict(n_partOfSpeech_dict, 0)
+    dependency_label_dict = convert_to_index_dict(n_dependency_label_dict, 0)
+    format_dict = convert_to_index_dict(n_format_dict, 0)
+
+    # create the new total feature dict
+    # Some explenation to this dict:
     # the keys are different features_attributes (eg part of speech, dependency value, token... )
     # -> but each feature_attributes can again have different feature_values (eg part of speech: Noun, Verb, ...)
     # The value of the dict for each key is a Tuple (x, dict) from which we can clcualte the position of the 1 (for the feature_value) in the one hot encoding
     # # x is start index of from where feature_attribute begins
     # # from dict in (x, dict) we get the index of the feature_value (for the corresponding feature_attribute) which we later add to x
-
     feature_dict = {}
 
+    nfeat_token = len(token_dict)
     nfeat_partOfSpeech = len(partOfSpeech_dict)
     nfeat_dependency_label = len(dependency_label_dict)
+    nfeat_format = len(format_dict)
 
-    # eg: "part_of_speech" attribute starts at index 0 and where 'NOUN" value starts, we can find in the partOfSpeech_dict
-    feature_dict["part_of_speech"] = (0, partOfSpeech_dict)
-    feature_dict["dependency_label"] = (nfeat_partOfSpeech, dependency_label_dict)
+    # eg: "part_of_speech" attribute starts at index nfeat_token and where 'NOUN" value starts, we can find in the partOfSpeech_dict
+    feat_attr_index = 0
+    feature_dict["token"] = (feat_attr_index, token_dict)
+    feat_attr_index += nfeat_token
+    feature_dict["part_of_speech"] = (feat_attr_index, partOfSpeech_dict)
+    feat_attr_index += nfeat_partOfSpeech
+    feature_dict["dependency_label"] = (feat_attr_index, dependency_label_dict)
+    feat_attr_index += nfeat_dependency_label
+    feature_dict["format"] = (feat_attr_index, format_dict)
 
     # calculate the whole amount of feature_values
-    n_features = nfeat_partOfSpeech + nfeat_dependency_label # + ... for other feature_attributes
+    n_features = nfeat_token + nfeat_partOfSpeech + nfeat_dependency_label + nfeat_format # + ... for other feature_attributes
+
+    print(feature_dict)
 
     return feature_dict, n_features
 
+def save_feature_dict():
+    '''
+    saves feature dicts in file "featreDicts.p"
+    '''
+    print("Saving feature dict...")
 
+    print(n_token_dict)
+    print(n_dependency_label_dict)
+    print(n_partOfSpeech_dict)
+    print(n_format_dict)
+
+    featureDicts = [n_token_dict, n_partOfSpeech_dict, n_dependency_label_dict, n_format_dict]
+    pickle.dump(featureDicts, open("featureDicts.p", "wb"))
+
+    print("finished ")
+
+def load_feature_dict():
+    '''
+    loads feature dicts assuming the necessary file exists
+    '''
+    assert os.path.isfile("featureDicts.p")
+    print("loading feature dicts...")
+
+    featureDicts = pickle.load(open("featureDicts.p", "rb"))
+
+    n_token_dict.update(featureDicts[0])
+    n_partOfSpeech_dict.update(featureDicts[1])
+    n_dependency_label_dict.update(featureDicts[2])
+    n_format_dict.update(featureDicts[3])
+
+    print("finished")
+
+
+
+def convert_to_index_dict(dict, min_appearance):
+    '''
+    converts dict with (key: feature, value: omount of appearance in data)
+    to a dict with (key: featue, value: index in one hot encoding starting from the parent feature)
+    restricted with the minimum amount of appearance of the feature in the training data n
+    '''
+    # create new dictionaries where value is index
+    new_dict = {}
+    i = 0
+    for key, value in dict.items():
+        if value > min_appearance:
+            new_dict[key] = i
+            i += 1
+    print(new_dict)
+    return new_dict
+
+
+
+
+
+
+# =================
 
 class LogisticRegressionInstance(namedtuple('Instance', ['features', 'label', 'name'])):
     """

@@ -42,8 +42,14 @@ def main():
             print('No prediction for instance ID ' + instance_id + '!')
 
     metrics = evaluate_metrics(actual, predicted)
-    line = '\t'.join([('%s=%.3f' % (metric, value)) for (metric, value) in iteritems(metrics)])
-    print('Metrics:\t' + line)
+    # line_floats = '\t'.join([('\n\n%.3f\n%s' % (value, metric)) for (metric, value) in iteritems(metrics)])
+    # print('Metrics:\n\n' + line_floats)
+    print("------------------------------------------------------------")
+    print("{:<35} {:<15}".format('Metric', 'Value'))
+    print("------------------------------------------------------------")
+    for (k, v) in iteritems(metrics):
+        print("{:<35} {:<15}".format(k, v))
+    print("------------------------------------------------------------")
 
 
 def load_labels(filename):
@@ -166,7 +172,7 @@ def compute_f1(actual, predicted):
     except ZeroDivisionError:
         F1 = 0.0
 
-    return F1
+    return true_positives, false_positives, true_negatives, false_negatives, precision, recall, F1
 
 
 def evaluate_metrics(actual, predicted):
@@ -176,9 +182,15 @@ def evaluate_metrics(actual, predicted):
     acc = compute_acc(actual, predicted)
     avg_log_loss = compute_avg_log_loss(actual, predicted)
     auroc = compute_auroc(actual, predicted)
-    F1 = compute_f1(actual, predicted)
-
-    return {'accuracy': acc, 'avglogloss': avg_log_loss, 'auroc': auroc, 'F1': F1}
+    true_pos, false_pos, true_neg, false_neg, precision, recall, F1 = compute_f1(actual, predicted)
+    ratio_maj = (true_neg + false_pos)/len(actual)
+    return {'correctly predicted 1 (tp)': true_pos, 'incorrectly predicted 1 (fp)': false_pos,
+            'correctly predicted 0 (tn)': true_neg,
+            'incorrectly predicted 0 (fn)': false_neg,
+            'precision:  tp / (tp+fp)': precision, 'recall:  tp / (tp+fn)': recall, 'F1': F1,
+            'ratio majority class':ratio_maj, 'accuracy': acc,
+            'avglogloss': avg_log_loss,
+            'auroc': auroc }
 
 
 def test_metrics():

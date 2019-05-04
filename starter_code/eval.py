@@ -1,9 +1,7 @@
 from __future__ import division
 
-import argparse
 from io import open
 import math
-import os
 
 from future.builtins import range
 from future.utils import iterkeys, iteritems
@@ -208,6 +206,7 @@ def test_metrics():
     assert metrics['auroc'] == 0.740
     assert metrics['F1'] == 0.667
     print('Verified that our environment is calculating metrics correctly.')
+
 
 if __name__ == '__main__':
     main()

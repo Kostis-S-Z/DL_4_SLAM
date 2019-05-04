@@ -4,9 +4,9 @@ from keras.models import Sequential
 from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed
 
 
-class SimpleLstm:
+class SimpleLSTM:
 
-    def __init__(self, **kwargs):
+    def __init__(self, net_arch, verbose=0, **kwargs):
         """
         Initialize Neural Network with data and parameters
         """
@@ -18,37 +18,34 @@ class SimpleLstm:
         for var, default in var_defaults.items():
             setattr(self, var, kwargs.get(var, default))
 
+        self.net_architecture = net_arch
+        self.verbose = verbose
         self.model = None
+        self.input_shape = None
 
-    def data_in_time(self, data_x, data_y=None):
-        # TODO: Comment these method nalytically
-        data_list = []
-        for i in range(len(data_x) - self.time_steps + 1):
-            data_list.append(data_x[i:i + self.time_steps])
+    def init_model(self):
+        """
+        Initialise a LSTM model
 
-        data_x = np.reshape(np.concatenate(data_list), (data_x.shape[0] - self.time_steps + 1, self.time_steps, data_x.shape[1]))
-        if data_y is not None:
-            data_y = data_y[self.time_steps - 1:len(data_y)]
-            return data_x, data_y
-        else:
-            return data_x
+        return_sequences = True. ensure that the LSTM cell returns all of the outputs from the unrolled
+        LSTM cell through time. If this argument is left out, the LSTM cell will simply provide the
+        output of the LSTM cell from the last time step.
+        We want this because we want to output correct/incorrect for each word, not just
+        at the end of the exercise one correct/incorrect
+        """
 
-    def init_model(self, inp_shape, verbose):
-        lstm_layer_size = 100
-        # return_sequences = True. ensure that the LSTM cell returns all of the outputs from the unrolled
-        # LSTM cell through time. If this argument is left out, the LSTM cell will simply provide the
-        # output of the LSTM cell from the last time step.
-        #  We want this because we want to output correct/incorrect for each word, not just
-        # at the end of the exercise one correct/incorrect
+        hidden_0 = self.net_architecture[0]
+
+        output = self.net_architecture[-1]
+
         model = Sequential()
-        model.add(LSTM(lstm_layer_size, return_sequences=False, input_shape=(self.time_steps, inp_shape)))
+        model.add(LSTM(hidden_0, return_sequences=False, input_shape=(self.time_steps, self.input_shape)))
 
-        # a second LSTM layer
         # self.model.add(LSTM(lstm_layer_size, return_sequences=True, input_shape=(self.timesteps, lstm_layer_size)))
-        model.add(Dense(1, activation='sigmoid', input_shape = (0, lstm_layer_size)))
-        # binary because we're doing binary classification (correct / incorrect
 
-        if verbose > 0:
+        model.add(Dense(output, activation='sigmoid'))
+
+        if self.verbose > 0:
             print(model.summary())
 
         return model
@@ -63,12 +60,14 @@ class SimpleLstm:
         # TODO: change these
         x_val = x_train
         y_val = y_train
+        self.input_shape = x_train.shape[2]
         if model is None:
-            model = self.init_model(x_train.shape[2], verbose)
+            model = self.init_model()
         else:
             print("Loading pre-existing model...")
             model = self.load_model()
 
+        # binary because we're doing binary classification (correct / incorrect
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
         # Fit the training data to the model
         model.fit(x_train, y_train,
@@ -98,13 +97,27 @@ class SimpleLstm:
 
         return pred_dict
 
+    def data_in_time(self, data_x, data_y=None):
+        # TODO: Comment these method analytically
+        data_list = []
+        for i in range(len(data_x) - self.time_steps + 1):
+            data_list.append(data_x[i:i + self.time_steps])
+
+        data_x = np.reshape(np.concatenate(data_list), (data_x.shape[0] - self.time_steps + 1, self.time_steps, data_x.shape[1]))
+        if data_y is not None:
+            data_y = data_y[self.time_steps - 1:len(data_y)]
+            return data_x, data_y
+        else:
+            return data_x
+
     def save_model(self):
         """
         Save current model with weights
         """
         self.model.save("model.h5")
 
-    def load_model(self):
+    @staticmethod
+    def load_model():
         """
         Load a model
         """

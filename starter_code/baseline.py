@@ -20,7 +20,7 @@ import argparse
 import os
 from io import open
 from pathlib import Path
-import simple_lstm
+from simple_lstm import SimpleLSTM
 
 from future.builtins import range
 from future.utils import iteritems
@@ -68,6 +68,13 @@ dependency_label_dict = {}
 #   Total instances: 2.622.957, Total exercises: 824.012, Total lines in the file: 4.866.081
 
 
+# Define the number of nodes in each layer, the last one is the output
+net_architecture = {
+    0: 100,
+    1: 1
+}
+
+
 def main():
     """
     Executes the baseline model. This loads the training data, training labels, and dev data, then trains a logistic
@@ -91,8 +98,7 @@ def main():
     assert os.path.basename(args.train)[:5] == os.path.basename(args.test)[:5]
     """
 
-    # test random
-    train_part_test_all()
+    # train_part_test_all()
 
 
 def train_rnn_in_chunks():
@@ -113,6 +119,9 @@ def train_rnn_in_chunks():
     start_line = 0
     total_instances = 0
     total_exercises = 0
+
+    lstm_model = SimpleLSTM(net_architecture)
+
     for chunk in range(num_chunks - 1):
         if VERBOSE > 0:
             print("Training with chunk", chunk + 1)
@@ -129,17 +138,15 @@ def train_rnn_in_chunks():
                                                                  dependency_label_dict,
                                                                  labels_dict=training_labels)
 
-        model = simple_lstm.SimpleLstm()
-
         # If its the first chunk then you haven't trained a model yet and start from scratch
         # otherwise resume from an already saved one
         if chunk != 0:
-            trained_model = model.load_model()
-            model.train(training_data, training_labels, model=trained_model, verbose=VERBOSE)
+            trained_model = lstm_model.load_model()
+            lstm_model.train(training_data, training_labels, model=trained_model, verbose=VERBOSE)
         else:
-            model.train(training_data, training_labels, verbose=VERBOSE)
+            lstm_model.train(training_data, training_labels, verbose=VERBOSE)
 
-        model.save_model()
+        lstm_model.save_model()
 
         total_instances += instance_count
         total_exercises += num_exercises
@@ -170,7 +177,7 @@ def train_rnn_in_chunks():
     if VERBOSE > 0:
         print("total instances: {} total exercises: {} line: {}".format(total_instances, total_exercises, end_line))
 
-    predictions = model.predict(training_data, train_id)
+    predictions = lstm_model.predict(training_data, train_id)
 
     write_predictions(predictions)
 
@@ -185,14 +192,14 @@ def train_part_test_all():
     # and the features of the training will be lost
 
     if MODEL == 'LSTM':
-        predictions = lstm()
+        predictions = run_rnn()
     else:
-        predictions = log_reg()
+        predictions = run_log_reg()
 
     write_predictions(predictions)
 
 
-def lstm():
+def run_rnn():
     """
     Train an LSTM model
     NOTE: LSTM doesn't use all of the examples because they are not in training_data
@@ -219,7 +226,7 @@ def lstm():
     print(training_data.shape, test_data.shape)
 
     # 0 is nothing, 1 is progress bar and 2 is line per epoch
-    lstm1 = simple_lstm.SimpleLstm()
+    lstm1 = SimpleLSTM()
     lstm1.train(x_train, labels_list, verbose=VERBOSE)
 
     predictions = lstm1.predict(test_data, test_id)
@@ -227,7 +234,7 @@ def lstm():
     return predictions
 
 
-def log_reg():
+def run_log_reg():
     """
     Train the provided baseline logistic regression model
     """

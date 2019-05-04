@@ -52,6 +52,7 @@ n_token_dict = {}
 # set this variable to 1 of you want to count the features in the training set, build the dictionary and save result to file
 COUNT_FEATURES = 0
 
+
 # A few notes on this:
 #   - we still use ALL of the test data to evaluate the model
 #   - on my desktop PC (8gb RAM, i7 CPU) i manage to load 50% of the training data but it crashes during training
@@ -87,7 +88,7 @@ def main():
 
     # loads the already existing feature counts from file
     if COUNT_FEATURES:
-        if os.path.isfile("featureDicts.p"):
+        if os.path.isfile("featureDicts.p") and False:
             load_feature_dict()
         else:
             print("no dictionary file exists, create new feature dictionaries")
@@ -101,7 +102,7 @@ def main():
     # save count-feature-dict in file and exit
     if COUNT_FEATURES:
         save_feature_dict()
-        exit()
+        #exit()
 
     # Train model
     if VERBOSE > 0:
@@ -130,7 +131,6 @@ def lstm(training_data, training_labels, test_data, args_pred):
         labels_list.append(training_labels[training_data[i].instance_id])
         id_list.append(training_data[i].instance_id)
     feature_dict, n_features = build_feature_dict()
-    exit()
     X_train = lstm1.one_hot_encode(train_data_new, feature_dict, n_features)
     # 0 is nothing, 1 is progress bar and 2 is line per epoch
     lstm1.train(X_train, labels_list, verbose=VERBOSE)
@@ -253,7 +253,7 @@ def load_data(filename):
 
             # Otherwise we're parsing a new Instance for the current exercise
             else:
-                line = line.split()
+                line = line.lower().split()
                 if training:
                     assert len(line) == 7
                 else:
@@ -397,7 +397,7 @@ def build_feature_dict():
     load_feature_dict()
 
     # convert feature-count-dict to feature-index-dict
-    token_dict = convert_to_index_dict(n_token_dict, 10)
+    token_dict = convert_to_index_dict(n_token_dict, 2)
     partOfSpeech_dict = convert_to_index_dict(n_partOfSpeech_dict, 0)
     dependency_label_dict = convert_to_index_dict(n_dependency_label_dict, 0)
     format_dict = convert_to_index_dict(n_format_dict, 0)

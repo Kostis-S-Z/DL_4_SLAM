@@ -33,11 +33,13 @@ class SimpleLstm:
         for i, training_example in enumerate(training_data):
             for train_feature in training_example.keys():
                 feature_attribute, feature_value = train_feature.split(":", 1)
+                # uncommon features_values of feature_attribute 'token' are ignored
+                if feature_attribute == 'token' and feature_value not in feature_index_dict[feature_attribute][1]:
+                    continue
                 index_attribute = feature_index_dict[feature_attribute][0]
                 index_value = feature_index_dict[feature_attribute][1][feature_value]
                 index = index_attribute + index_value
                 one_hot_vec[i, index] = 1
-
         return one_hot_vec
 
 

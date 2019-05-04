@@ -6,10 +6,8 @@ import math
 from future.builtins import range
 from future.utils import iterkeys, iteritems
 
-from baseline import pred_path, key_path
 
-
-def main():
+def evaluate(pred_path, key_path):
     """
     Evaluates your predictions. This loads the dev labels and your predictions, and then evaluates them, printing the
     results for a variety of metrics to the screen.
@@ -206,7 +204,3 @@ def test_metrics():
     assert metrics['auroc'] == 0.740
     assert metrics['F1'] == 0.667
     print('Verified that our environment is calculating metrics correctly.')
-
-
-if __name__ == '__main__':
-    main()

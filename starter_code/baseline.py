@@ -27,6 +27,7 @@ from future.utils import iteritems
 
 from preprocess_data import reformat_data
 from data import load_data
+from eval import evaluate
 from log_reg import LogisticRegressionInstance, LogisticRegression
 
 directory = str(Path.cwd().parent)  # Get the parent directory of the current working directory
@@ -47,7 +48,7 @@ pred_path = en_es_predictions
 
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
-TRAINING_PERC = 0.35  # Control how much (%) of the training data to actually use for training
+TRAINING_PERC = 0.15  # Control how much (%) of the training data to actually use for training
 EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
@@ -98,7 +99,9 @@ def main():
     assert os.path.basename(args.train)[:5] == os.path.basename(args.test)[:5]
     """
 
-    # train_part_test_all()
+    train_part_test_all()
+
+    evaluate(pred_path, key_path)
 
 
 def train_rnn_in_chunks():
@@ -238,7 +241,7 @@ def run_log_reg():
     """
     Train the provided baseline logistic regression model
     """
-    epochs = 20
+    epochs = 10
 
     training_data, training_labels, _, _, _ = load_data(train_path,
                                                         TRAINING_DATA_USE,

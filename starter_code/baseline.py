@@ -29,7 +29,6 @@ from preprocess_data import reformat_data
 from data import load_data
 from eval import evaluate
 from log_reg import LogisticRegressionInstance, LogisticRegression
-from data import array
 
 directory = str(Path.cwd().parent)  # Get the parent directory of the current working directory
 data_directory = directory + "/data.nosync"
@@ -57,8 +56,8 @@ TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercis
 MODEL = 'LSTM'  # which model to train. Choose 'LSTM' or 'LOGREG'
 VERBOSE = 2  # 0, 1 or 2. The more verbose, the more print statements
 
-#FEATURES_TO_USE = ['user', 'countries', 'client' , 'session', 'format', 'token', 'part_of_speech', 'dependency_label']
-FEATURES_TO_USE = [ 'dependency_label']
+FEATURES_TO_USE = ['user', 'countries', 'client' , 'session', 'format', 'token', 'part_of_speech', 'dependency_label']
+#FEATURES_TO_USE = [ 'dependency_label']
 
 
 # A few notes on this:
@@ -205,14 +204,10 @@ def run_rnn():
     """
 
     training_data, training_labels, _, _, _ = load_data(train_path,
-                                                        0, end_line=10)
+                                                        TRAINING_DATA_USE)
 
     training_data, training_labels, train_id = reformat_data(training_data, FEATURES_TO_USE, labels_dict=training_labels)
 
-    print(array)
-    print(min(array), max(array))
-
-    exit()
     test_data = load_data(test_path,
                           TRAINING_DATA_USE)
 

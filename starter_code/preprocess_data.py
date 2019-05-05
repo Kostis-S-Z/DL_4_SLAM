@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
 import os
+from sklearn.preprocessing import StandardScaler
 
 def reformat_data(data, features_to_use, labels_dict=None):
     """
@@ -39,7 +40,7 @@ def one_hot_encode(training_data, feature_index_dict, n_features, features_to_us
             feature_attribute, feature_value = train_feature.split(":", 1)
             # ignore feature_attributes that are not relevant because not in 'features_to_use list'
             if feature_attribute not in features_to_use:
-                print('ignore', feature_attribute)
+                #print('ignore', feature_attribute)
                 continue
             # uncommon features_values of feature_attribute 'token' are ignored
             if feature_value not in feature_index_dict[feature_attribute][1]:
@@ -52,7 +53,9 @@ def one_hot_encode(training_data, feature_index_dict, n_features, features_to_us
         one_hot_vec[i, -1] = training_example['time']
         one_hot_vec[i, -2] = training_example['days']
 
-    print(one_hot_vec)
+    scaler = StandardScaler()
+    scaler.fit(one_hot_vec)
+    one_hot_vec = scaler.transform(one_hot_vec)
 
     return one_hot_vec
 

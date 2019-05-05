@@ -1,21 +1,16 @@
 from __future__ import division
 
-import argparse
 from io import open
 import math
-import os
 
 from future.builtins import range
 from future.utils import iterkeys, iteritems
 
 
-def main():
+def evaluate(pred_path, key_path):
     """
     Evaluates your predictions. This loads the dev labels and your predictions, and then evaluates them, printing the
     results for a variety of metrics to the screen.
-    """
-
-    test_metrics()
 
     parser = argparse.ArgumentParser(description='Duolingo shared task evaluation script')
     parser.add_argument('--pred', help='Predictions file name', required=True)
@@ -24,12 +19,15 @@ def main():
     args = parser.parse_args()
 
     assert os.path.isfile(args.pred)
+    """
+
+    test_metrics()
 
     print('\nLoading labels for exercises...')
-    labels = load_labels(args.key)
+    labels = load_labels(key_path)
 
     print('Loading predictions for exercises...')
-    predictions = load_labels(args.pred)
+    predictions = load_labels(pred_path)
 
     actual = []
     predicted = []
@@ -42,8 +40,14 @@ def main():
             print('No prediction for instance ID ' + instance_id + '!')
 
     metrics = evaluate_metrics(actual, predicted)
-    line = '\t'.join([('%s=%.3f' % (metric, value)) for (metric, value) in iteritems(metrics)])
-    print('Metrics:\t' + line)
+    # line_floats = '\t'.join([('\n\n%.3f\n%s' % (value, metric)) for (metric, value) in iteritems(metrics)])
+    # print('Metrics:\n\n' + line_floats)
+    print("------------------------------------------------------------")
+    print("{:<35} {:<15}".format('Metric', 'Value'))
+    print("------------------------------------------------------------")
+    for (k, v) in iteritems(metrics):
+        print("{:<35} {:<15}".format(k, v))
+    print("------------------------------------------------------------")
 
 
 def load_labels(filename):
@@ -88,6 +92,21 @@ def compute_acc(actual, predicted):
             acc += 1.
     acc /= num
     return acc
+
+
+def count_class_balance(true_labels):
+    """
+    Count the (im)balance between the binary classification
+    """
+    class1 = 0
+    class2 = 0
+    for a_label in true_labels:
+        if a_label >= 0.5:
+            class1 += 1
+        else:
+            class2 += 1
+
+    print("1: {} \n 0: {} \n out of {}".format(class1, class2, class1 + class2))
 
 
 def compute_avg_log_loss(actual, predicted):
@@ -148,6 +167,9 @@ def compute_f1(actual, predicted):
     false_positives = 0
     false_negatives = 0
     true_negatives = 0
+    precision = 0
+    recall = 0
+
 
     for i in range(num):
         if actual[i] >= 0.5 and predicted[i] >= 0.5:
@@ -166,7 +188,7 @@ def compute_f1(actual, predicted):
     except ZeroDivisionError:
         F1 = 0.0
 
-    return F1
+    return true_positives, false_positives, true_negatives, false_negatives, precision, recall, F1
 
 
 def evaluate_metrics(actual, predicted):
@@ -176,9 +198,15 @@ def evaluate_metrics(actual, predicted):
     acc = compute_acc(actual, predicted)
     avg_log_loss = compute_avg_log_loss(actual, predicted)
     auroc = compute_auroc(actual, predicted)
-    F1 = compute_f1(actual, predicted)
-
-    return {'accuracy': acc, 'avglogloss': avg_log_loss, 'auroc': auroc, 'F1': F1}
+    true_pos, false_pos, true_neg, false_neg, precision, recall, F1 = compute_f1(actual, predicted)
+    ratio_maj = (true_neg + false_pos)/len(actual)
+    return {'correctly predicted 1 (tp)': true_pos, 'incorrectly predicted 1 (fp)': false_pos,
+            'correctly predicted 0 (tn)': true_neg,
+            'incorrectly predicted 0 (fn)': false_neg,
+            'precision:  tp / (tp+fp)': precision, 'recall:  tp / (tp+fn)': recall, 'F1': F1,
+            'ratio majority class':ratio_maj, 'accuracy': acc,
+            'avglogloss': avg_log_loss,
+            'auroc': auroc }
 
 
 def test_metrics():
@@ -191,6 +219,3 @@ def test_metrics():
     assert metrics['auroc'] == 0.740
     assert metrics['F1'] == 0.667
     print('Verified that our environment is calculating metrics correctly.')
-
-if __name__ == '__main__':
-    main()

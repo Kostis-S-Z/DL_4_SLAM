@@ -35,15 +35,34 @@ class SimpleLSTM:
         """
 
         hidden_0 = self.net_architecture[0]
+        # hidden_1 = self.net_architecture[1]
+        # hidden_2 = self.net_architecture[2]
+        # hidden_3 = self.net_architecture[3]
+        # hidden_4 = self.net_architecture[4]
 
         output = self.net_architecture[-1]
 
         model = Sequential()
+
         model.add(LSTM(hidden_0, return_sequences=False, input_shape=(self.time_steps, self.input_shape)))
 
-        # self.model.add(LSTM(lstm_layer_size, return_sequences=True, input_shape=(self.timesteps, lstm_layer_size)))
+        # TODO: Use BatchNormalization
+        # TODO: Use Dropout
+        # model.add(LSTM(hidden_1, return_sequences=True))
+        # model.add(LSTM(hidden_2, return_sequences=True))
+        # model.add(LSTM(hidden_3, return_sequences=True))
+        # model.add(LSTM(hidden_4, return_sequences=True))
 
         model.add(Dense(output, activation='sigmoid'))
+        """
+        About BCE + sigmoid:
+        As the loss function is central to learning, this means that a model employing last-layer sigmoid + BCE cannot 
+        discriminate among samples whose predicted class is either in extreme 
+        accordance or extreme discordance with their labels.
+        https://towardsdatascience.com/sigmoid-activation-and-binary-crossentropy-a-less-than-perfect-match-b801e130e31
+        
+        so we can even try without any activation in the output layer and compute BCE from the raw outputs
+        """
 
         if self.verbose > 0:
             print(model.summary())

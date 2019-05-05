@@ -21,11 +21,7 @@ class SimpleLstm:
         self.timesteps = 2
 
 
-    def one_hot_encode(self, training_data, feature_index_dict, n_features):
-        """
-        !!!WE ARE MISSING OUT A LOT OF TRAINING INSTANCES BECAUSE THEY ARE NOT INCLUDED IN training_data!!!
-        print("amount of training instances:", len(training_data))
-        """
+    def one_hot_encode(self, training_data, feature_index_dict, n_features, features_to_use):
 
         one_hot_vec = np.zeros((len(training_data),n_features))
 
@@ -33,13 +29,20 @@ class SimpleLstm:
         for i, training_example in enumerate(training_data):
             for train_feature in training_example.keys():
                 feature_attribute, feature_value = train_feature.split(":", 1)
-                # uncommon features_values of feature_attribute 'token' are ignored
-                if feature_attribute == 'token' and feature_value not in feature_index_dict[feature_attribute][1]:
+                # ignore feature_attributes that are not relevant because not in 'features_to_use list'
+                if feature_attribute not in features_to_use:
+                    print('ignore', feature_attribute)
                     continue
+                # uncommon features_values of feature_attribute 'token' are ignored
+                if feature_value not in feature_index_dict[feature_attribute][1]:
+                    continue
+                # otherwise calculate the right index for that feature and add 1 to one-hot-encoding
                 index_attribute = feature_index_dict[feature_attribute][0]
                 index_value = feature_index_dict[feature_attribute][1][feature_value]
                 index = index_attribute + index_value
                 one_hot_vec[i, index] = 1
+
+        print(one_hot_vec)
         return one_hot_vec
 
 

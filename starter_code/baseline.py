@@ -39,18 +39,16 @@ EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
 
-NUM_LINES_LIM = 5000 #limit the number of lines that are read in (debugging purposes)
+NUM_LINES_LIM = 500 #limit the number of lines that are read in (debugging purposes)
 MODEL = 'LSTM' # which model to train. Choose 'LSTM' or 'LOGREG'
 VERBOSE = 0 # 0, 1 or 2. The more verbose, the more print statements
 
-# dictionaries of features for the one hot encoding
-n_partOfSpeech_dict = {}
-n_dependency_label_dict = {}
-n_format_dict = {}
-n_token_dict = {}
-
 # set this variable to 1 of you want to count the features in the training set, build the dictionary and save result to file
-COUNT_FEATURES = 0
+COUNT_FEATURES = 1
+# select all features you want to train with ['user', 'countries', 'client' , 'session', 'format', 'token', 'part_of_speech', 'dependency_label']
+FEATURES_TO_USE = ['user', 'countries', 'client' , 'session', 'format', 'token', 'part_of_speech', 'dependency_label']
+# dictionaries of features for the one hot encoding
+n_attr_dicts = [{}, {}, {}, {}, {}, {}, {}, {}]
 
 
 # A few notes on this:
@@ -108,12 +106,13 @@ def main():
     if VERBOSE > 0:
         print("\n -- Training model: ", MODEL, " -- \n")
     if MODEL == 'LSTM':
-        lstm(training_data, training_labels, test_data, args.pred)
+        lstm(training_data, training_labels, test_data, args.pred, FEATURES_TO_USE)
     elif MODEL == 'LOGREG':
         logreg(training_data, training_labels, test_data, args.pred)
 
 
-def lstm(training_data, training_labels, test_data, args_pred):
+
+def lstm(training_data, training_labels, test_data, args_pred, features_to_use):
     """
     Train an LSTM model
     NOTE: LSTM doesn't use all of the examples because they are not in training_data
@@ -130,8 +129,9 @@ def lstm(training_data, training_labels, test_data, args_pred):
         train_data_new.append(training_data[i].to_features())
         labels_list.append(training_labels[training_data[i].instance_id])
         id_list.append(training_data[i].instance_id)
-    feature_dict, n_features = build_feature_dict()
-    X_train = lstm1.one_hot_encode(train_data_new, feature_dict, n_features)
+
+    feature_dict, n_features = build_feature_dict(features_to_use)
+    X_train = lstm1.one_hot_encode(train_data_new, feature_dict, n_features, features_to_use)
     # 0 is nothing, 1 is progress bar and 2 is line per epoch
     lstm1.train(X_train, labels_list, verbose=VERBOSE)
     predictions = lstm1.predict(X_train, id_list)
@@ -206,7 +206,7 @@ def load_data(filename):
     with open(filename, 'rt') as f:
         num_lines = 0
         for line in f:
-            #print(line)
+            print(line)
             #TODO : NOT LIMIT THIS NUMBER OF LINES TO ONLY 12. THIS IS ONLY FOR DEBUGGING PURPOSES
             # This gives slightly less than 12 samples - the first lines are comments and the first line of an
             # exercise describes the exercise
@@ -239,8 +239,16 @@ def load_data(filename):
                     list_of_exercise_parameters = line[2:].split()
                     for exercise_parameter in list_of_exercise_parameters:
                         [key, value] = exercise_parameter.split(':')
+
                         if key == 'countries':
-                            value = value.split('|')
+
+                            #count features
+                            if value not in n_attr_dicts[1]:
+                                n_attr_dicts[1][value] = 1
+                            else:
+                                n_attr_dicts[1][value] += 1
+
+                            #value = value.split('|')
                         elif key == 'days':
                             value = float(value)
                         elif key == 'time':
@@ -249,7 +257,32 @@ def load_data(filename):
                             else:
                                 assert '.' not in value
                                 value = int(value)
+
                         instance_properties[key] = value
+
+                        # count features
+                        if key == 'user':
+                            if value not in n_attr_dicts[0]:
+                                n_attr_dicts[0][value] = 1
+                            else:
+                                n_attr_dicts[0][value] += 1
+                        # countries s.o.
+                        if key == 'client':
+                            if value not in n_attr_dicts[2]:
+                                n_attr_dicts[2][value] = 1
+                            else:
+                                n_attr_dicts[2][value] += 1
+                        if key == 'session':
+                            if value not in n_attr_dicts[3]:
+                                n_attr_dicts[3][value] = 1
+                            else:
+                                n_attr_dicts[3][value] += 1
+                        if key == 'format':
+                            if value not in n_attr_dicts[4]:
+                                n_attr_dicts[4][value] = 1
+                            else:
+                                n_attr_dicts[4][value] += 1
+
 
             # Otherwise we're parsing a new Instance for the current exercise
             else:
@@ -280,49 +313,26 @@ def load_data(filename):
                     labels[instance_properties['instance_id']] = label
                 data.append(InstanceData(instance_properties=instance_properties))
 
-
-
-                # remember which features appear in the dataset
+                # count different features in the data
                 if COUNT_FEATURES:
-                    if line[1] not in n_token_dict:
-                        #print(line[1], "\nnot in", token_dict)
-                        n_token_dict[line[1]] = 1
+                    if line[1] not in n_attr_dicts[5]: # 'token'
+                        n_attr_dicts[5][line[1]] = 1
                     else:
-                        #print(line[1], "\nalready in", token_dict)
-                        n_token_dict[line[1]] += 1
+                        n_attr_dicts[5][line[1]] += 1
 
-                    if line[2] not in n_partOfSpeech_dict:
-                        n_partOfSpeech_dict[line[2]] = len(n_partOfSpeech_dict)
+                    if line[2] not in n_attr_dicts[6]: #'part_of_speech'
+                        n_attr_dicts[6][line[2]] = 1
                     else:
-                        #print(line[2], "\nalready in", n_partOfSpeech_dict)
-                        n_partOfSpeech_dict[line[2]] += 1
+                        n_attr_dicts[6][line[2]] += 1
 
-                    if line[4] not in n_dependency_label_dict:
-                        #print(line[4], "\nnot in", n_dependency_label_dict)
-                        n_dependency_label_dict[line[4]] = 1#, len(n_dependency_label_dict)]
+                    if line[2] not in n_attr_dicts[7]: #'dependency_label'
+                        n_attr_dicts[7][line[4]] = 1
                     else:
-                        #print(line[4], "\nalready in", n_dependency_label_dict)
-                        n_dependency_label_dict[line[4]]+= 1
-
-                    if instance_properties['format'] not in n_format_dict:
-                        #print(instance_properties['format'], "\nnot in", n_format_dict)
-                        n_format_dict[instance_properties['format']] = 1
-                    else:
-                        #print(instance_properties['format'], "\nalready in", n_format_dict)
-                        n_format_dict[instance_properties['format']] += 1
-
-
-
-
-
-            #print("instance_properties", instance_properties, "\n")
+                        n_attr_dicts[7][line[4]] += 1
 
         if VERBOSE > 1:
             print('Done loading ' + str(len(data)) + ' instances across ' + str(num_exercises) +
               ' exercises.\n')
-
-
-
 
     if training:
         return data, labels
@@ -379,57 +389,51 @@ class InstanceData(object):
         to_return = dict()
 
         # to_return['bias'] = 1.0
-        # to_return['user:' + self.user] = 1.0
-        # to_return['format:' + self.format] = 1.0
-        to_return['token:' + self.token.lower()] = 1.0
+        to_return['user:' + self.user] = 1.0
+        to_return['countries:' + self.countries] = 1.0
+        to_return['client:' + self.client] = 1.0
+        to_return['session:' + self.session] = 1.0
+        to_return['format:' + self.format] = 1.0
 
+        to_return['token:' + self.token.lower()] = 1.0
         to_return['part_of_speech:' + self.part_of_speech] = 1.0
+        to_return['dependency_label:' + self.dependency_label] = 1.0
+
         # for morphological_feature in self.morphological_features:
         #     to_return['morphological_feature:' + morphological_feature] = 1.0
-        to_return['dependency_label:' + self.dependency_label] = 1.0
-        #print("one-hot feature matrix: ", to_return)
         return to_return
 
-def build_feature_dict():
+# for categorical features
+# ['user', 'countries', 'client' , 'session', 'format', 'token', 'part_of_speech', 'dependency_label']
+# continous:
+# ['days, 'time] 'TODO'
+def build_feature_dict(features_to_use):
     print("Building feature dict .... ")
 
-    # load the feature-count-dict from file
-    load_feature_dict()
-
-    # convert feature-count-dict to feature-index-dict
-    token_dict = convert_to_index_dict(n_token_dict, 2)
-    partOfSpeech_dict = convert_to_index_dict(n_partOfSpeech_dict, 0)
-    dependency_label_dict = convert_to_index_dict(n_dependency_label_dict, 0)
-    format_dict = convert_to_index_dict(n_format_dict, 0)
-
-    # create the new total feature dict
     # Some explenation to this dict:
     # the keys are different features_attributes (eg part of speech, dependency value, token... )
     # -> but each feature_attributes can again have different feature_values (eg part of speech: Noun, Verb, ...)
     # The value of the dict for each key is a Tuple (x, dict) from which we can clcualte the position of the 1 (for the feature_value) in the one hot encoding
     # # x is start index of from where feature_attribute begins
     # # from dict in (x, dict) we get the index of the feature_value (for the corresponding feature_attribute) which we later add to x
+
+    # load list of all relevant n_attr_dicts
+    n_attr_dict_list = load_feature_dict(features_to_use)
+
+    # initialize final feature dict and set count to zero
     feature_dict = {}
+    n_features = 0
 
-    nfeat_token = len(token_dict)
-    nfeat_partOfSpeech = len(partOfSpeech_dict)
-    nfeat_dependency_label = len(dependency_label_dict)
-    nfeat_format = len(format_dict)
+    # go over all n_attr_dicts in the list, convert them and add them to the final feature_dict
+    for i, n_attr_dict in enumerate(n_attr_dict_list):
+        # convert feature-count-dict to feature-index-dict
+        attr_dict  = convert_to_index_dict(n_attr_dict , 3)
+        # add this dict to the final feature dict with the right attr_index
+        feature_dict[features_to_use[i]] = (n_features, attr_dict )
+        # update amount of different features seen until now
+        n_features += len(attr_dict )
 
-    # eg: "part_of_speech" attribute starts at index nfeat_token and where 'NOUN" value starts, we can find in the partOfSpeech_dict
-    feat_attr_index = 0
-    feature_dict["token"] = (feat_attr_index, token_dict)
-    feat_attr_index += nfeat_token
-    feature_dict["part_of_speech"] = (feat_attr_index, partOfSpeech_dict)
-    feat_attr_index += nfeat_partOfSpeech
-    feature_dict["dependency_label"] = (feat_attr_index, dependency_label_dict)
-    feat_attr_index += nfeat_dependency_label
-    feature_dict["format"] = (feat_attr_index, format_dict)
-
-    # calculate the whole amount of feature_values
-    n_features = nfeat_token + nfeat_partOfSpeech + nfeat_dependency_label + nfeat_format # + ... for other feature_attributes
-
-    print(feature_dict)
+    print("Building finished the new feature_dict is", feature_dict)
 
     return feature_dict, n_features
 
@@ -438,34 +442,30 @@ def save_feature_dict():
     saves feature dicts in file "featreDicts.p"
     '''
     print("Saving feature dict...")
+    print("save n_attr_dicts", n_attr_dicts)
+    pickle.dump(n_attr_dicts, open("featureDicts.p", "wb"))
+    print("saving finished ")
 
-    print(n_token_dict)
-    print(n_dependency_label_dict)
-    print(n_partOfSpeech_dict)
-    print(n_format_dict)
-
-    featureDicts = [n_token_dict, n_partOfSpeech_dict, n_dependency_label_dict, n_format_dict]
-    pickle.dump(featureDicts, open("featureDicts.p", "wb"))
-
-    print("finished ")
-
-def load_feature_dict():
+def load_feature_dict(features_to_use):
     '''
-    loads feature dicts assuming the necessary file exists
+    loads feature dicts of all relevant categorical features
     '''
+
+    # assume the necessary file exists
     assert os.path.isfile("featureDicts.p")
     print("loading feature dicts...")
-
+    all_categorical_features = ['user', 'countries', 'client', 'session', 'format', 'token', 'part_of_speech',
+                                'dependency_label']
     featureDicts = pickle.load(open("featureDicts.p", "rb"))
 
-    n_token_dict.update(featureDicts[0])
-    n_partOfSpeech_dict.update(featureDicts[1])
-    n_dependency_label_dict.update(featureDicts[2])
-    n_format_dict.update(featureDicts[3])
+    new_n_attr_dicts = []
+    for i, attribute in enumerate(all_categorical_features):
+        if attribute in features_to_use:
+            new_n_attr_dicts.append(featureDicts[i])
 
-    print("finished")
+    print("loading finished")
 
-
+    return new_n_attr_dicts
 
 def convert_to_index_dict(dict, min_appearance):
     '''
@@ -480,7 +480,6 @@ def convert_to_index_dict(dict, min_appearance):
         if value > min_appearance:
             new_dict[key] = i
             i += 1
-    print(new_dict)
     return new_dict
 
 

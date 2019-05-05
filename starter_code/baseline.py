@@ -30,35 +30,23 @@ from data import load_data
 from eval import evaluate
 from log_reg import LogisticRegressionInstance, LogisticRegression
 
-directory = str(Path.cwd().parent)  # Get the parent directory of the current working directory
-data_directory = directory + "/data.nosync"
-
-data_en_es = data_directory + "/data_en_es"
-
-data_en_es_train = data_en_es + "/en_es.slam.20190204.train"
-data_en_es_test = data_en_es + "/en_es.slam.20190204.dev"
-data_en_es_key = data_en_es + "/en_es.slam.20190204.dev.key"
-
-en_es_predictions = "en_es_predictions.pred"
-
-train_path = data_en_es_train
-test_path = data_en_es_test
-key_path = data_en_es_key
-pred_path = en_es_predictions
-
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
-TRAINING_PERC = 0.0005  # Control how much (%) of the training data to actually use for training
+TRAINING_PERC = 0.2  # Control how much (%) of the training data to actually use for training
 EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
 
-MODEL = 'LSTM'  # which model to train. Choose 'LSTM' or 'LOGREG'
+MODEL = 'LOGREG'  # which model to train. Choose 'LSTM' or 'LOGREG'
 VERBOSE = 2  # 0, 1 or 2. The more verbose, the more print statements
 
 FEATURES_TO_USE = ['user', 'countries', 'client' , 'session', 'format', 'token', 'part_of_speech', 'dependency_label']
 
-
+OS = 'WINDOWS'
+train_path = ""
+test_path = ""
+key_path = ""
+pred_path = ""
 # A few notes on this:
 #   - we still use ALL of the test data to evaluate the model
 #   - on my desktop PC (8gb RAM, i7 CPU) i manage to load 50% of the training data but it crashes during training
@@ -97,10 +85,33 @@ def main():
     # Assert that the train course matches the test course
     assert os.path.basename(args.train)[:5] == os.path.basename(args.test)[:5]
     """
-
+    get_paths()
     train_part_test_all()
 
     evaluate(pred_path, key_path)
+
+def get_paths():
+    global train_path
+    global test_path
+    global key_path
+    global pred_path
+
+    directory = str(Path.cwd().parent)  # Get the parent directory of the current working directory
+    if OS == 'WINDOWS':
+        delim = "\"
+    else:
+        delim = "/"
+    data_directory = directory + delim + "data"
+    data_en_es = data_directory + delim + "data_en_es"
+    data_en_es_train = data_en_es + delim + "en_es.slam.20190204.train"
+    data_en_es_test = data_en_es + delim + "en_es.slam.20190204.dev"
+    data_en_es_key = data_en_es + delim + "en_es.slam.20190204.dev.key"
+    en_es_predictions = "en_es_predictions.pred"
+
+    train_path = data_en_es_train
+    test_path = data_en_es_test
+    key_path = data_en_es_key
+    pred_path = en_es_predictions
 
 
 def train_rnn_in_chunks():

@@ -28,17 +28,14 @@ def reformat_data(data, features_to_use, labels_dict=None):
 
 
 def one_hot_encode(training_data, feature_index_dict, n_features, features_to_use):
-    """
-    !!!WE ARE MISSING OUT A LOT OF TRAINING INSTANCES BECAUSE THEY ARE NOT INCLUDED IN training_data!!!
-    print("amount of training instances:", len(training_data))
-    """
-
-    one_hot_vec = np.zeros((len(training_data), n_features))
+    one_hot_vec = np.zeros((len(training_data), n_features + 2))
     #print("n_features", n_features)
 
     # for all training examples compute one hot encoding
     for i, training_example in enumerate(training_data):
         for train_feature in training_example.keys():
+            if train_feature == 'time' or train_feature == 'days':
+                continue
             feature_attribute, feature_value = train_feature.split(":", 1)
             # ignore feature_attributes that are not relevant because not in 'features_to_use list'
             if feature_attribute not in features_to_use:
@@ -52,9 +49,16 @@ def one_hot_encode(training_data, feature_index_dict, n_features, features_to_us
             index_value = feature_index_dict[feature_attribute][1][feature_value]
             index = index_attribute + index_value
             one_hot_vec[i, index] = 1
+        one_hot_vec[i, -1] = training_example['time']
+        one_hot_vec[i, -2] = training_example['days']
+
+    print(one_hot_vec)
 
     return one_hot_vec
 
+
+
+# continous features ['days', 'time']
 def build_feature_dict(features_to_use):
     print("Building feature dict .... ")
 

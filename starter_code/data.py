@@ -46,6 +46,7 @@ def load_data(filename, train_data_use, start_from_line=0, end_line=0):
         # Total number of lines 971.852
         num_lines = 0
         for line in f:
+            print(num_lines, "\n", line)
             """
             DO NOT LIMIT THIS NUMBER OF LINES TO ONLY 12. THIS IS ONLY FOR DEBUGGING PURPOSES
             This gives slightly less than 12 samples - the first lines are comments and the first line of an
@@ -201,7 +202,16 @@ class InstanceData(object):
         to_return['token:' + self.token.lower()] = 1.0
         to_return['part_of_speech:' + self.part_of_speech] = 1.0
         to_return['dependency_label:' + self.dependency_label] = 1.0
+        to_return['time'] = self.time
+        to_return['days'] = self.days
+        print("time", self.time)
+        if self.days not in array:
+            array.append(self.days)
+        print("days", self.days)
 
         # for morphological_feature in self.morphological_features:
         #     to_return['morphological_feature:' + morphological_feature] = 1.0
         return to_return
+
+
+array = []

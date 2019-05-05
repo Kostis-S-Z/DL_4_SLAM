@@ -26,14 +26,17 @@ TRAINING_PERC = 0.001  # Control how much (%) of the training data to actually u
 EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
 
-FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'token', 'part_of_speech', 'dependency_label']
+FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'token']
+# , 'part_of_speech', 'dependency_label']
 
 # Model parameters
 
 # Define the number of nodes in each layer, the last one is the output
 net_architecture = {
-    0: 100,
-    1: 1
+    0: 256,
+    1: 512,
+    2: 256,
+    3: 1
 }
 
 
@@ -56,9 +59,9 @@ def evaluate_lstm():
     if VERBOSE > 0:
         print("\n -- Training with chunks -- \n")
 
-    # num_chunks = int(1 / TRAINING_PERC)
-    num_chunks = 3  # DEBUG: use if you want to test a really small part of the data
-    use_last_batch = False  # By using last batch you load all the remaining training data
+    num_chunks = int(1 / TRAINING_PERC)
+    # num_chunks = 3  # DEBUG: use if you want to test a really small part of the data
+    use_last_batch = True  # By using last batch you load all the remaining training data
 
     start_line = 0
     total_instances = 0
@@ -123,7 +126,7 @@ def evaluate_lstm():
     if VERBOSE > 0:
         print("total instances: {} total exercises: {} line: {}".format(total_instances, total_exercises, end_line))
 
-    test_data = load_data(test_path, perc_data_use=1000)
+    test_data = load_data(test_path, perc_data_use=MAX)
 
     test_data, _, test_id = reformat_data(test_data, FEATURES_TO_USE)
 
@@ -140,7 +143,7 @@ class SimpleLSTM:
         """
         var_defaults = {
             "lr": 0.01,  # learning rate
-            "time_steps": 5  # how many time steps to look back to
+            "time_steps": 256  # how many time steps to look back to
         }
 
         for var, default in var_defaults.items():
@@ -163,17 +166,20 @@ class SimpleLSTM:
         """
 
         hidden_0 = self.net_architecture[0]
-        # hidden_1 = self.net_architecture[1]
-        # hidden_2 = self.net_architecture[2]
+        hidden_1 = self.net_architecture[1]
+        hidden_2 = self.net_architecture[2]
         # hidden_3 = self.net_architecture[3]
         # hidden_4 = self.net_architecture[4]
 
-        output = self.net_architecture[1]
+        output = self.net_architecture[3]
 
         model = Sequential()
 
         model.add(LSTM(hidden_0, return_sequences=False, input_shape=(self.time_steps, self.input_shape)))
+        model.add(LSTM(hidden_1, return_sequences=False))
+        model.add(LSTM(hidden_2, return_sequences=False))
 
+        # TODO: return sequence: true or false?
         # TODO: Use BatchNormalization
         # TODO: Use Dropout
         # model.add(LSTM(hidden_1, return_sequences=True))

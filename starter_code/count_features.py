@@ -1,22 +1,14 @@
-
-import argparse
 import os
 from io import open
 from pathlib import Path
 import pickle as pickle
-import json as json
-from simple_lstm import SimpleLSTM
 
 from future.builtins import range
-from future.utils import iteritems
 
-from preprocess_data import reformat_data
 from data import InstanceData
-from eval import evaluate
-from log_reg import LogisticRegressionInstance, LogisticRegression
 
 directory = str(Path.cwd().parent)  # Get the parent directory of the current working directory
-data_directory = directory + "/data.nosync"
+data_directory = directory + "/data"
 
 data_en_es = data_directory + "/data_en_es"
 
@@ -33,29 +25,24 @@ pred_path = en_es_predictions
 
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
-TRAINING_PERC = 0.15  # Control how much (%) of the training data to actually use for training
+TRAINING_PERC = 0.05  # Control chunk size
 EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
 
 VERBOSE = 2  # 0, 1 or 2. The more verbose, the more print statements
 
-
-
 # dictionaries of features for the one hot encoding
 n_attr_dicts = [{}, {}, {}, {}, {}, {}, {}, {}]
 
 
 def main():
-    if os.path.isfile("featureDicts.p") and False:
-        load_feature_dict()
-    else:
-        print("create new feature dictionaries")
-
+    print("create new feature dictionaries")
 
     load_in_chunks()
 
     save_feature_dict()
+
 
 def load_in_chunks():
     num_chunks = int(1 / TRAINING_PERC)
@@ -63,7 +50,6 @@ def load_in_chunks():
     start_line = 0
     total_instances = 0
     total_exercises = 0
-
 
     for chunk in range(num_chunks - 1):
         if VERBOSE > 0:
@@ -83,7 +69,8 @@ def load_in_chunks():
 
     if VERBOSE > 0:
         print("Last batch")
-    # the last batch should contain more than the previous batches        # by setting the end_line to a number higher than the number of lines in the file
+    # the last batch should contain more than the previous batches
+    # by setting the end_line to a number higher than the number of lines in the file
     # the reader will read until the end of file and will exit
     training_data, training_labels, end_line, instance_count, num_exercises = load_data(train_path,
                                                                                         TRAINING_DATA_USE,
@@ -94,7 +81,6 @@ def load_in_chunks():
     total_exercises += num_exercises
 
 
-
 def load_data(filename, train_data_use, start_from_line=0, end_line=0):
     """
     This method loads and returns the data in filename. If the data is labelled training data, it returns labels too.
@@ -102,8 +88,6 @@ def load_data(filename, train_data_use, start_from_line=0, end_line=0):
     Parameters:
         filename: the location of the training or test data you want to load.
         train_data_use: how many of the training data to use
-        partOfSpeech_dict: a feature
-        dependency_label_dict: another feature
         start_from_line: specific number of line to start reading the data
         end_line: specific number of line to stop reading the data
 
@@ -181,11 +165,9 @@ def load_data(filename, train_data_use, start_from_line=0, end_line=0):
                     for exercise_parameter in list_of_exercise_parameters:
                         [key, value] = exercise_parameter.split(':')
                         if key == 'countries':
-
                             # TODO CHANGE THIS
-                            #value = value.split('|')
+                            # value = value.split('|')
                             # count features
-
 
                             if value not in n_attr_dicts[1]:
                                 n_attr_dicts[1][value] = 1
@@ -255,22 +237,20 @@ def load_data(filename, train_data_use, start_from_line=0, end_line=0):
                     labels[instance_properties['instance_id']] = label
                 data.append(InstanceData(instance_properties=instance_properties))
 
-
-                if line[1] not in n_attr_dicts[5]: # 'token'
+                if line[1] not in n_attr_dicts[5]:  # 'token'
                     n_attr_dicts[5][line[1]] = 1
                 else:
                     n_attr_dicts[5][line[1]] += 1
 
-                if line[2] not in n_attr_dicts[6]: #'part_of_speech'
+                if line[2] not in n_attr_dicts[6]:  # 'part_of_speech'
                     n_attr_dicts[6][line[2]] = 1
                 else:
                     n_attr_dicts[6][line[2]] += 1
 
-                if line[2] not in n_attr_dicts[7]: #'dependency_label'
+                if line[2] not in n_attr_dicts[7]:  # 'dependency_label'
                     n_attr_dicts[7][line[4]] = 1
                 else:
                     n_attr_dicts[7][line[4]] += 1
-
 
         if VERBOSE > 1:
             print('Done loading ' + str(len(data)) + ' instances across ' + str(num_exercises) +
@@ -283,11 +263,11 @@ def load_data(filename, train_data_use, start_from_line=0, end_line=0):
 
 
 def save_feature_dict():
-    '''
+    """
     saves feature dicts in file "featreDicts.p"
-    '''
+    """
 
-    #with open("featureDicts.json", "w") as fp:
+    # with open("featureDicts.json", "w") as fp:
     #    json.dump(n_attr_dicts, fp)
 
     print("Saving feature dict...")
@@ -295,10 +275,11 @@ def save_feature_dict():
     pickle.dump(n_attr_dicts, open("featureDicts.p", "wb"))
     print("saving finished ")
 
+
 def load_feature_dict(features_to_use):
-    '''
+    """
     loads feature dicts of all relevant categorical features
-    '''
+    """
 
     # assume the necessary file exists
     assert os.path.isfile("featureDicts.p")
@@ -315,7 +296,6 @@ def load_feature_dict(features_to_use):
     print("loading finished")
 
     return new_n_attr_dicts
-
 
 
 if __name__ == '__main__':

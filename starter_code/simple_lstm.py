@@ -2,7 +2,7 @@ import numpy as np
 from keras.models import load_model
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed
-
+FEATURES_TO_USE = ['user', 'countries', 'client' , 'session', 'format', 'token', 'part_of_speech', 'dependency_label']
 
 class SimpleLSTM:
 
@@ -40,7 +40,7 @@ class SimpleLSTM:
         # hidden_3 = self.net_architecture[3]
         # hidden_4 = self.net_architecture[4]
 
-        output = self.net_architecture[-1]
+        output = self.net_architecture[1]
 
         model = Sequential()
 

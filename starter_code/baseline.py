@@ -31,7 +31,7 @@ from eval import evaluate
 from log_reg import LogisticRegressionInstance, LogisticRegression
 
 directory = str(Path.cwd().parent)  # Get the parent directory of the current working directory
-data_directory = directory + "/data"
+data_directory = directory + "/data.nosync"
 
 data_en_es = data_directory + "/data_en_es"
 
@@ -48,17 +48,16 @@ pred_path = en_es_predictions
 
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
-TRAINING_PERC = 0.15  # Control how much (%) of the training data to actually use for training
+TRAINING_PERC = 0.0005  # Control how much (%) of the training data to actually use for training
 EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
 
-MODEL = 'LOGREG'  # which model to train. Choose 'LSTM' or 'LOGREG'
+MODEL = 'LSTM'  # which model to train. Choose 'LSTM' or 'LOGREG'
 VERBOSE = 2  # 0, 1 or 2. The more verbose, the more print statements
 
-# dictionaries of features for the one hot encoding
-partOfSpeech_dict = {}
-dependency_label_dict = {}
+FEATURES_TO_USE = ['user', 'countries', 'client' , 'session', 'format', 'token', 'part_of_speech', 'dependency_label']
+
 
 # A few notes on this:
 #   - we still use ALL of the test data to evaluate the model
@@ -132,13 +131,10 @@ def train_rnn_in_chunks():
         # Start loading data from the last point
         training_data, training_labels, end_line, instance_count, num_exercises = load_data(train_path,
                                                                                             TRAINING_DATA_USE,
-                                                                                            partOfSpeech_dict,
-                                                                                            dependency_label_dict,
                                                                                             start_from_line=start_line)
 
         training_data, training_labels, train_id = reformat_data(training_data,
-                                                                 partOfSpeech_dict,
-                                                                 dependency_label_dict,
+                                                                 FEATURES_TO_USE,
                                                                  labels_dict=training_labels)
 
         # If its the first chunk then you haven't trained a model yet and start from scratch
@@ -166,13 +162,10 @@ def train_rnn_in_chunks():
         # the reader will read until the end of file and will exit
         training_data, training_labels, end_line, instance_count, num_exercises = load_data(train_path,
                                                                                             TRAINING_DATA_USE,
-                                                                                            partOfSpeech_dict,
-                                                                                            dependency_label_dict,
                                                                                             start_from_line=start_line,
                                                                                             end_line=MAX)
 
-        training_data, training_labels, train_id = reformat_data(training_data, partOfSpeech_dict,
-                                                                 dependency_label_dict, labels_dict=training_labels)
+        training_data, training_labels, train_id = reformat_data(training_data, FEATURES_TO_USE, labels_dict=training_labels)
 
         total_instances += instance_count
         total_exercises += num_exercises
@@ -209,19 +202,14 @@ def run_rnn():
     """
 
     training_data, training_labels, _, _, _ = load_data(train_path,
-                                                        TRAINING_DATA_USE,
-                                                        partOfSpeech_dict,
-                                                        dependency_label_dict, )
+                                                        TRAINING_DATA_USE)
 
-    training_data, training_labels, train_id = reformat_data(training_data, partOfSpeech_dict,
-                                                             dependency_label_dict, labels_dict=training_labels)
+    training_data, training_labels, train_id = reformat_data(training_data, FEATURES_TO_USE, labels_dict=training_labels)
 
     test_data = load_data(test_path,
-                          TRAINING_DATA_USE,
-                          partOfSpeech_dict,
-                          dependency_label_dict)
+                          TRAINING_DATA_USE)
 
-    test_data, _, test_id = reformat_data(test_data, partOfSpeech_dict, dependency_label_dict)
+    test_data, _, test_id = reformat_data(test_data,FEATURES_TO_USE)
 
     x_train = training_data
     labels_list = training_labels
@@ -229,7 +217,7 @@ def run_rnn():
     print(training_data.shape, test_data.shape)
 
     # 0 is nothing, 1 is progress bar and 2 is line per epoch
-    lstm1 = SimpleLSTM()
+    lstm1 = SimpleLSTM(net_architecture)
     lstm1.train(x_train, labels_list, verbose=VERBOSE)
 
     predictions = lstm1.predict(test_data, test_id)
@@ -244,18 +232,14 @@ def run_log_reg():
     epochs = 10
 
     training_data, training_labels, _, _, _ = load_data(train_path,
-                                                        TRAINING_DATA_USE,
-                                                        partOfSpeech_dict,
-                                                        dependency_label_dict)
+                                                        TRAINING_DATA_USE)
 
     training_instances = [LogisticRegressionInstance(features=instance_data.to_features(),
                                                      label=training_labels[instance_data.instance_id],
                                                      name=instance_data.instance_id) for instance_data in training_data]
 
     test_data = load_data(test_path,
-                          TRAINING_DATA_USE,
-                          partOfSpeech_dict,
-                          dependency_label_dict)
+                          TRAINING_DATA_USE)
 
     test_instances = [LogisticRegressionInstance(features=instance_data.to_features(),
                                                  label=None,

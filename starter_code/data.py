@@ -5,7 +5,7 @@ File to load and instantiate the data
 VERBOSE = 2
 
 
-def load_data(filename, train_data_use, partOfSpeech_dict, dependency_label_dict, start_from_line=0, end_line=0):
+def load_data(filename, train_data_use, start_from_line=0, end_line=0):
     """
     This method loads and returns the data in filename. If the data is labelled training data, it returns labels too.
 
@@ -91,7 +91,8 @@ def load_data(filename, train_data_use, partOfSpeech_dict, dependency_label_dict
                     for exercise_parameter in list_of_exercise_parameters:
                         [key, value] = exercise_parameter.split(':')
                         if key == 'countries':
-                            value = value.split('|')
+                            pass
+                            #value = value.split('|')
                         elif key == 'days':
                             value = float(value)
                         elif key == 'time':
@@ -131,13 +132,6 @@ def load_data(filename, train_data_use, partOfSpeech_dict, dependency_label_dict
                     label = float(line[6])
                     labels[instance_properties['instance_id']] = label
                 data.append(InstanceData(instance_properties=instance_properties))
-
-                # save which features are in the dataset
-                # the one hot encoding needs to know which features are in the dataset to determine its size
-                if line[2] not in partOfSpeech_dict:
-                    partOfSpeech_dict[line[2]] = len(partOfSpeech_dict)
-                if line[4] not in dependency_label_dict:
-                    dependency_label_dict[line[4]] = len(dependency_label_dict)
 
         if VERBOSE > 1:
             print('Done loading ' + str(len(data)) + ' instances across ' + str(num_exercises) +
@@ -197,15 +191,17 @@ class InstanceData(object):
         # print("\n -- to features -- \n")
         to_return = dict()
 
-        to_return['bias'] = 1.0
+        # to_return['bias'] = 1.0
         to_return['user:' + self.user] = 1.0
+        to_return['countries:' + self.countries] = 1.0
+        to_return['client:' + self.client] = 1.0
+        to_return['session:' + self.session] = 1.0
         to_return['format:' + self.format] = 1.0
+
         to_return['token:' + self.token.lower()] = 1.0
-
         to_return['part_of_speech:' + self.part_of_speech] = 1.0
-        for morphological_feature in self.morphological_features:
-            to_return['morphological_feature:' + morphological_feature] = 1.0
-
         to_return['dependency_label:' + self.dependency_label] = 1.0
-        # print("one-hot feature matrix: ", to_return)
+
+        # for morphological_feature in self.morphological_features:
+        #     to_return['morphological_feature:' + morphological_feature] = 1.0
         return to_return

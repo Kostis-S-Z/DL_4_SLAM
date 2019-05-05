@@ -1,19 +1,72 @@
 """
 File to load and instantiate the data
+
+This loads the training data, training labels, and dev data, then trains a logistic
+regression model, then dumps predictions to the specified file.
+
+Modify the middle of this code, between the two commented blocks, to create your own model.
+parser = argparse.ArgumentParser(description='Duolingo shared task baseline model')
+
+parser.add_argument('--train', help='Training file name', required=True)
+parser.add_argument('--test', help='Test file name, to make predictions on', required=True)
+parser.add_argument('--pred', help='Output file name for predictions, defaults to test_name.pred')
+args = parser.parse_args()
+
+if not args.pred:
+    args.pred = args.test + '.pred'
+
+assert os.path.isfile(args.train)
+assert os.path.isfile(args.test)
+
+# Assert that the train course matches the test course
+assert os.path.basename(args.train)[:5] == os.path.basename(args.test)[:5]
 """
+
+import os
+from pathlib import Path
+from future.utils import iteritems
 
 VERBOSE = 2
 
+OS = 'unix'  # make sure the paths work for both WINDOWS and unix
+train_path = ""
+test_path = ""
+key_path = ""
+pred_path = ""
 
-def load_data(filename, train_data_use, start_from_line=0, end_line=0):
+
+def get_paths():
+    global train_path
+    global test_path
+    global key_path
+    global pred_path
+
+    directory = str(Path.cwd().parent)  # Get the parent directory of the current working directory
+    if OS == 'WINDOWS':
+        delim = "\\"
+    else:
+        delim = "/"
+
+    data_directory = directory + delim + "data"
+    data_en_es = data_directory + delim + "data_en_es"
+    data_en_es_train = data_en_es + delim + "en_es.slam.20190204.train"
+    data_en_es_test = data_en_es + delim + "en_es.slam.20190204.dev"
+    data_en_es_key = data_en_es + delim + "en_es.slam.20190204.dev.key"
+    en_es_predictions = "en_es_predictions.pred"
+
+    train_path = data_en_es_train
+    test_path = data_en_es_test
+    key_path = data_en_es_key
+    pred_path = en_es_predictions
+
+
+def load_data(filename, perc_data_use=1., start_from_line=0, end_line=0):
     """
     This method loads and returns the data in filename. If the data is labelled training data, it returns labels too.
 
     Parameters:
         filename: the location of the training or test data you want to load.
-        train_data_use: how many of the training data to use
-        partOfSpeech_dict: a feature
-        dependency_label_dict: another feature
+        perc_data_use: how many of the training data to use
         start_from_line: specific number of line to start reading the data
         end_line: specific number of line to stop reading the data
 
@@ -46,14 +99,6 @@ def load_data(filename, train_data_use, start_from_line=0, end_line=0):
         # Total number of lines 971.852
         num_lines = 0
         for line in f:
-            """
-            DO NOT LIMIT THIS NUMBER OF LINES TO ONLY 12. THIS IS ONLY FOR DEBUGGING PURPOSES
-            This gives slightly less than 12 samples - the first lines are comments and the first line of an
-            exercise describes the exercise
-            if num_lines > NUM_LINES_LIM:
-                break
-            """
-
             # The line counter starts from 1
             num_lines += 1
             # If you want to start loading data after a specific point in the file
@@ -77,7 +122,7 @@ def load_data(filename, train_data_use, start_from_line=0, end_line=0):
                 # Load only the specified amount of data indicated based on BOTH the num of exercise and the last line
                 # If end_line = 0, then only the first condition needs to be met
                 # If end_line = MAX, then this is never true, and the loading will stop when there are no more data
-                if num_exercises >= train_data_use and num_lines > end_line:
+                if num_exercises >= perc_data_use and num_lines > end_line:
                     if VERBOSE > 0:
                         print('Stop loading training data...')
                     break
@@ -143,6 +188,18 @@ def load_data(filename, train_data_use, start_from_line=0, end_line=0):
         return data
 
 
+def write_predictions(predictions):
+    """
+    Write results to a file to evaluate them later
+    """
+    if os.path.isfile(pred_path):
+        print("Overwriting previous predictions!")
+
+    with open(pred_path, 'wt') as f:
+        for instance_id, prediction in iteritems(predictions):
+            f.write(instance_id + ' ' + str(prediction) + '\n')
+
+
 class InstanceData(object):
     """
     A bare-bones class to store the included properties of each instance. This is meant to act as easy access to the
@@ -205,3 +262,7 @@ class InstanceData(object):
         # for morphological_feature in self.morphological_features:
         #     to_return['morphological_feature:' + morphological_feature] = 1.0
         return to_return
+
+
+if __name__ == '__main__':
+    get_paths()

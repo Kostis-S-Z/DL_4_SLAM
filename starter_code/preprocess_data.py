@@ -2,6 +2,7 @@ import numpy as np
 import pickle
 import os
 
+
 def reformat_data(data, features_to_use, labels_dict=None):
     """
     Use the features we want in our own format

@@ -190,6 +190,20 @@ def compute_f1(actual, predicted):
 
     return true_positives, false_positives, true_negatives, false_negatives, precision, recall, F1
 
+def compute_mcc(tp, fp, tn, fn):
+    """
+    Compute the Matthew correlation coefficient.
+    Regarded as a good measure of quality in case of unbalanced classes.
+    Returns a value between -1 and +1. +1 represents perfect prediction, 0 random, and -1 total disagreement
+    between prediction and observation.
+    """
+    n = tn + tp + fn + fp
+    s = (tp + fn)/n
+    p = (tp + fp) / n
+    mcc = (tp/n - s*p) / math.sqrt(p*s*(1-s)*(1-p))
+    return mcc
+
+
 
 def evaluate_metrics(actual, predicted):
     """
@@ -200,13 +214,14 @@ def evaluate_metrics(actual, predicted):
     auroc = compute_auroc(actual, predicted)
     true_pos, false_pos, true_neg, false_neg, precision, recall, F1 = compute_f1(actual, predicted)
     ratio_maj = (true_neg + false_pos)/len(actual)
+    mcc = compute_mcc(true_pos, false_pos, true_neg, false_neg)
     return {'correctly predicted 1 (tp)': true_pos, 'incorrectly predicted 1 (fp)': false_pos,
             'correctly predicted 0 (tn)': true_neg,
             'incorrectly predicted 0 (fn)': false_neg,
             'precision:  tp / (tp+fp)': precision, 'recall:  tp / (tp+fn)': recall, 'F1': F1,
             'ratio majority class':ratio_maj, 'accuracy': acc,
             'avglogloss': avg_log_loss,
-            'auroc': auroc }
+            'auroc': auroc, 'Matthew corr coef':mcc }
 
 
 def test_metrics():

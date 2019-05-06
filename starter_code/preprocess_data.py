@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
 import os
+from data import VERBOSE
 
 
 def reformat_data(data, features_to_use, labels_dict=None):
@@ -23,27 +24,27 @@ def reformat_data(data, features_to_use, labels_dict=None):
     feature_dict, n_features = build_feature_dict(features_to_use)
 
     # Convert features to one-hot encoding
-    x_train = one_hot_encode(new_data, feature_dict, n_features, features_to_use)
+    data_vectors = one_hot_encode(new_data, feature_dict, n_features, features_to_use)
 
-    return x_train, labels, id_list
+    return data_vectors, labels, id_list
 
 
-def one_hot_encode(training_data, feature_index_dict, n_features, features_to_use):
+def one_hot_encode(data, feature_index_dict, n_features, features_to_use):
     """
     !!!WE ARE MISSING OUT A LOT OF TRAINING INSTANCES BECAUSE THEY ARE NOT INCLUDED IN training_data!!!
     print("amount of training instances:", len(training_data))
     """
 
-    one_hot_vec = np.zeros((len(training_data), n_features))
-    #print("n_features", n_features)
+    one_hot_vec = np.zeros((len(data), n_features))
+    # print("n_features", n_features)
 
-    # for all training examples compute one hot encoding
-    for i, training_example in enumerate(training_data):
-        for train_feature in training_example.keys():
-            feature_attribute, feature_value = train_feature.split(":", 1)
+    # for all data examples compute one hot encoding
+    for i, a_sample in enumerate(data):
+        for a_feature in a_sample.keys():
+            feature_attribute, feature_value = a_feature.split(":", 1)
             # ignore feature_attributes that are not relevant because not in 'features_to_use list'
             if feature_attribute not in features_to_use:
-                print('ignore', feature_attribute)
+                # print('ignore', feature_attribute)
                 continue
             # uncommon features_values of feature_attribute 'token' are ignored
             if feature_value not in feature_index_dict[feature_attribute][1]:
@@ -56,15 +57,19 @@ def one_hot_encode(training_data, feature_index_dict, n_features, features_to_us
 
     return one_hot_vec
 
+
 def build_feature_dict(features_to_use):
-    print("Building feature dict .... ")
+    if VERBOSE > 1:
+        print("Building feature dict .... ")
 
     # Some explenation to this dict:
     # the keys are different features_attributes (eg part of speech, dependency value, token... )
     # -> but each feature_attributes can again have different feature_values (eg part of speech: Noun, Verb, ...)
-    # The value of the dict for each key is a Tuple (x, dict) from which we can clcualte the position of the 1 (for the feature_value) in the one hot encoding
+    # The value of the dict for each key is a Tuple (x, dict) from which we can clcualte the position of the 1
+    # (for the feature_value) in the one hot encoding
     # # x is start index of from where feature_attribute begins
-    # # from dict in (x, dict) we get the index of the feature_value (for the corresponding feature_attribute) which we later add to x
+    # # from dict in (x, dict) we get the index of the feature_value (for the corresponding feature_attribute)
+    # which we later add to x
 
     # load list of all relevant n_attr_dicts
     n_attr_dict_list = load_feature_dict(features_to_use)
@@ -82,18 +87,21 @@ def build_feature_dict(features_to_use):
         # update amount of different features seen until now
         n_features += len(attr_dict )
 
-    print("Building finished the new feature_dict is", feature_dict)
+    if VERBOSE > 1:
+        print("Building finished the new feature_dict is", feature_dict)
 
     return feature_dict, n_features
 
+
 def load_feature_dict(features_to_use):
-    '''
+    """
     loads feature dicts of all relevant categorical features
-    '''
+    """
 
     # assume the necessary file exists
     assert os.path.isfile("featureDicts.p")
-    print("loading feature dicts...")
+    if VERBOSE > 1:
+        print("loading feature dicts...")
     all_categorical_features = ['user', 'countries', 'client', 'session', 'format', 'token', 'part_of_speech',
                                 'dependency_label']
     featureDicts = pickle.load(open("featureDicts.p", "rb"))
@@ -103,17 +111,18 @@ def load_feature_dict(features_to_use):
         if attribute in features_to_use:
             new_n_attr_dicts.append(featureDicts[i])
 
-    print("loading finished")
+    if VERBOSE > 1:
+        print("loading finished")
 
     return new_n_attr_dicts
 
 
 def convert_to_index_dict(dict, min_appearance):
-    '''
+    """
     converts dict with (key: feature, value: omount of appearance in data)
     to a dict with (key: featue, value: index in one hot encoding starting from the parent feature)
     restricted with the minimum amount of appearance of the feature in the training data n
-    '''
+    """
     # create new dictionaries where value is index
     new_dict = {}
     i = 0

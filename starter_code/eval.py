@@ -32,12 +32,13 @@ def evaluate(pred_path, key_path):
     actual = []
     predicted = []
 
-    for instance_id in iterkeys(labels):
+    for instance_id in iterkeys(predictions):
         try:
             actual.append(labels[instance_id])
             predicted.append(predictions[instance_id])
         except KeyError:
-            print('No prediction for instance ID ' + instance_id + '!')
+            # print('No prediction for instance ID ' + instance_id + '!')
+            pass
 
     metrics = evaluate_metrics(actual, predicted)
     # line_floats = '\t'.join([('\n\n%.3f\n%s' % (value, metric)) for (metric, value) in iteritems(metrics)])
@@ -48,6 +49,7 @@ def evaluate(pred_path, key_path):
     for (k, v) in iteritems(metrics):
         print("{:<35} {:<15}".format(k, v))
     print("------------------------------------------------------------")
+    return metrics
 
 
 def load_labels(filename):
@@ -145,7 +147,7 @@ def compute_auroc(actual, predicted):
             for j in range(last_rank, i):
                 r[sorted_posterior[j][1]] = float(last_rank+1+i)/2.0
             last_rank = i
-        if i==len(sorted_posterior)-1:
+        if i == len(sorted_posterior)-1:
             for j in range(last_rank, i+1):
                 r[sorted_posterior[j][1]] = float(last_rank+i+2)/2.0
 
@@ -170,7 +172,6 @@ def compute_f1(actual, predicted):
     precision = 0
     recall = 0
 
-
     for i in range(num):
         if actual[i] >= 0.5 and predicted[i] >= 0.5:
             true_positives += 1
@@ -190,6 +191,7 @@ def compute_f1(actual, predicted):
 
     return true_positives, false_positives, true_negatives, false_negatives, precision, recall, F1
 
+
 def compute_mcc(tp, fp, tn, fn):
     """
     Compute the Matthew correlation coefficient.
@@ -198,11 +200,15 @@ def compute_mcc(tp, fp, tn, fn):
     between prediction and observation.
     """
     n = tn + tp + fn + fp
-    s = (tp + fn)/n
+    s = (tp + fn) / n
     p = (tp + fp) / n
-    mcc = (tp/n - s*p) / math.sqrt(p*s*(1-s)*(1-p))
+    numerator = (tp / n - s*p)
+    denominator = math.sqrt(p*s*(1-s)*(1-p))
+    try:
+        mcc = numerator / denominator
+    except ZeroDivisionError:
+        mcc = 0.0  # If denominator is zero, it means the classifier just predicts the majority class!
     return mcc
-
 
 
 def evaluate_metrics(actual, predicted):
@@ -215,13 +221,19 @@ def evaluate_metrics(actual, predicted):
     true_pos, false_pos, true_neg, false_neg, precision, recall, F1 = compute_f1(actual, predicted)
     ratio_maj = (true_neg + false_pos)/len(actual)
     mcc = compute_mcc(true_pos, false_pos, true_neg, false_neg)
-    return {'correctly predicted 1 (tp)': true_pos, 'incorrectly predicted 1 (fp)': false_pos,
+
+    return {'correctly predicted 1 (tp)': true_pos,
+            'incorrectly predicted 1 (fp)': false_pos,
             'correctly predicted 0 (tn)': true_neg,
             'incorrectly predicted 0 (fn)': false_neg,
-            'precision:  tp / (tp+fp)': precision, 'recall:  tp / (tp+fn)': recall, 'F1': F1,
-            'ratio majority class':ratio_maj, 'accuracy': acc,
-            'avglogloss': avg_log_loss,
-            'auroc': auroc, 'Matthew corr coef':mcc }
+            'precision:  tp / (tp+fp)': precision,
+            'recall:  tp / (tp+fn)': recall,
+            'F1': F1,
+            'ratio majority class': ratio_maj,
+            'accuracy': acc,
+            'avg_log_loss': avg_log_loss,
+            'AUC': auroc,
+            'MCC': mcc}
 
 
 def test_metrics():
@@ -230,7 +242,7 @@ def test_metrics():
     metrics = evaluate_metrics(actual, predicted)
     metrics = {key: round(metrics[key], 3) for key in iterkeys(metrics)}
     assert metrics['accuracy'] == 0.700
-    assert metrics['avglogloss'] == 0.613
-    assert metrics['auroc'] == 0.740
+    assert metrics['avg_log_loss'] == 0.613
+    assert metrics['AUC'] == 0.740
     assert metrics['F1'] == 0.667
     print('Verified that our environment is calculating metrics correctly.')

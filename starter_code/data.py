@@ -26,13 +26,17 @@ import os
 from pathlib import Path
 from future.utils import iteritems
 
-VERBOSE = 2
+VERBOSE = 0
 
 OS = 'unix'  # make sure the paths work for both WINDOWS and unix
 train_path = ""
 test_path = ""
 key_path = ""
 pred_path = ""
+
+# Number of exercises on the English-Spanish train and test dataset
+EN_ES_NUM_TRAIN_EX = 824012
+EN_ES_NUM_TEST_EX = 115770  # This is actually dev
 
 
 def get_paths():
@@ -82,9 +86,11 @@ def load_data(filename, perc_data_use=1., start_from_line=0, end_line=0):
     training = False
     if filename.find('train') != -1:
         training = True
+        num_data_use = perc_data_use * EN_ES_NUM_TRAIN_EX  # Get actual number of exercises to train on
         if VERBOSE > 1:
             print('Loading training instances...')
     else:
+        num_data_use = perc_data_use * EN_ES_NUM_TEST_EX  # Get actual number of exercises to test on
         if VERBOSE > 1:
             print('Loading testing instances...')
     if training:
@@ -122,8 +128,8 @@ def load_data(filename, perc_data_use=1., start_from_line=0, end_line=0):
                 # Load only the specified amount of data indicated based on BOTH the num of exercise and the last line
                 # If end_line = 0, then only the first condition needs to be met
                 # If end_line = MAX, then this is never true, and the loading will stop when there are no more data
-                if num_exercises >= perc_data_use and num_lines > end_line:
-                    if VERBOSE > 0:
+                if num_exercises >= num_data_use and num_lines > end_line:
+                    if VERBOSE > 1:
                         print('Stop loading training data...')
                     break
 
@@ -136,8 +142,8 @@ def load_data(filename, perc_data_use=1., start_from_line=0, end_line=0):
                     for exercise_parameter in list_of_exercise_parameters:
                         [key, value] = exercise_parameter.split(':')
                         if key == 'countries':
+                            # value = value.split('|')
                             pass
-                            #value = value.split('|')
                         elif key == 'days':
                             value = float(value)
                         elif key == 'time':

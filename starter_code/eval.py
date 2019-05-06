@@ -4,7 +4,7 @@ from io import open
 import math
 
 from future.builtins import range
-from future.utils import iterkeys, iteritems
+from future.utils import iterkeys
 
 
 def evaluate(pred_path, key_path):
@@ -46,8 +46,8 @@ def evaluate(pred_path, key_path):
     print("------------------------------------------------------------")
     print("{:<35} {:<15}".format('Metric', 'Value'))
     print("------------------------------------------------------------")
-    for (k, v) in iteritems(metrics):
-        print("{:<35} {:<15}".format(k, v))
+    for k in sorted(metrics.keys()):
+        print("    {:<35} {:<15}".format(k, metrics[k]))
     print("------------------------------------------------------------")
     return metrics
 

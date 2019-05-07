@@ -32,33 +32,45 @@ def reformat_data(data, features_to_use, labels_dict=None):
 
 
 def one_hot_encode(training_data, feature_index_dict, n_features, features_to_use):
+
+    if VERBOSE > 1:
+        print("start building one hot encoding")
     one_hot_vec = np.zeros((len(training_data), n_features + 2))
     #print("n_features", n_features)
 
     # for all training examples compute one hot encoding
     for i, training_example in enumerate(training_data):
-        for train_feature in training_example.keys():
-            if train_feature == 'time' or train_feature == 'days':
+        for feature_attribute in training_example.keys():
+            feature_value = training_example[feature_attribute]
+
+            if feature_attribute == 'time':
+                one_hot_vec[i, -1] = training_example['time']
                 continue
-            feature_attribute, feature_value = train_feature.split(":", 1)
+            if feature_attribute == 'days':
+                one_hot_vec[i, -2] = training_example['days']
+                continue
+
             # ignore feature_attributes that are not relevant because not in 'features_to_use list'
             if feature_attribute not in features_to_use:
                 #print('ignore', feature_attribute)
                 continue
-            # uncommon features_values of feature_attribute 'token' are ignored
-            if feature_value not in feature_index_dict[feature_attribute][1]:
-                continue
-            # otherwise calculate the right index for that feature and add 1 to one-hot-encoding
-            index_attribute = feature_index_dict[feature_attribute][0]
-            index_value = feature_index_dict[feature_attribute][1][feature_value]
+
+            # calculate the right index for that feature and compute the one-hot-encoding
+            try:
+                index_attribute = feature_index_dict[feature_attribute][0]
+                index_value = feature_index_dict[feature_attribute][1][feature_value]
+            except Exception: pass
+
             index = index_attribute + index_value
+
             one_hot_vec[i, index] = 1
-        one_hot_vec[i, -1] = training_example['time']
-        one_hot_vec[i, -2] = training_example['days']
 
     scaler = StandardScaler()
-    scaler.fit(one_hot_vec)
-    one_hot_vec = scaler.transform(one_hot_vec)
+    scaler.fit(one_hot_vec[:,-2:-1])
+    one_hot_vec[:,-2:-1] = scaler.transform(one_hot_vec[:,-2:-1])
+
+    if VERBOSE > 1:
+        print("finished one hot encoding")
 
     return one_hot_vec
 
@@ -93,7 +105,7 @@ def build_feature_dict(features_to_use):
         n_features += len(attr_dict )
 
     if VERBOSE > 1:
-        print("Building finished the new feature_dict is", feature_dict)
+        print("Building finished ")
 
     return feature_dict, n_features
 

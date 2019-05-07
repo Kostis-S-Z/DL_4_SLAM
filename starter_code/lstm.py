@@ -21,12 +21,12 @@ test_path = data.test_path
 key_path = data.key_path
 pred_path = data.pred_path
 
-VERBOSE = 1  # 0, 1 or 2. The more verbose, the more print statements
+VERBOSE = 2# 0, 1 or 2. The more verbose, the more print statements
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
-TRAINING_PERC = 0.001  # Control how much (%) of the training data to actually use for training
-TEST_PERC = 0.001
+TRAINING_PERC = 0.1  # Control how much (%) of the training data to actually use for training
+TEST_PERC = 0.1
 
 FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'token']
 # , 'part_of_speech', 'dependency_label']
@@ -94,10 +94,10 @@ def run_lstm():
         # otherwise resume from an already saved one
         if chunk != 0:
             trained_model = lstm_model.load_model()
-            lstm_model.train(training_data, training_labels, model=trained_model)
         else:
-            lstm_model.train(training_data, training_labels)
+            trained_model = None
 
+        lstm_model.train(training_data, training_labels, model=trained_model)
         lstm_model.save_model()
 
         total_instances += num_instance
@@ -278,21 +278,32 @@ class SimpleLSTM:
 
     def data_in_time(self, data_x, data_y=None):
         # TODO: Comment these method analytically
-        data_list = []
-        for i in range(len(data_x) - self.time_steps + 1):
-            data_list.append(data_x[i:i + self.time_steps])
+        # for dataset [x1, x2, x3, ..., xn]
+        # it computes matrix [ [x0, x1, x2, ..., xt], [x1, x2, x3, ..., xt+2], [x2, x3, x4, ..., xt+3], ..., [...] ]
+        # for every datasample we get the t preceding datasamples
 
+        print("start building data in time")
+
+        # n is amount of samples that have at least history of t
         n = data_x.shape[0] - self.time_steps + 1
         t = self.time_steps
+        # lenght of one hot encoding
         m = data_x.shape[1]
 
-        data_x = np.reshape(np.concatenate(data_list), (n, t, m))
+        data_new = np.zeros((n ,t, m))
+        for i in range(len(data_x) - self.time_steps + 1):
+            data_new[i,:,:] = data_x[i:i + self.time_steps]
+
+
+        print("finished building data in time")
+
 
         if data_y is not None:
             data_y = data_y[self.time_steps - 1:len(data_y)]
-            return data_x, data_y
+            return data_new, data_y
         else:
-            return data_x
+            return data_new
+
 
     def save_model(self):
         """

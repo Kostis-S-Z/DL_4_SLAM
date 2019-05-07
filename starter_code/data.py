@@ -26,7 +26,7 @@ import os
 from pathlib import Path
 from future.utils import iteritems
 
-VERBOSE = 0
+VERBOSE = 2
 
 OS = 'unix'  # make sure the paths work for both WINDOWS and unix
 train_path = ""
@@ -51,7 +51,7 @@ def get_paths():
     else:
         delim = "/"
 
-    data_directory = directory + delim + "data"
+    data_directory = directory + delim + "data.nosync"
     data_en_es = data_directory + delim + "data_en_es"
     data_en_es_train = data_en_es + delim + "en_es.slam.20190204.train"
     data_en_es_test = data_en_es + delim + "en_es.slam.20190204.dev"
@@ -255,15 +255,15 @@ class InstanceData(object):
         to_return = dict()
 
         # to_return['bias'] = 1.0
-        to_return['user:' + self.user] = 1.0
-        to_return['countries:' + self.countries] = 1.0
-        to_return['client:' + self.client] = 1.0
-        to_return['session:' + self.session] = 1.0
-        to_return['format:' + self.format] = 1.0
+        to_return['user'] =  self.user
+        to_return['countries'] = self.countries
+        to_return['client'] = self.client
+        to_return['session'] =  self.session
+        to_return['format'] =  self.format
 
-        to_return['token:' + self.token.lower()] = 1.0
-        to_return['part_of_speech:' + self.part_of_speech] = 1.0
-        to_return['dependency_label:' + self.dependency_label] = 1.0
+        to_return['token'] = self.token.lower()
+        to_return['part_of_speech'] = self.part_of_speech
+        to_return['dependency_label'] = self.dependency_label
         to_return['time'] = self.time
         to_return['days'] = self.days
 

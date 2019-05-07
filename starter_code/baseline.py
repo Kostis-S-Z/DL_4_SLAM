@@ -15,216 +15,52 @@ should consider replacing the LogisticRegressionInstance with a class more appro
 This code is written to be compatible with both Python 2 or 3, at the expense of dependency on the future library. This
 code does not depend on any other Python libraries besides future.
 """
-
-import argparse
-import os
-from io import open
-from pathlib import Path
-from simple_lstm import SimpleLSTM
-
+# Python 2/3 compatibility although currently doesn't matter because we are dependent on Path lib
 from future.builtins import range
-from future.utils import iteritems
 
-from preprocess_data import reformat_data
-from data import load_data
+# Logistic Regression imports
+import math
+from collections import defaultdict, namedtuple
+from random import shuffle, uniform
+
+# Data evaluation functions
+import data
+from data import get_paths, load_data, write_predictions
 from eval import evaluate
-from log_reg import LogisticRegressionInstance, LogisticRegression
 
-directory = str(Path.cwd().parent)  # Get the parent directory of the current working directory
-data_directory = directory + "/data.nosync"
+get_paths()
 
-data_en_es = data_directory + "/data_en_es"
+train_path = data.train_path
+test_path = data.test_path
+key_path = data.key_path
+pred_path = data.pred_path
 
-data_en_es_train = data_en_es + "/en_es.slam.20190204.train"
-data_en_es_test = data_en_es + "/en_es.slam.20190204.dev"
-data_en_es_key = data_en_es + "/en_es.slam.20190204.dev.key"
 
-en_es_predictions = "en_es_predictions.pred"
-
-train_path = data_en_es_train
-test_path = data_en_es_test
-key_path = data_en_es_key
-pred_path = en_es_predictions
-
-MAX = 10000000  # Placeholder value to work as an on/off if statement
-
-TRAINING_PERC = 0.05#0.0005  # Control how much (%) of the training data to actually use for training
-EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
-
-TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
-
-MODEL = 'LSTM'  # which model to train. Choose 'LSTM' or 'LOGREG'
 VERBOSE = 2  # 0, 1 or 2. The more verbose, the more print statements
 
-FEATURES_TO_USE = ['user', 'countries', 'client' , 'session', 'format', 'token', 'part_of_speech', 'dependency_label']
-#FEATURES_TO_USE = [ 'dependency_label']
+# Data parameters
+MAX = 10000000  # Placeholder value to work as an on/off if statement
 
+TRAINING_PERC = 0.00001  # Control how much (%) of the training data to actually use for training
 
-# A few notes on this:
-#   - we still use ALL of the test data to evaluate the model
-#   - on my desktop PC (8gb RAM, i7 CPU) i manage to load 50% of the training data but it crashes during training
-#       due to overload
-#   - I suggest using 20-30% of the data to train for now... maybe even less for a laptop
-#   - Minimum amount you can train is 14% (for en_es 14% is too little. 20% is fine)
-#   Total instances: 2.622.957, Total exercises: 824.012, Total lines in the file: 4.866.081
+EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
+TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
 
+# Model parameters
+# Sigma is the L2 prior variance, regularizing the baseline model. Smaller sigma means more regularization.
+_DEFAULT_SIGMA = 20.0
 
-# Define the number of nodes in each layer, the last one is the output
-net_architecture = {
-    0: 100,
-    1: 1
-}
+# Eta is the learning rate/step size for SGD. Larger means larger step size.
+_DEFAULT_ETA = 0.1
 
 
 def main():
-    """
-    Executes the baseline model. This loads the training data, training labels, and dev data, then trains a logistic
-    regression model, then dumps predictions to the specified file.
 
-    Modify the middle of this code, between the two commented blocks, to create your own model.
-    parser = argparse.ArgumentParser(description='Duolingo shared task baseline model')
+    predictions = run_log_reg()
 
-    parser.add_argument('--train', help='Training file name', required=True)
-    parser.add_argument('--test', help='Test file name, to make predictions on', required=True)
-    parser.add_argument('--pred', help='Output file name for predictions, defaults to test_name.pred')
-    args = parser.parse_args()
-
-    if not args.pred:
-        args.pred = args.test + '.pred'
-
-    assert os.path.isfile(args.train)
-    assert os.path.isfile(args.test)
-
-    # Assert that the train course matches the test course
-    assert os.path.basename(args.train)[:5] == os.path.basename(args.test)[:5]
-    """
-
-    train_part_test_all()
-
+    write_predictions(predictions)
 
     evaluate(pred_path, key_path)
-
-
-def train_rnn_in_chunks():
-    """
-    Train a model with a chunk of the data, then save the weights, the load another chunk, load the weights and
-    resume training. This is done to go make it possible to train a full model in system with limited memory.
-
-    The chunks are split evenly, except the last one. The last one will contain a bit more.
-    e.g when split 15% the last batch will contain ~200.000 exercises where as the others ~125.000
-    """
-    if VERBOSE > 0:
-        print("\n -- Training with chunks -- \n")
-
-    # num_chunks = int(1 / TRAINING_PERC)
-    num_chunks = 3  # DEBUG: use if you want to test a really small part of the data
-    use_last_batch = False  # By using last batch you load all the remaining training data
-
-    start_line = 0
-    total_instances = 0
-    total_exercises = 0
-
-    lstm_model = SimpleLSTM(net_architecture)
-
-    for chunk in range(num_chunks - 1):
-        if VERBOSE > 0:
-            print("Training with chunk", chunk + 1)
-
-        # Start loading data from the last point
-        training_data, training_labels, end_line, instance_count, num_exercises = load_data(train_path,
-                                                                                            TRAINING_DATA_USE,
-                                                                                            start_from_line=start_line)
-
-        training_data, training_labels, train_id = reformat_data(training_data,
-                                                                 FEATURES_TO_USE,
-                                                                 labels_dict=training_labels)
-
-        # If its the first chunk then you haven't trained a model yet and start from scratch
-        # otherwise resume from an already saved one
-        if chunk != 0:
-            trained_model = lstm_model.load_model()
-            lstm_model.train(training_data, training_labels, model=trained_model, verbose=VERBOSE)
-        else:
-            lstm_model.train(training_data, training_labels, verbose=VERBOSE)
-
-        lstm_model.save_model()
-
-        total_instances += instance_count
-        total_exercises += num_exercises
-
-        # Make the ending line of this batch, the starting point of the next batch
-        start_line = end_line
-
-    if use_last_batch:
-
-        if VERBOSE > 0:
-            print("Last batch")
-        # the last batch should contain more than the previous batches
-        # by setting the end_line to a number higher than the number of lines in the file
-        # the reader will read until the end of file and will exit
-        training_data, training_labels, end_line, instance_count, num_exercises = load_data(train_path,
-                                                                                            TRAINING_DATA_USE,
-                                                                                            start_from_line=start_line,
-                                                                                            end_line=MAX)
-
-        training_data, training_labels, train_id = reformat_data(training_data, FEATURES_TO_USE, labels_dict=training_labels)
-
-        total_instances += instance_count
-        total_exercises += num_exercises
-
-    if VERBOSE > 0:
-        print("total instances: {} total exercises: {} line: {}".format(total_instances, total_exercises, end_line))
-
-    predictions = lstm_model.predict(training_data, train_id)
-
-    write_predictions(predictions)
-
-
-def train_part_test_all():
-    """
-    Train with only one part of the data and test on all of the data
-    """
-
-    # The global variables partOfSpeech_dict, dependency_label_dict are dependent on the order you load the data
-    # so if you load the training and then the test these variables will contain stuff of features of the test
-    # and the features of the training will be lost
-
-    if MODEL == 'LSTM':
-        predictions = run_rnn()
-    else:
-        predictions = run_log_reg()
-
-    write_predictions(predictions)
-
-
-def run_rnn():
-    """
-    Train an LSTM model
-    NOTE: LSTM doesn't use all of the examples because they are not in training_data
-    """
-
-    training_data, training_labels, _, _, _ = load_data(train_path,
-                                                        TRAINING_DATA_USE)
-
-    training_data, training_labels, train_id = reformat_data(training_data, FEATURES_TO_USE, labels_dict=training_labels)
-
-    test_data = load_data(test_path,
-                          TRAINING_DATA_USE)
-
-    test_data, _, test_id = reformat_data(test_data,FEATURES_TO_USE)
-
-    x_train = training_data
-    labels_list = training_labels
-
-    print(training_data.shape, test_data.shape)
-
-    # 0 is nothing, 1 is progress bar and 2 is line per epoch
-    lstm1 = SimpleLSTM(net_architecture)
-    lstm1.train(x_train, labels_list, verbose=VERBOSE)
-
-    predictions = lstm1.predict(test_data, test_id)
-
-    return predictions
 
 
 def run_log_reg():
@@ -233,15 +69,13 @@ def run_log_reg():
     """
     epochs = 10
 
-    training_data, training_labels, _, _, _ = load_data(train_path,
-                                                        TRAINING_DATA_USE)
+    training_data, training_labels, _, _, _ = load_data(train_path, perc_data_use=TRAINING_DATA_USE)
 
     training_instances = [LogisticRegressionInstance(features=instance_data.to_features(),
                                                      label=training_labels[instance_data.instance_id],
                                                      name=instance_data.instance_id) for instance_data in training_data]
 
-    test_data = load_data(test_path,
-                          TRAINING_DATA_USE)
+    test_data = load_data(test_path)
 
     test_instances = [LogisticRegressionInstance(features=instance_data.to_features(),
                                                  label=None,
@@ -256,16 +90,70 @@ def run_log_reg():
     return predictions
 
 
-def write_predictions(predictions):
+class LogisticRegressionInstance(namedtuple('Instance', ['features', 'label', 'name'])):
     """
-    Write results to a file to evaluate them later
+    A named tuple for packaging together the instance features, label, and name.
     """
-    if os.path.isfile(pred_path):
-        print("Overwriting previous predictions!")
+    def __new__(cls, features, label, name):
+        if label:
+            if not isinstance(label, (int, float)):
+                raise TypeError('LogisticRegressionInstance label must be a number.')
+            label = float(label)
+        if not isinstance(features, dict):
+            raise TypeError('LogisticRegressionInstance features must be a dict.')
+        return super(LogisticRegressionInstance, cls).__new__(cls, features, label, name)
 
-    with open(pred_path, 'wt') as f:
-        for instance_id, prediction in iteritems(predictions):
-            f.write(instance_id + ' ' + str(prediction) + '\n')
+
+class LogisticRegression(object):
+    """
+    An L2-regularized logistic regression object trained using stochastic gradient descent.
+    """
+
+    def __init__(self, sigma=_DEFAULT_SIGMA, eta=_DEFAULT_ETA):
+        super(LogisticRegression, self).__init__()
+        self.sigma = sigma  # L2 prior variance
+        self.eta = eta  # initial learning rate
+        self.weights = defaultdict(lambda: uniform(-1.0, 1.0)) # weights initialize to random numbers
+        self.fcounts = None # this forces smaller steps for things we've seen often before
+
+    def predict_instance(self, instance):
+        """
+        This computes the logistic function of the dot product of the instance features and the weights.
+        We truncate predictions at ~10^(-7) and ~1 - 10^(-7).
+        """
+        a = min(17., max(-17., sum([float(self.weights[k]) * instance.features[k] for k in instance.features])))
+        return 1. / (1. + math.exp(-a))
+
+    def error(self, instance):
+        return instance.label - self.predict_instance(instance)
+
+    def reset(self):
+        self.fcounts = defaultdict(int)
+
+    def training_update(self, instance):
+        if self.fcounts is None:
+            self.reset()
+        err = self.error(instance)
+        for k in instance.features:
+            rate = self.eta / math.sqrt(1 + self.fcounts[k])
+            # L2 regularization update
+            if k != 'bias':
+                self.weights[k] -= rate * self.weights[k] / self.sigma ** 2
+            # error update
+            self.weights[k] += rate * err * instance.features[k]
+            # increment feature count for learning rate
+            self.fcounts[k] += 1
+
+    def train(self, train_set, iterations=10):
+        for it in range(iterations):
+            print('Training iteration ' + str(it+1) + '/' + str(iterations) + '...')
+            shuffle(train_set)
+            for instance in train_set:
+                self.training_update(instance)
+        print('\n')
+
+    def predict_test_set(self, test_set):
+        return {instance.name: self.predict_instance(instance) for instance in test_set}
 
 
 if __name__ == '__main__':

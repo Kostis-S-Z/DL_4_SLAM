@@ -8,7 +8,7 @@ from future.builtins import range
 from data import InstanceData
 
 directory = str(Path.cwd().parent)  # Get the parent directory of the current working directory
-data_directory = directory + "/data.nosync"
+data_directory = directory + "/data"
 
 data_en_es = data_directory + "/data_en_es"
 

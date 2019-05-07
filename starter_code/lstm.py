@@ -26,7 +26,7 @@ VERBOSE = 2# 0, 1 or 2. The more verbose, the more print statements
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 TRAINING_PERC = 0.1  # Control how much (%) of the training data to actually use for training
-TEST_PERC = 0.1
+TEST_PERC = 1.
 
 FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'token']
 # , 'part_of_speech', 'dependency_label']
@@ -44,8 +44,8 @@ net_architecture = {
 model_params = {
     "batch_size": 100,  # number of samples in a batch
     "lr": 0.01,  # learning rate
-    "epochs": 1,  # number of epochs
-    "time_steps": 5  # how many time steps to look back to
+    "epochs": 20,  # number of epochs
+    "time_steps": 50  # how many time steps to look back to
 }
 
 
@@ -67,9 +67,9 @@ def run_lstm():
     The chunks are split evenly, except the last one. The last one will contain a bit more.
     e.g when split 15% the last batch will contain ~200.000 exercises where as the others ~125.000
     """
-    # num_chunks = int(1 / TRAINING_PERC)
-    num_chunks = 2  # DEBUG: use if you want to test a really small part of the data
-    use_last_batch = False  # By using last batch you load all the remaining training data
+    num_chunks = int(1 / TRAINING_PERC)
+    #num_chunks = 2  # DEBUG: use if you want to test a really small part of the data
+    use_last_batch = True # False  # By using last batch you load all the remaining training data
 
     start_line = 0
     total_instances = 0
@@ -292,6 +292,8 @@ class SimpleLSTM:
 
         data_new = np.zeros((n ,t, m))
         for i in range(len(data_x) - self.time_steps + 1):
+            #if VERBOSE > 1 and i % 100 == 0:
+            #    print("Build for batch", int(i/100), "out of", (len(data_x) - self.time_steps + 1)/100)
             data_new[i,:,:] = data_x[i:i + self.time_steps]
 
 

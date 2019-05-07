@@ -51,7 +51,7 @@ def get_paths():
     else:
         delim = "/"
 
-    data_directory = directory + delim + "data.nosync"
+    data_directory = directory + delim + "data"
     data_en_es = data_directory + delim + "data_en_es"
     data_en_es_train = data_en_es + delim + "en_es.slam.20190204.train"
     data_en_es_test = data_en_es + delim + "en_es.slam.20190204.dev"

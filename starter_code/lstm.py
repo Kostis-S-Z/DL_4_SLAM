@@ -26,7 +26,7 @@ VERBOSE = 2  # 0, 1 or 2. The more verbose, the more print statements
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 TRAINING_PERC = 0.05  # Control how much (%) of the training data to actually use for training
-TEST_PERC = 1.
+TEST_PERC = 0.1
 
 FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'token']
 # , 'part_of_speech', 'dependency_label']
@@ -67,9 +67,9 @@ def run_lstm():
     The chunks are split evenly, except the last one. The last one will contain a bit more.
     e.g when split 15% the last batch will contain ~200.000 exercises where as the others ~125.000
     """
-    num_chunks = int(1 / TRAINING_PERC)
-    # num_chunks = 2  # DEBUG: use if you want to test a really small part of the data
-    use_last_batch = True  # False  # By using last batch you load all the remaining training data
+    # num_chunks = int(1 / TRAINING_PERC)
+    num_chunks = 1  # DEBUG: use if you want to test a really small part of the data
+    use_last_batch = False  # False  # By using last batch you load all the remaining training data
 
     start_line = 0
     total_instances = 0
@@ -263,7 +263,7 @@ class SimpleLSTM:
         Ofcourse, it is useful if the model is trained before making predictions.
         """
         # Format the data in our way
-        test_data = self.data_in_time(test_data)
+        test_data = data_in_time(self.time_steps, test_data)
         # Make predictions
         pred_labels = self.model.predict(test_data)
 

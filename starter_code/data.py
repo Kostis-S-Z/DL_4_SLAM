@@ -264,6 +264,8 @@ class InstanceData(object):
         to_return['token:' + self.token.lower()] = 1.0
         to_return['part_of_speech:' + self.part_of_speech] = 1.0
         to_return['dependency_label:' + self.dependency_label] = 1.0
+        to_return['time'] = self.time
+        to_return['days'] = self.days
 
         # for morphological_feature in self.morphological_features:
         #     to_return['morphological_feature:' + morphological_feature] = 1.0

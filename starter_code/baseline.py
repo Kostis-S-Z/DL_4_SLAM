@@ -40,7 +40,9 @@ VERBOSE = 2  # 0, 1 or 2. The more verbose, the more print statements
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
+
 TRAINING_PERC = 0.00001  # Control how much (%) of the training data to actually use for training
+
 EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
 

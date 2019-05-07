@@ -1,6 +1,8 @@
 import numpy as np
 import pickle
 import os
+from sklearn.preprocessing import StandardScaler
+
 from data import VERBOSE
 
 
@@ -29,22 +31,19 @@ def reformat_data(data, features_to_use, labels_dict=None):
     return data_vectors, labels, id_list
 
 
-def one_hot_encode(data, feature_index_dict, n_features, features_to_use):
-    """
-    !!!WE ARE MISSING OUT A LOT OF TRAINING INSTANCES BECAUSE THEY ARE NOT INCLUDED IN training_data!!!
-    print("amount of training instances:", len(training_data))
-    """
+def one_hot_encode(training_data, feature_index_dict, n_features, features_to_use):
+    one_hot_vec = np.zeros((len(training_data), n_features + 2))
+    #print("n_features", n_features)
 
-    one_hot_vec = np.zeros((len(data), n_features))
-    # print("n_features", n_features)
-
-    # for all data examples compute one hot encoding
-    for i, a_sample in enumerate(data):
-        for a_feature in a_sample.keys():
-            feature_attribute, feature_value = a_feature.split(":", 1)
+    # for all training examples compute one hot encoding
+    for i, training_example in enumerate(training_data):
+        for train_feature in training_example.keys():
+            if train_feature == 'time' or train_feature == 'days':
+                continue
+            feature_attribute, feature_value = train_feature.split(":", 1)
             # ignore feature_attributes that are not relevant because not in 'features_to_use list'
             if feature_attribute not in features_to_use:
-                # print('ignore', feature_attribute)
+                #print('ignore', feature_attribute)
                 continue
             # uncommon features_values of feature_attribute 'token' are ignored
             if feature_value not in feature_index_dict[feature_attribute][1]:
@@ -54,6 +53,12 @@ def one_hot_encode(data, feature_index_dict, n_features, features_to_use):
             index_value = feature_index_dict[feature_attribute][1][feature_value]
             index = index_attribute + index_value
             one_hot_vec[i, index] = 1
+        one_hot_vec[i, -1] = training_example['time']
+        one_hot_vec[i, -2] = training_example['days']
+
+    scaler = StandardScaler()
+    scaler.fit(one_hot_vec)
+    one_hot_vec = scaler.transform(one_hot_vec)
 
     return one_hot_vec
 

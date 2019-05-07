@@ -11,7 +11,7 @@ from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed
 # Data evaluation functions
 import data
 from data import get_paths, load_data, write_predictions
-from preprocess_data import reformat_data
+from preprocess_data import reformat_data, data_in_time
 from eval import evaluate
 
 get_paths()
@@ -21,11 +21,11 @@ test_path = data.test_path
 key_path = data.key_path
 pred_path = data.pred_path
 
-VERBOSE = 2# 0, 1 or 2. The more verbose, the more print statements
+VERBOSE = 2  # 0, 1 or 2. The more verbose, the more print statements
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
-TRAINING_PERC = 0.1  # Control how much (%) of the training data to actually use for training
+TRAINING_PERC = 0.05  # Control how much (%) of the training data to actually use for training
 TEST_PERC = 1.
 
 FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'token']
@@ -37,7 +37,7 @@ MODEL_ID = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + ":" + str
 
 # Define the number of nodes in each layer, the last one is the output
 net_architecture = {
-    0: 256,
+    0: 128,
     1: 1
 }
 
@@ -68,8 +68,8 @@ def run_lstm():
     e.g when split 15% the last batch will contain ~200.000 exercises where as the others ~125.000
     """
     num_chunks = int(1 / TRAINING_PERC)
-    #num_chunks = 2  # DEBUG: use if you want to test a really small part of the data
-    use_last_batch = True # False  # By using last batch you load all the remaining training data
+    # num_chunks = 2  # DEBUG: use if you want to test a really small part of the data
+    use_last_batch = True  # False  # By using last batch you load all the remaining training data
 
     start_line = 0
     total_instances = 0
@@ -96,6 +96,8 @@ def run_lstm():
             trained_model = lstm_model.load_model()
         else:
             trained_model = None
+
+        training_data, training_labels = data_in_time(model_params["time_steps"], training_data, training_labels)
 
         lstm_model.train(training_data, training_labels, model=trained_model)
         lstm_model.save_model()
@@ -235,10 +237,7 @@ class SimpleLSTM:
         shape y_train = (n, )
         """
         y_train = np.array(y_train)
-        x_train, y_train = self.data_in_time(x_train, y_train)
-        # TODO: change these
-        x_val = x_train
-        y_val = y_train
+
         self.input_shape = x_train.shape[2]
         if model is None:
             model = self.init_model()
@@ -250,7 +249,6 @@ class SimpleLSTM:
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
         # Fit the training data to the model
         model.fit(x_train, y_train,
-                  validation_data=(x_val, y_val),
                   shuffle=False,
                   epochs=self.epochs,
                   batch_size=self.batch_size,
@@ -275,37 +273,6 @@ class SimpleLSTM:
             pred_dict[ids[i + self.time_steps]] = float(pred_labels[i])
 
         return pred_dict
-
-    def data_in_time(self, data_x, data_y=None):
-        # TODO: Comment these method analytically
-        # for dataset [x1, x2, x3, ..., xn]
-        # it computes matrix [ [x0, x1, x2, ..., xt], [x1, x2, x3, ..., xt+2], [x2, x3, x4, ..., xt+3], ..., [...] ]
-        # for every datasample we get the t preceding datasamples
-
-        print("start building data in time")
-
-        # n is amount of samples that have at least history of t
-        n = data_x.shape[0] - self.time_steps + 1
-        t = self.time_steps
-        # lenght of one hot encoding
-        m = data_x.shape[1]
-
-        data_new = np.zeros((n ,t, m))
-        for i in range(len(data_x) - self.time_steps + 1):
-            #if VERBOSE > 1 and i % 100 == 0:
-            #    print("Build for batch", int(i/100), "out of", (len(data_x) - self.time_steps + 1)/100)
-            data_new[i,:,:] = data_x[i:i + self.time_steps]
-
-
-        print("finished building data in time")
-
-
-        if data_y is not None:
-            data_y = data_y[self.time_steps - 1:len(data_y)]
-            return data_new, data_y
-        else:
-            return data_new
-
 
     def save_model(self):
         """

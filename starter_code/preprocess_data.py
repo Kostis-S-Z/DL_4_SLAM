@@ -6,6 +6,35 @@ from sklearn.preprocessing import StandardScaler
 from data import VERBOSE
 
 
+def data_in_time(time_steps, data_x, data_y=None):
+    # TODO: Comment these method analytically
+    # for dataset [x1, x2, x3, ..., xn]
+    # it computes matrix [ [x0, x1, x2, ..., xt], [x1, x2, x3, ..., xt+2], [x2, x3, x4, ..., xt+3], ..., [...] ]
+    # for every datasample we get the t preceding datasamples
+
+    print("start building data in time")
+
+    # n is amount of samples that have at least history of t
+    n = data_x.shape[0] - time_steps + 1
+    t = time_steps
+    # lenght of one hot encoding
+    m = data_x.shape[1]
+
+    data_new = np.zeros((n, t, m))
+    for i in range(len(data_x) - time_steps + 1):
+        # if VERBOSE > 1 and i % 100 == 0:
+        #    print("Build for batch", int(i/100), "out of", (len(data_x) - self.time_steps + 1)/100)
+        data_new[i, :, :] = data_x[i:i + time_steps]
+
+    print("finished building data in time")
+
+    if data_y is not None:
+        data_y = data_y[time_steps - 1:len(data_y)]
+        return data_new, data_y
+    else:
+        return data_new
+
+
 def reformat_data(data, features_to_use, labels_dict=None):
     """
     Use the features we want in our own format
@@ -59,15 +88,16 @@ def one_hot_encode(training_data, feature_index_dict, n_features, features_to_us
             try:
                 index_attribute = feature_index_dict[feature_attribute][0]
                 index_value = feature_index_dict[feature_attribute][1][feature_value]
-            except Exception: pass
+            except Exception:
+                continue
 
             index = index_attribute + index_value
 
             one_hot_vec[i, index] = 1
 
-    scaler = StandardScaler()
-    scaler.fit(one_hot_vec[:,-2:-1])
-    one_hot_vec[:,-2:-1] = scaler.transform(one_hot_vec[:,-2:-1])
+    # scaler = StandardScaler()
+    # scaler.fit(one_hot_vec[:,-2:-1])
+    # one_hot_vec[:,-2:-1] = scaler.transform(one_hot_vec[:,-2:-1])
 
     if VERBOSE > 1:
         print("finished one hot encoding")

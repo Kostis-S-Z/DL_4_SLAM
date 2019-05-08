@@ -11,7 +11,7 @@ from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed
 # Data evaluation functions
 import data
 from data import get_paths, load_data, write_predictions
-from preprocess_data import reformat_data, data_in_time
+from preprocess_data import preprocess, data_in_time
 from eval import evaluate
 
 get_paths()
@@ -21,15 +21,24 @@ test_path = data.test_path
 key_path = data.key_path
 pred_path = data.pred_path
 
-VERBOSE = 2  # 0, 1 or 2. The more verbose, the more print statements
+VERBOSE = 1  # 0 or 1
+KERAS_VERBOSE = 0  # 0 or 1
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
-TRAINING_PERC = 0.05  # Control how much (%) of the training data to actually use for training
+TRAINING_PERC = 0.001  # Control how much (%) of the training data to actually use for training
 TEST_PERC = 0.1
 
+# FEATURES_TO_USE = ['user']  # 2595
+# FEATURES_TO_USE = ['countries']  # 66
+# FEATURES_TO_USE = ['client']  # 5
+# FEATURES_TO_USE = ['session']  # 5
+# FEATURES_TO_USE = ['format']  # 5
+# FEATURES_TO_USE = ['token']  # 2228
+
 FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'token']
-# , 'part_of_speech', 'dependency_label']
+THRESHOLD_OF_OCC = 1000
+
 
 # Model parameters
 now = datetime.datetime.now()
@@ -44,8 +53,8 @@ net_architecture = {
 model_params = {
     "batch_size": 100,  # number of samples in a batch
     "lr": 0.01,  # learning rate
-    "epochs": 20,  # number of epochs
-    "time_steps": 50  # how many time steps to look back to
+    "epochs": 2,  # number of epochs
+    "time_steps": 20  # how many time steps to look back to
 }
 
 
@@ -68,27 +77,36 @@ def run_lstm():
     e.g when split 15% the last batch will contain ~200.000 exercises where as the others ~125.000
     """
     # num_chunks = int(1 / TRAINING_PERC)
-    num_chunks = 1  # DEBUG: use if you want to test a really small part of the data
-    use_last_batch = False  # False  # By using last batch you load all the remaining training data
+    num_chunks = 2  # DEBUG: use if you want to test a really small part of the data
 
     start_line = 0
     total_instances = 0
     total_exercises = 0
 
-    lstm_model = SimpleLSTM(net_architecture, verbose=VERBOSE, **model_params)
+    lstm_model = SimpleLSTM(net_architecture, **model_params)
 
     for chunk in range(num_chunks - 1):
-        if VERBOSE > 0:
-            print("-- Training with chunk {}--".format(chunk + 1))
+        # If in the last chunk, use all of the data left
+        if chunk != num_chunks - 1:
+            end_line = 0
+        else:
+            end_line = MAX  # the reader will read until the end of file and will exit
 
-        # Start loading data from the last point
         training_data, training_labels, end_line, num_instance, num_exercises = load_data(train_path,
                                                                                           perc_data_use=TRAINING_PERC,
-                                                                                          start_from_line=start_line)
+                                                                                          start_from_line=start_line,
+                                                                                          end_line=end_line)
 
-        training_data, training_labels, train_id = reformat_data(training_data,
-                                                                 FEATURES_TO_USE,
-                                                                 labels_dict=training_labels)
+        training_data, training_labels, train_id = preprocess(model_params["time_steps"],
+                                                              training_data,
+                                                              FEATURES_TO_USE,
+                                                              THRESHOLD_OF_OCC,
+                                                              labels_dict=training_labels)
+
+        if VERBOSE > 0:
+            print("-- Training chunk {} / {} for {} instances, {} timesteps and "
+                  "{} features--".format(chunk + 1, num_chunks - 1, training_data.shape[0],
+                                         training_data.shape[1], training_data.shape[2]))
 
         # If its the first chunk then you haven't trained a model yet and start from scratch
         # otherwise resume from an already saved one
@@ -97,49 +115,21 @@ def run_lstm():
         else:
             trained_model = None
 
-        training_data, training_labels = data_in_time(model_params["time_steps"], training_data, training_labels)
-
         lstm_model.train(training_data, training_labels, model=trained_model)
         lstm_model.save_model()
-
-        total_instances += num_instance
-        total_exercises += num_exercises
 
         # Make the ending line of this batch, the starting point of the next batch
         start_line = end_line
-
-    if use_last_batch:
-
-        if VERBOSE > 0:
-            print("Last batch")
-        # the last batch should contain more than the previous batches
-        # by setting the end_line to a number higher than the number of lines in the file
-        # the reader will read until the end of file and will exit
-        training_data, training_labels, end_line, num_instance, num_exercises = load_data(train_path,
-                                                                                          perc_data_use=TRAINING_PERC,
-                                                                                          start_from_line=start_line,
-                                                                                          end_line=MAX)
-
-        training_data, training_labels, train_id = reformat_data(training_data,
-                                                                 FEATURES_TO_USE,
-                                                                 labels_dict=training_labels)
-
-        trained_model = lstm_model.load_model()
-        lstm_model.train(training_data, training_labels, model=trained_model)
-        lstm_model.save_model()
-
-        total_instances += num_instance
+        total_instances += num_instance - model_params["time_steps"] + 1
         total_exercises += num_exercises
 
     if VERBOSE > 1:
-        print("total instances: {} total exercises: {}".format(total_instances, total_exercises))
-
-    if VERBOSE > 0:
+        print("total trained instances: {} total exercises: {}".format(total_instances, total_exercises))
         print("\n-- Testing --\n")
 
     test_data = load_data(test_path, perc_data_use=TEST_PERC)  # Load the test dataset
 
-    test_data, _, test_id = reformat_data(test_data, FEATURES_TO_USE)
+    test_data, _, test_id = preprocess(test_data, FEATURES_TO_USE, THRESHOLD_OF_OCC)
 
     predictions = lstm_model.predict(test_data, test_id)
 
@@ -163,7 +153,7 @@ def write_results(results):
 
 class SimpleLSTM:
 
-    def __init__(self, net_arch, verbose=0, **kwargs):
+    def __init__(self, net_arch, **kwargs):
         """
         Initialize Neural Network with data and parameters
         """
@@ -178,7 +168,6 @@ class SimpleLSTM:
             setattr(self, var, kwargs.get(var, default))
 
         self.net_architecture = net_arch
-        self.verbose = verbose
         self.model = None
         self.input_shape = None
 
@@ -226,7 +215,7 @@ class SimpleLSTM:
         so we can even try without any activation in the output layer and compute BCE from the raw outputs
         """
 
-        if self.verbose > 0:
+        if KERAS_VERBOSE > 0:
             print(model.summary())
 
         return model
@@ -252,7 +241,7 @@ class SimpleLSTM:
                   shuffle=False,
                   epochs=self.epochs,
                   batch_size=self.batch_size,
-                  verbose=self.verbose)
+                  verbose=KERAS_VERBOSE)
 
         # save the model to a class variable for further use afterwards (only reading from this variable, no changing)
         self.model = model
@@ -262,8 +251,6 @@ class SimpleLSTM:
         make predictions for one-hot encoded feature vector X using the model.
         Ofcourse, it is useful if the model is trained before making predictions.
         """
-        # Format the data in our way
-        test_data = data_in_time(self.time_steps, test_data)
         # Make predictions
         pred_labels = self.model.predict(test_data)
 

@@ -11,7 +11,7 @@ from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed
 # Data evaluation functions
 import data
 from data import get_paths, load_data, write_predictions
-from preprocess_data import preprocess, data_in_time
+from preprocess_data import preprocess
 from eval import evaluate
 
 get_paths()
@@ -22,12 +22,12 @@ key_path = data.key_path
 pred_path = data.pred_path
 
 VERBOSE = 1  # 0 or 1
-KERAS_VERBOSE = 0  # 0 or 1
+KERAS_VERBOSE = 1  # 0 or 1
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 TRAINING_PERC = 0.001  # Control how much (%) of the training data to actually use for training
-TEST_PERC = 0.1
+TEST_PERC = 0.05
 
 # FEATURES_TO_USE = ['user']  # 2595
 # FEATURES_TO_USE = ['countries']  # 66
@@ -37,7 +37,7 @@ TEST_PERC = 0.1
 # FEATURES_TO_USE = ['token']  # 2228
 
 FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'token']
-THRESHOLD_OF_OCC = 1000
+THRESHOLD_OF_OCC = 150
 
 
 # Model parameters
@@ -53,8 +53,8 @@ net_architecture = {
 model_params = {
     "batch_size": 100,  # number of samples in a batch
     "lr": 0.01,  # learning rate
-    "epochs": 2,  # number of epochs
-    "time_steps": 20  # how many time steps to look back to
+    "epochs": 10,  # number of epochs
+    "time_steps": 50  # how many time steps to look back to
 }
 
 
@@ -76,8 +76,8 @@ def run_lstm():
     The chunks are split evenly, except the last one. The last one will contain a bit more.
     e.g when split 15% the last batch will contain ~200.000 exercises where as the others ~125.000
     """
-    # num_chunks = int(1 / TRAINING_PERC)
-    num_chunks = 2  # DEBUG: use if you want to test a really small part of the data
+    num_chunks = int(1 / TRAINING_PERC)
+    # num_chunks = 2  # DEBUG: use if you want to test a really small part of the data
 
     start_line = 0
     total_instances = 0
@@ -129,7 +129,7 @@ def run_lstm():
 
     test_data = load_data(test_path, perc_data_use=TEST_PERC)  # Load the test dataset
 
-    test_data, _, test_id = preprocess(test_data, FEATURES_TO_USE, THRESHOLD_OF_OCC)
+    test_data, _, test_id = preprocess(model_params["time_steps"], test_data, FEATURES_TO_USE, THRESHOLD_OF_OCC)
 
     predictions = lstm_model.predict(test_data, test_id)
 

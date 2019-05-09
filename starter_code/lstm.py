@@ -37,7 +37,7 @@ TEST_PERC = 0.05
 # FEATURES_TO_USE = ['token']  # 2228
 
 FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'token']
-THRESHOLD_OF_OCC = 150
+THRESHOLD_OF_OCC = 2000
 
 
 # Model parameters
@@ -56,6 +56,18 @@ model_params = {
     "epochs": 10,  # number of epochs
     "time_steps": 50  # how many time steps to look back to
 }
+
+# use word embedding
+
+# input to lstm only changing values
+
+# feed all the data to initialize the lstm
+
+# or feed the constant data inside the state of the lstm
+
+# train per user
+
+# compare word embedding / tf idf
 
 
 def main():

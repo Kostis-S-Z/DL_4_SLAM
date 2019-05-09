@@ -9,9 +9,7 @@ The model is L2-regularized logistic regression, trained with SGD weighted by fr
 
 2. Run count_features.py to count how many times each feature value appears
 
-3. Run preprocess_data.py to create a new data file with the preprocessed data
-
-4. Run lstm.py
+3. Run lstm.py
 
 ## Setup
 

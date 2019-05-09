@@ -2,6 +2,7 @@ import os
 from io import open
 from pathlib import Path
 import pickle as pickle
+import json
 
 from future.builtins import range
 
@@ -25,7 +26,7 @@ pred_path = en_es_predictions
 
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
-TRAINING_PERC = 0.05  # Control chunk size
+TRAINING_PERC = 0.1  # Control chunk size
 EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
@@ -34,6 +35,8 @@ VERBOSE = 2  # 0, 1 or 2. The more verbose, the more print statements
 
 # dictionaries of features for the one hot encoding
 n_attr_dicts = [{}, {}, {}, {}, {}, {}, {}, {}]
+all_features = ['user', 'countries', 'client', 'session', 'format', 'token', 'part_of_speech', 'dependency_label']
+#all_features = ['client', 'session', 'format', 'part_of_speech']
 
 
 def main():
@@ -53,7 +56,7 @@ def load_in_chunks():
 
     for chunk in range(num_chunks - 1):
         if VERBOSE > 0:
-            print("Training with chunk", chunk + 1)
+            print("Loading chunk", chunk + 1, "out of", num_chunks)
 
         # Start loading data from the last point
         training_data, training_labels, end_line, instance_count, num_exercises = load_data(train_path,
@@ -271,8 +274,25 @@ def save_feature_dict():
     #    json.dump(n_attr_dicts, fp)
 
     print("Saving feature dict...")
-    print("save n_attr_dicts", n_attr_dicts)
-    pickle.dump(n_attr_dicts, open("featureDicts.p", "wb"))
+    #print("save n_attr_dicts", n_attr_dicts)
+    #pickle.dump(n_attr_dicts, open("featureDicts.p", "wb"))
+
+    #with open('data.json', 'w') as fp:
+    #    json.dump(n_attr_dicts, fp)
+
+
+
+
+    print("values for:")
+    for i in range(len(n_attr_dicts)):
+        print(all_features[i], "has \t\t", len(n_attr_dicts[i]), "values")
+
+    with open('featureDicts.json', 'w') as fp:
+        fp.write(
+            '[' +
+            ',\n'.join(json.dumps(i) for i in n_attr_dicts) +
+            ']\n')
+
     print("saving finished ")
 
 

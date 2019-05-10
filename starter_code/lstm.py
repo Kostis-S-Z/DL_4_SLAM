@@ -200,11 +200,11 @@ class SimpleLSTM:
 
     def train(self, x_train, y_train, model=None):
         """
+        Train the LSTM model
         shape X_train = (n, one_hot_m)
         shape y_train = (n, )
         """
         y_train = np.array(y_train)
-
         self.input_shape = x_train.shape[2]
 
         if model is None:
@@ -213,11 +213,10 @@ class SimpleLSTM:
             print("Loading pre-existing model...")
             model = self.load_model()
 
-        # binary because we're doing binary classification (correct / incorrect)
+        # loss is binary_crossentropy because we're doing binary classification (correct / incorrect)
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-        # Fit the training data to the model
-        # Also use a part of the data for validation
+        # Fit the training data to the model and use a part of the data for validation
         model.fit(x_train, y_train, shuffle=False, epochs=self.epochs, validation_split=0.1,
                   batch_size=self.batch_size, verbose=KERAS_VERBOSE)
 
@@ -228,6 +227,8 @@ class SimpleLSTM:
         """
         make predictions for one-hot encoded feature vector X using the model.
         Ofcourse, it is useful if the model is trained before making predictions.
+        Predictions are returned in the form {wordId: prediction, .... , wordId: prediction} where predictions are
+        unrounded predictions: floats between 1 (incorrect) and 0 (correct)
         """
         # Make predictions
         pred_labels = self.model.predict(test_data)
@@ -235,6 +236,12 @@ class SimpleLSTM:
         # TODO: Comment the next 3 lines analytically
         pred_dict = {}
         for i in range(len(ids) - self.time_steps):
+            #It looks like the is sample i with a future, but it's actualy sample i+n_timesteps with a history.
+            # Because in the labels the first n_timesteps are being deleted. Kind of like this:
+            # x = [1,2,3,4,5] Labels: [a,b,c,d,e] t = 2 to all x's in index range(0,2) 2 is added
+            # (not 3 and 4 because they don't have 2 after them so x becomes [1-2-3, 2-3-4, 3-4-5]
+            # Now in the y's the first n_timesteps labels are deleted. So you get [c,d,e]
+            # This is exactly 3,4 and 5 with t previous time_steps and the labels of 3,4,5
             pred_dict[ids[i + self.time_steps]] = float(pred_labels[i])
 
         return pred_dict

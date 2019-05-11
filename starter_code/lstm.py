@@ -35,12 +35,12 @@ FEATURES_TO_USE = ['countries', 'client', 'session', 'format', 'token']
 THRESHOLD_OF_OCC = 2000
 
 # If you want to build a new data set with you features put preprocessed_data_id = ""
-# If you don't want to build new data and want to use existing preprocess, put their path here
-preprocessed_data_id = "9_5_18:0"
+# If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
+preprocessed_data_id = ""
 
 # Model parameters
 now = datetime.datetime.now()
-MODEL_ID = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + ":" + str(now.minute)
+MODEL_ID = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
 
 trained_model = None
 
@@ -217,6 +217,12 @@ class SimpleLSTM:
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
         # Fit the training data to the model and use a part of the data for validation
+        print("x_train: ", x_train.shape)
+        print("x train 0: ", x_train[0][0][0])
+        print("ÿ_train: ", y_train.shape)
+        print("y_train 0: ", y_train[0])
+        print("batch size: ", self.batch_size)
+        print("keras verbose: ", KERAS_VERBOSE)
         model.fit(x_train, y_train, shuffle=False, epochs=self.epochs, validation_split=0.1,
                   batch_size=self.batch_size, verbose=KERAS_VERBOSE)
 

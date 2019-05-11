@@ -31,7 +31,7 @@ def preprocess(time_steps, data, features_to_use, n_threshold, labels_dict=None)
 
     # Make a 3D matrix of sample x features x history
     if labels_dict is not None:
-        data_vectors, labels = data_in_time(time_steps, data_vectors, id_list, data_y=labels)
+        data_vectors, labels, id_list = data_in_time(time_steps, data_vectors, id_list, data_y=labels)
     else:
         data_vectors, id_list = data_in_time(time_steps, data_vectors, id_list)
 
@@ -59,16 +59,18 @@ def data_in_time(time_steps, data_x, id_list, data_y=None):
         # if VERBOSE > 1 and i % 100 == 0:
         #    print("Build for batch", int(i/100), "out of", (len(data_x) - self.time_steps + 1)/100)
         data_new[i, :, :] = data_x[i-time_steps:i]
-        # delete the first t elements of data_new, since they contain only zeros
+    # delete the first t elements of data_new, since they contain only zeros
     data_new = data_new[time_steps:,:,:]
+    # also then delete the first t elements from the id_list
     id_list = id_list[time_steps:]
 
     if VERBOSE > 1:
         print("finished building data in time")
 
     if data_y is not None:
-        data_y = data_y[time_steps - 1:]
-        return data_new, data_y,id_list
+        # and also delete the first t elements from y_data
+        data_y = data_y[time_steps:]
+        return data_new, data_y, id_list
     else:
         return data_new, id_list
 

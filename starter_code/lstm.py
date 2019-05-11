@@ -10,8 +10,8 @@ from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed
 
 # Data evaluation functions
 import data
-from data import get_paths, load_data, write_predictions
-from preprocess_data import reformat_data
+from data import get_paths, write_predictions
+from build_dataset import build_dataset
 from eval import evaluate
 
 get_paths()
@@ -21,35 +21,59 @@ test_path = data.test_path
 key_path = data.key_path
 pred_path = data.pred_path
 
-VERBOSE = 2# 0, 1 or 2. The more verbose, the more print statements
+VERBOSE = 1  # 0 or 1
+KERAS_VERBOSE = 1  # 0 or 1
 
-# Data parameters
-MAX = 10000000  # Placeholder value to work as an on/off if statement
-TRAINING_PERC = 0.1  # Control how much (%) of the training data to actually use for training
-TEST_PERC = 1.
+# FEATURES_TO_USE = ['user']  # 2595
+# FEATURES_TO_USE = ['countries']  # 66
+# FEATURES_TO_USE = ['client']  # 5
+# FEATURES_TO_USE = ['session']  # 5
+# FEATURES_TO_USE = ['format']  # 5
+# FEATURES_TO_USE = ['token']  # 2228
+# TODO if you input FEATURES_TO_USE in another order then suddenly the values of format become tokens....
+FEATURES_TO_USE = ['countries', 'client', 'session', 'format', 'token', ]
+THRESHOLD_OF_OCC = 2000
 
-FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'token']
-# , 'part_of_speech', 'dependency_label']
+# If you want to build a new data set with you features put preprocessed_data_id = ""
+# If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
+preprocessed_data_id = ""
 
 # Model parameters
 now = datetime.datetime.now()
-MODEL_ID = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + ":" + str(now.minute)
+MODEL_ID = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
+
+trained_model = None
 
 # Define the number of nodes in each layer, the last one is the output
 net_architecture = {
-    0: 256,
+    0: 128,
     1: 1
 }
 
 model_params = {
-    "batch_size": 100,  # number of samples in a batch
+    "batch_size": 64,  # number of samples in a batch
     "lr": 0.01,  # learning rate
-    "epochs": 20,  # number of epochs
-    "time_steps": 50  # how many time steps to look back to
+    "epochs": 10,  # number of epochs
+    "time_steps": 100  # how many time steps to look back to
 }
+
+# use word embedding
+
+# input to lstm only changing values
+
+# feed all the data to initialize the lstm
+
+# or feed the constant data inside the state of the lstm
+
+# train per user
+
+# compare word embedding / tf idf
 
 
 def main():
+    if not preprocessed_data_id:
+        build_dataset(MODEL_ID, train_path, test_path, model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC)
+
     predictions = run_lstm()
 
     write_predictions(predictions)
@@ -67,81 +91,46 @@ def run_lstm():
     The chunks are split evenly, except the last one. The last one will contain a bit more.
     e.g when split 15% the last batch will contain ~200.000 exercises where as the others ~125.000
     """
-    num_chunks = int(1 / TRAINING_PERC)
-    #num_chunks = 2  # DEBUG: use if you want to test a really small part of the data
-    use_last_batch = True # False  # By using last batch you load all the remaining training data
 
-    start_line = 0
-    total_instances = 0
-    total_exercises = 0
+    if not preprocessed_data_id:
+        data_id = MODEL_ID
+    else:
+        data_id = preprocessed_data_id
 
-    lstm_model = SimpleLSTM(net_architecture, verbose=VERBOSE, **model_params)
+    # Training
+    train_data = load_new_data(data_id, "train_data")
+    train_labels = load_new_data(data_id, "train_labels")
+    # train_id = load_new_data(data_id, "train_id")  # Do we need the training id?
+    lstm_model = SimpleLSTM(net_architecture, **model_params)
+    lstm_model.train(train_data, train_labels)
+    lstm_model.save_model()
 
-    for chunk in range(num_chunks - 1):
-        if VERBOSE > 0:
-            print("-- Training with chunk {}--".format(chunk + 1))
+    # Testing
 
-        # Start loading data from the last point
-        training_data, training_labels, end_line, num_instance, num_exercises = load_data(train_path,
-                                                                                          perc_data_use=TRAINING_PERC,
-                                                                                          start_from_line=start_line)
-
-        training_data, training_labels, train_id = reformat_data(training_data,
-                                                                 FEATURES_TO_USE,
-                                                                 labels_dict=training_labels)
-
-        # If its the first chunk then you haven't trained a model yet and start from scratch
-        # otherwise resume from an already saved one
-        if chunk != 0:
-            trained_model = lstm_model.load_model()
-        else:
-            trained_model = None
-
-        lstm_model.train(training_data, training_labels, model=trained_model)
-        lstm_model.save_model()
-
-        total_instances += num_instance
-        total_exercises += num_exercises
-
-        # Make the ending line of this batch, the starting point of the next batch
-        start_line = end_line
-
-    if use_last_batch:
-
-        if VERBOSE > 0:
-            print("Last batch")
-        # the last batch should contain more than the previous batches
-        # by setting the end_line to a number higher than the number of lines in the file
-        # the reader will read until the end of file and will exit
-        training_data, training_labels, end_line, num_instance, num_exercises = load_data(train_path,
-                                                                                          perc_data_use=TRAINING_PERC,
-                                                                                          start_from_line=start_line,
-                                                                                          end_line=MAX)
-
-        training_data, training_labels, train_id = reformat_data(training_data,
-                                                                 FEATURES_TO_USE,
-                                                                 labels_dict=training_labels)
-
-        trained_model = lstm_model.load_model()
-        lstm_model.train(training_data, training_labels, model=trained_model)
-        lstm_model.save_model()
-
-        total_instances += num_instance
-        total_exercises += num_exercises
-
-    if VERBOSE > 1:
-        print("total instances: {} total exercises: {}".format(total_instances, total_exercises))
-
-    if VERBOSE > 0:
-        print("\n-- Testing --\n")
-
-    test_data = load_data(test_path, perc_data_use=TEST_PERC)  # Load the test dataset
-
-    test_data, _, test_id = reformat_data(test_data, FEATURES_TO_USE)
+    test_data = load_new_data(data_id, "test_data")
+    # TODO: fix the ID thing being larger than the data
+    # if you fix it, there also needs to be a change in the code in the lstm.predict() function where the IDs are used
+    test_id = load_new_data(data_id, "test_id")
 
     predictions = lstm_model.predict(test_data, test_id)
 
     return predictions
+
+
+def load_new_data(data_id, data_type):
+
+    import pickle
+    with open("new_data/data_" + data_id + "/" + data_type + "_chunk_0", 'rb') as fr:
+        try:
+            data_chunk = pickle.load(fr)
+            if isinstance(data_chunk, (list,)):
+                print("Loaded {} with {} length".format(data_type, len(data_chunk)))
+            else:
+                print("Loaded {} with {} shape".format(data_type, data_chunk.shape))
+            return data_chunk
+        except IOError:
+            print("No such file")
+            exit()
 
 
 def write_results(results):
@@ -161,22 +150,21 @@ def write_results(results):
 
 class SimpleLSTM:
 
-    def __init__(self, net_arch, verbose=0, **kwargs):
+    def __init__(self, net_arch, **kwargs):
         """
         Initialize Neural Network with data and parameters
         """
         var_defaults = {
-            "batch_size": 10,  # number of samples in a batch
+            "batch_size": 64,  # number of samples in a batch
             "lr": 0.01,  # learning rate
             "epochs": 10,  # number of epochs
-            "time_steps": 5  # how many time steps to look back to
+            "time_steps": 50  # how many time steps to look back to
         }
 
         for var, default in var_defaults.items():
             setattr(self, var, kwargs.get(var, default))
 
         self.net_architecture = net_arch
-        self.verbose = verbose
         self.model = None
         self.input_shape = None
 
@@ -194,8 +182,6 @@ class SimpleLSTM:
         hidden_0 = self.net_architecture[0]
         # hidden_1 = self.net_architecture[1]
         # hidden_2 = self.net_architecture[2]
-        # hidden_3 = self.net_architecture[3]
-        # hidden_4 = self.net_architecture[4]
 
         output = self.net_architecture[1]
 
@@ -205,56 +191,40 @@ class SimpleLSTM:
         # model.add(LSTM(hidden_1, return_sequences=False))
         # model.add(LSTM(hidden_2, return_sequences=False))
 
-        # TODO: return sequence: true or false?
-        # TODO: Use BatchNormalization
-        # TODO: Use Dropout
-        # model.add(LSTM(hidden_1, return_sequences=True))
-        # model.add(LSTM(hidden_2, return_sequences=True))
-        # model.add(LSTM(hidden_3, return_sequences=True))
-        # model.add(LSTM(hidden_4, return_sequences=True))
-
         model.add(Dense(output, activation='sigmoid'))
-        """
-        About BCE + sigmoid:
-        As the loss function is central to learning, this means that a model employing last-layer sigmoid + BCE cannot 
-        discriminate among samples whose predicted class is either in extreme 
-        accordance or extreme discordance with their labels.
-        https://towardsdatascience.com/sigmoid-activation-and-binary-crossentropy-a-less-than-perfect-match-b801e130e31
 
-        so we can even try without any activation in the output layer and compute BCE from the raw outputs
-        """
-
-        if self.verbose > 0:
+        if KERAS_VERBOSE > 0:
             print(model.summary())
 
         return model
 
     def train(self, x_train, y_train, model=None):
         """
+        Train the LSTM model
         shape X_train = (n, one_hot_m)
         shape y_train = (n, )
         """
         y_train = np.array(y_train)
-        x_train, y_train = self.data_in_time(x_train, y_train)
-        # TODO: change these
-        x_val = x_train
-        y_val = y_train
         self.input_shape = x_train.shape[2]
+
         if model is None:
             model = self.init_model()
         else:
             print("Loading pre-existing model...")
             model = self.load_model()
 
-        # binary because we're doing binary classification (correct / incorrect
+        # loss is binary_crossentropy because we're doing binary classification (correct / incorrect)
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-        # Fit the training data to the model
-        model.fit(x_train, y_train,
-                  validation_data=(x_val, y_val),
-                  shuffle=False,
-                  epochs=self.epochs,
-                  batch_size=self.batch_size,
-                  verbose=self.verbose)
+
+        # Fit the training data to the model and use a part of the data for validation
+        print("x_train: ", x_train.shape)
+        print("x train 0: ", x_train[0][0][0])
+        print("ÿ_train: ", y_train.shape)
+        print("y_train 0: ", y_train[0])
+        print("batch size: ", self.batch_size)
+        print("keras verbose: ", KERAS_VERBOSE)
+        model.fit(x_train, y_train, shuffle=False, epochs=self.epochs, validation_split=0.1,
+                  batch_size=self.batch_size, verbose=KERAS_VERBOSE)
 
         # save the model to a class variable for further use afterwards (only reading from this variable, no changing)
         self.model = model
@@ -263,49 +233,24 @@ class SimpleLSTM:
         """
         make predictions for one-hot encoded feature vector X using the model.
         Ofcourse, it is useful if the model is trained before making predictions.
+        Predictions are returned in the form {wordId: prediction, .... , wordId: prediction} where predictions are
+        unrounded predictions: floats between 1 (incorrect) and 0 (correct)
         """
-        # Format the data in our way
-        test_data = self.data_in_time(test_data)
         # Make predictions
         pred_labels = self.model.predict(test_data)
 
         # TODO: Comment the next 3 lines analytically
         pred_dict = {}
         for i in range(len(ids) - self.time_steps):
+            #It looks like the is sample i with a future, but it's actualy sample i+n_timesteps with a history.
+            # Because in the labels the first n_timesteps are being deleted. Kind of like this:
+            # x = [1,2,3,4,5] Labels: [a,b,c,d,e] t = 2 to all x's in index range(0,2) 2 is added
+            # (not 3 and 4 because they don't have 2 after them so x becomes [1-2-3, 2-3-4, 3-4-5]
+            # Now in the y's the first n_timesteps labels are deleted. So you get [c,d,e]
+            # This is exactly 3,4 and 5 with t previous time_steps and the labels of 3,4,5
             pred_dict[ids[i + self.time_steps]] = float(pred_labels[i])
 
         return pred_dict
-
-    def data_in_time(self, data_x, data_y=None):
-        # TODO: Comment these method analytically
-        # for dataset [x1, x2, x3, ..., xn]
-        # it computes matrix [ [x0, x1, x2, ..., xt], [x1, x2, x3, ..., xt+2], [x2, x3, x4, ..., xt+3], ..., [...] ]
-        # for every datasample we get the t preceding datasamples
-
-        print("start building data in time")
-
-        # n is amount of samples that have at least history of t
-        n = data_x.shape[0] - self.time_steps + 1
-        t = self.time_steps
-        # lenght of one hot encoding
-        m = data_x.shape[1]
-
-        data_new = np.zeros((n ,t, m))
-        for i in range(len(data_x) - self.time_steps + 1):
-            #if VERBOSE > 1 and i % 100 == 0:
-            #    print("Build for batch", int(i/100), "out of", (len(data_x) - self.time_steps + 1)/100)
-            data_new[i,:,:] = data_x[i:i + self.time_steps]
-
-
-        print("finished building data in time")
-
-
-        if data_y is not None:
-            data_y = data_y[self.time_steps - 1:len(data_y)]
-            return data_new, data_y
-        else:
-            return data_new
-
 
     def save_model(self):
         """

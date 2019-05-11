@@ -270,22 +270,10 @@ def save_feature_dict():
     saves feature dicts in file "featreDicts.p"
     """
 
-    # with open("featureDicts.json", "w") as fp:
-    #    json.dump(n_attr_dicts, fp)
-
     print("Saving feature dict...")
-    #print("save n_attr_dicts", n_attr_dicts)
-    #pickle.dump(n_attr_dicts, open("featureDicts.p", "wb"))
-
-    #with open('data.json', 'w') as fp:
-    #    json.dump(n_attr_dicts, fp)
-
-
-
-
     print("values for:")
     for i in range(len(n_attr_dicts)):
-        print(all_features[i], "has \t\t", len(n_attr_dicts[i]), "values")
+        print(all_features[i], "has", len(n_attr_dicts[i]), "values")
 
     with open('featureDicts.json', 'w') as fp:
         fp.write(

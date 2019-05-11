@@ -1,5 +1,6 @@
 import numpy as np
 import pickle
+import json
 import os
 import math
 
@@ -132,6 +133,7 @@ def one_hot_encode(training_data, feature_index_dict, n_features, features_to_us
                 else:
                     not_embedded.append(feature_value)
             elif feature_attribute == 'user':
+                pass
 
 
 
@@ -185,7 +187,8 @@ def build_feature_dict(features_to_use, n_threshold):
             # update amount of different features seen until now
             n_features += EMBED_LENGTH
         elif current_feature == 'user':
-            feature_dict['user'] = (n_features, ....)
+            pass
+            #feature_dict['user'] = (n_features, ....)
             # binary encoding needs this many spaces reserved: round_up(2_log(number_of_things_to_encode))
             n_features += math.ceil(len(index_dict))
         else:
@@ -207,12 +210,14 @@ def load_feature_dict(features_to_use):
     """
 
     # assume the necessary file exists
-    assert os.path.isfile("featureDicts.p")
+    assert os.path.isfile("featureDicts.json")
     if VERBOSE > 1:
         print("loading feature dicts...")
     all_categorical_features = ['user', 'countries', 'client', 'session', 'format', 'token', 'part_of_speech',
                                 'dependency_label']
-    featureDicts = pickle.load(open("featureDicts.p", "rb"))
+    featureDicts = json.load(open("featureDicts.json", "rb"))
+
+    print(featureDicts)
 
     new_n_attr_dicts = []
     for i, attribute in enumerate(all_categorical_features):

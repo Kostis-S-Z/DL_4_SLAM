@@ -14,8 +14,8 @@ VERBOSE = 2
 def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, n_threshold):
 
     path_to_save = "new_data/data_" + model_id + "/"
-
-    os.makedirs(path_to_save)
+    if not os.path.exists(path_to_save):
+        os.makedirs(path_to_save)
 
     # Build train data
     build_data("train", train_path, path_to_save, time_steps, features_to_use, n_threshold, TRAINING_PERC)

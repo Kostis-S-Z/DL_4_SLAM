@@ -35,6 +35,7 @@ KERAS_VERBOSE = 1  # 0 or 1
 # FEATURES_TO_USE = ['days']  #
 # FEATURES_TO_USE = ['token']  # 2226
 # TODO if you input FEATURES_TO_USE in another order then suddenly the values of format become tokens....
+
 FEATURES_TO_USE = ['countries', 'client', 'session', 'format', 'token']
 THRESHOLD_OF_OCC = 0
 

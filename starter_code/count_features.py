@@ -122,13 +122,6 @@ def load_data(filename, train_data_use, start_from_line=0, end_line=0):
         # Total number of lines 971.852
         num_lines = 0
         for line in f:
-            """
-            DO NOT LIMIT THIS NUMBER OF LINES TO ONLY 12. THIS IS ONLY FOR DEBUGGING PURPOSES
-            This gives slightly less than 12 samples - the first lines are comments and the first line of an
-            exercise describes the exercise
-            if num_lines > NUM_LINES_LIM:
-                break
-            """
 
             # The line counter starts from 1
             num_lines += 1

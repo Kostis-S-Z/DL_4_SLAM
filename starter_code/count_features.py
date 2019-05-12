@@ -36,7 +36,7 @@ VERBOSE = 2  # 0, 1 or 2. The more verbose, the more print statements
 # dictionaries of features for the one hot encoding
 n_attr_dicts = [{}, {}, {}, {}, {}, {}, {}, {}]
 all_features = ['user', 'countries', 'client', 'session', 'format', 'token', 'part_of_speech', 'dependency_label']
-#all_features = ['client', 'session', 'format', 'part_of_speech']
+# all_features = ['client', 'session', 'format', 'part_of_speech']
 
 
 def main():
@@ -68,7 +68,6 @@ def load_in_chunks():
 
         # Make the ending line of this batch, the starting point of the next batch
         start_line = end_line
-        print(n_attr_dicts)
 
     if VERBOSE > 0:
         print("Last batch")
@@ -267,7 +266,7 @@ def load_data(filename, train_data_use, start_from_line=0, end_line=0):
 
 def save_feature_dict():
     """
-    saves feature dicts in file "featreDicts.p"
+    saves feature dicts in file "feature_dicts.p"
     """
 
     print("Saving feature dict...")
@@ -275,7 +274,7 @@ def save_feature_dict():
     for i in range(len(n_attr_dicts)):
         print(all_features[i], "has", len(n_attr_dicts[i]), "values")
 
-    with open('featureDicts.json', 'w') as fp:
+    with open('feature_dicts.json', 'w') as fp:
         fp.write(
             '[' +
             ',\n'.join(json.dumps(i) for i in n_attr_dicts) +
@@ -290,16 +289,17 @@ def load_feature_dict(features_to_use):
     """
 
     # assume the necessary file exists
-    assert os.path.isfile("featureDicts.p")
+    assert os.path.isfile("feature_dicts.json")
     print("loading feature dicts...")
     all_categorical_features = ['user', 'countries', 'client', 'session', 'format', 'token', 'part_of_speech',
                                 'dependency_label']
-    featureDicts = pickle.load(open("featureDicts.p", "rb"))
+
+    feature_dicts = json.load(open("feature_dicts.json", "r"))
 
     new_n_attr_dicts = []
     for i, attribute in enumerate(all_categorical_features):
         if attribute in features_to_use:
-            new_n_attr_dicts.append(featureDicts[i])
+            new_n_attr_dicts.append(feature_dicts[i])
 
     print("loading finished")
 

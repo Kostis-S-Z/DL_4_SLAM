@@ -31,6 +31,8 @@ KERAS_VERBOSE = 1  # 0 or 1
 # FEATURES_TO_USE = ['client']  # 3
 # FEATURES_TO_USE = ['session']  # 3
 # FEATURES_TO_USE = ['format']  # 3
+# FEATURES_TO_USE = ['hour']  #
+# FEATURES_TO_USE = ['days']  #
 # FEATURES_TO_USE = ['token']  # 2226
 # TODO if you input FEATURES_TO_USE in another order then suddenly the values of format become tokens....
 FEATURES_TO_USE = ['countries', 'client', 'session', 'format', 'token']
@@ -38,7 +40,7 @@ THRESHOLD_OF_OCC = 0
 
 # If you want to build a new data set with you features put preprocessed_data_id = ""
 # If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
-use_pre_processed_data = True
+use_pre_processed_data = False
 preprocessed_data_id = "12_5_2.27"  # "11_5_21.15"
 
 # Model parameters
@@ -62,18 +64,6 @@ model_params = {
     "epochs": 10,  # number of epochs
     "time_steps": 100  # how many time steps to look back to
 }
-
-# use word embedding
-
-# input to lstm only changing values
-
-# feed all the data to initialize the lstm
-
-# or feed the constant data inside the state of the lstm
-
-# train per user
-
-# compare word embedding / tf idf
 
 
 def main():
@@ -209,6 +199,7 @@ class SimpleLSTM:
 
         model = Sequential()
 
+        # return sequencxes should be false
         model.add(LSTM(hidden_0, return_sequences=False, input_shape=(self.time_steps, self.input_shape)))
         # model.add(LSTM(hidden_1, return_sequences=False))
         # model.add(LSTM(hidden_2, return_sequences=False))

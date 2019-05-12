@@ -121,15 +121,15 @@ def info(feature_dict_demo):
 
     # The size of users is just one integer (float)
     users = feature_dict_demo.pop('users', None)
-    number_of_features += 1
+    number_of_features += 1  # TODO THIS IS ALSO BINARY LENGTH
 
     # The size of countries can also be one integer (float
     countries = feature_dict_demo.pop('countries', None)
-    number_of_features += 1
+    number_of_features += 1  # TODO THIS IS ALSO BINARY LENGTH
 
     # The size of days and hours is just one float each
     days = feature_dict_demo.pop('days', None)
-    hours = feature_dict_demo.pop('hours', None)
+    hours = feature_dict_demo.pop('hours', None)  # CHANGE HOURS TO THE CORRECT NAME
     number_of_features += 2
 
     # The rest will be one hot encoding

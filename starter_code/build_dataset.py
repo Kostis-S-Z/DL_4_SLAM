@@ -8,8 +8,8 @@ from preprocess_data import preprocess
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
-TRAINING_PERC = 0.01  # Control how much (%) of the training data to actually use for training
-TEST_PERC = 0.01
+TRAINING_PERC = 0.05  # Control how much (%) of the training data to actually use for training
+TEST_PERC = 0.1
 
 # vector length of the word embedding of the token
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
@@ -17,14 +17,12 @@ EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length fil
 
 def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, n_threshold, verbose=False):
 
-    path_to_save = "new_data/data_" + model_id + "/"
+    path_to_save = "proc_data/data_" + model_id + "/"
     if not os.path.exists(path_to_save):
         os.makedirs(path_to_save)
 
     # Dictionary of features containing only the features that we want to use
     feature_dict, n_features = build_feature_dict(features_to_use, n_threshold, verbose)
-
-    # n_features and number_of_features should be the same
 
     # Build train data
     build_data("train", train_path, path_to_save, time_steps, feature_dict, n_features, TRAINING_PERC, verbose)
@@ -39,17 +37,15 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
     preprocess them depending on time_steps, features_to_use, n_threshold
     and saves them in the directory path_to_save
     """
-    # TODO: change this
-    # Instead of saving chunks, maybe we should append to a file <- This needs testing that it works if you do it
 
-    # num_chunks = int(1 / percentage_use)
-    num_chunks = 2  # DEBUG: use if you want to test a really small part of the data
+    num_chunks = int(1 / percentage_use)
+    # num_chunks = 2  # DEBUG: use if you want to test a really small part of the data
 
     start_line = 0
     total_samples = 0
 
     # Choose type of data and shape
-    n = 2500000  # 2.500.000 instances
+    n = 2622957  # 2.622.957 instances
     t = time_steps  # time steps to look back to
     m = n_features  # actual length of sample vector!
     data_type = np.dtype('float64')
@@ -69,7 +65,7 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
 
     for chunk in range(num_chunks - 1):
         # If in the last chunk, use all of the data left
-        print("\n--Loading {} chunk {} out of {}-- \n".format(phase_type, chunk + 1, num_chunks))
+        print("\n--Loading {} chunk {} out of {}-- \n".format(phase_type, chunk + 1, num_chunks - 1))
 
         if chunk != num_chunks - 1:
             end_line = 0
@@ -144,16 +140,20 @@ def build_feature_dict(features_to_use, n_threshold, verbose):
             # update amount of different features seen until now
             n_features += EMBED_LENGTH
         elif current_feature == 'user':
-            # feature_dict['user'] = (n_features, ....)
             # binary encoding needs this many spaces reserved: round_up(2_log(number_of_things_to_encode))
             number_of_users = len(n_attr_dict)
-            user_vector_length = max(math.ceil(math.log(number_of_users)), 1)
+            user_vector_length = max(math.ceil(math.log(number_of_users, 2)), 1)
+
+            feature_dict['user'] = (user_vector_length, n_attr_dict)
             n_features += user_vector_length
+
         elif current_feature == 'countries':
             # binary encoding needs this many spaces reserved: round_up(2_log(number_of_things_to_encode))
             number_of_countries = len(n_attr_dict)
-            user_vector_length = max(math.ceil(math.log(number_of_countries)), 1)
-            n_features += user_vector_length
+            countries_vector_length = max(math.ceil(math.log(number_of_countries, 2)), 1)
+
+            feature_dict['countries'] = (countries_vector_length, n_attr_dict)
+            n_features += countries_vector_length
         else:
             # convert feature-count-dict to feature-index-dict
             index_dict = convert_to_index_dict(n_attr_dict, n_threshold)

@@ -10,7 +10,7 @@ from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed
 
 # Data evaluation functions
 import data
-from data import get_paths, write_predictions
+from data import get_paths, write_predictions, EN_ES_NUM_TRAIN_EX, EN_ES_NUM_TEST_EX
 from build_dataset import build_dataset
 from eval import evaluate
 
@@ -22,8 +22,6 @@ key_path = data.key_path
 pred_path = data.pred_path
 
 VERBOSE = 1  # 0 or 1
-BUILDING_VERBOSE = 0
-PREPROCESSING_VERBOSE = 0
 KERAS_VERBOSE = 1  # 0 or 1
 
 # FEATURES_TO_USE = ['user']  # 2593
@@ -31,24 +29,24 @@ KERAS_VERBOSE = 1  # 0 or 1
 # FEATURES_TO_USE = ['client']  # 3
 # FEATURES_TO_USE = ['session']  # 3
 # FEATURES_TO_USE = ['format']  # 3
-# FEATURES_TO_USE = ['hour']  #
+# FEATURES_TO_USE = ['time']  #
 # FEATURES_TO_USE = ['days']  #
 # FEATURES_TO_USE = ['token']  # 2226
 # TODO if you input FEATURES_TO_USE in another order then suddenly the values of format become tokens....
 
-FEATURES_TO_USE = ['countries', 'client', 'session', 'format', 'token']
+FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'token', 'time', 'days']
 THRESHOLD_OF_OCC = 0
 
 # If you want to build a new data set with you features put preprocessed_data_id = ""
 # If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
 use_pre_processed_data = False
-preprocessed_data_id = "12_5_2.27"  # "11_5_21.15"
+preprocessed_data_id = "12_5_20.29"  # "11_5_21.15"
 
 # Model parameters
 
-# Use pretrained model
+# Use pre trained model
 use_pre_trained_model = False
-PRE_TRAINED_MODEL_ID = "11_5_21.17"
+PRE_TRAINED_MODEL_ID = "12_5_20.34"
 
 now = datetime.datetime.now()
 MODEL_ID = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
@@ -74,7 +72,7 @@ def main():
     else:
         data_id = MODEL_ID
         build_dataset(MODEL_ID, train_path, test_path,
-                      model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC, verbose=BUILDING_VERBOSE)
+                      model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC)
 
     predictions = run_lstm(data_id)
 
@@ -93,18 +91,29 @@ def run_lstm(data_id):
     The chunks are split evenly, except the last one. The last one will contain a bit more.
     e.g when split 15% the last batch will contain ~200.000 exercises where as the others ~125.000
     """
-    num_chunks = 1
+    training_percentage_chunk = 0.05  # USE 0.008 WHEN NOT IN GCP
+    training_size_chunk = training_percentage_chunk * EN_ES_NUM_TRAIN_EX
+
+    test_percentage_chunk = 0.1  # USE 0.05 WHEN NOT IN GCP
+    test_size_chunk = test_percentage_chunk * EN_ES_NUM_TEST_EX
 
     lstm_model = SimpleLSTM(net_architecture, **model_params)
 
     if use_pre_trained_model:
         # Load pre trained model
+        print("Using pre trained model!")
         lstm_model.model = lstm_model.load_model(PRE_TRAINED_MODEL_ID)
     else:
         # Train as normal
-        for chunk in range(num_chunks):
+        start = 0
+        end = training_size_chunk
 
-            train_data, train_labels = load_preprocessed_data(data_id, "train")
+        # num_train_chunks = int(1./training_percentage_chunk)
+        num_train_chunks = 1
+
+        for chunk in range(num_train_chunks):
+
+            train_data, train_labels = load_preprocessed_data(data_id, "train", i_start=start, i_end=end)
 
             trained_model = lstm_model.load_model(MODEL_ID)
 
@@ -112,26 +121,42 @@ def run_lstm(data_id):
 
             lstm_model.save_model(MODEL_ID)
 
+            start = end
+            end = end + training_size_chunk
+
+    exit()
     # Testing
+    predictions = {}
 
-    test_data, test_id = load_preprocessed_data(data_id, "test")
+    start = 0
+    end = test_size_chunk
 
-    predictions = lstm_model.predict(test_data, test_id)
+    # num_test_chunks = int(1./test_percentage_chunk)
+    num_test_chunks = 2
+
+    for chunk in range(num_test_chunks):
+        test_data, test_id = load_preprocessed_data(data_id, "test", i_start=start, i_end=end)
+
+        predictions.update(lstm_model.predict(test_data, test_id))
+
+        start = end
+        end = end + test_size_chunk
 
     return predictions
 
 
-def load_preprocessed_data(data_id, phase_type):
+def load_preprocessed_data(data_id, phase_type, i_start=0, i_end=10000):
 
     from tables import open_file
 
-    filename = "new_data/data_" + data_id + "/" + phase_type + "_data.h5"
+    filename = "proc_data/data_" + data_id + "/" + phase_type + "_data.h5"
 
     try:
         data_file = open_file(filename, driver="H5FD_CORE")
 
-        start = 0  # TODO Use variable indices
-        end = 1000
+        start = i_start
+        end = i_end  # default value is 10.000
+
         dataset = data_file.root.Dataset[start:end]
 
         if phase_type == 'train':
@@ -253,16 +278,17 @@ class SimpleLSTM:
         # Make predictions
         pred_labels = self.model.predict(test_data)
 
-        # TODO: Comment the next 3 lines analytically
         pred_dict = {}
-        for i in range(len(ids) - self.time_steps):
+        for i in range(len(ids)):
             # It looks like the is sample i with a future, but it's actualy sample i+n_timesteps with a history.
             # Because in the labels the first n_timesteps are being deleted. Kind of like this:
             # x = [1,2,3,4,5] Labels: [a,b,c,d,e] t = 2 to all x's in index range(0,2) 2 is added
             # (not 3 and 4 because they don't have 2 after them so x becomes [1-2-3, 2-3-4, 3-4-5]
             # Now in the y's the first n_timesteps labels are deleted. So you get [c,d,e]
             # This is exactly 3,4 and 5 with t previous time_steps and the labels of 3,4,5
-            pred_dict[ids[i + self.time_steps]] = float(pred_labels[i])
+
+            instance_id = ids[i].decode()  # Convert numpy bytes b'rsAkJBG001' to rsAkJBG001
+            pred_dict[instance_id] = float(pred_labels[i])
 
         return pred_dict
 

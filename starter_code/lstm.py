@@ -108,8 +108,8 @@ def run_lstm(data_id):
         start = 0
         end = training_size_chunk
 
-        # num_train_chunks = int(1./training_percentage_chunk)
-        num_train_chunks = 1
+        num_train_chunks = int(1./training_percentage_chunk)
+        # num_train_chunks = 1
 
         for chunk in range(num_train_chunks):
 

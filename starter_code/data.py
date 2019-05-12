@@ -26,7 +26,7 @@ import os
 from pathlib import Path
 from future.utils import iteritems
 
-VERBOSE = 2
+LOADING_VERBOSE = 0
 
 OS = 'unix'  # make sure the paths work for both WINDOWS and unix
 train_path = ""
@@ -87,11 +87,11 @@ def load_data(filename, perc_data_use=1., start_from_line=0, end_line=0):
     if filename.find('train') != -1:
         training = True
         num_data_use = perc_data_use * EN_ES_NUM_TRAIN_EX  # Get actual number of exercises to train on
-        if VERBOSE > 1:
+        if LOADING_VERBOSE > 1:
             print('Loading training instances...')
     else:
         num_data_use = perc_data_use * EN_ES_NUM_TEST_EX  # Get actual number of exercises to test on
-        if VERBOSE > 1:
+        if LOADING_VERBOSE > 1:
             print('Loading testing instances...')
     if training:
         labels = dict()
@@ -112,7 +112,7 @@ def load_data(filename, perc_data_use=1., start_from_line=0, end_line=0):
             if num_lines < start_from_line + 1:
                 continue
             else:
-                if first and VERBOSE > 1:
+                if first and LOADING_VERBOSE > 1:
                     print("Starting to load from line", num_lines)
                     first = False
             line = line.strip()
@@ -121,7 +121,7 @@ def load_data(filename, perc_data_use=1., start_from_line=0, end_line=0):
             if len(line) == 0:
                 num_exercises += 1
                 if num_exercises % 100000 == 0:
-                    if VERBOSE > 1:
+                    if LOADING_VERBOSE > 1:
                         print('Loaded ' + str(len(data)) + ' instances across ' + str(num_exercises) + ' exercises...')
                 instance_properties = dict()
 
@@ -129,7 +129,7 @@ def load_data(filename, perc_data_use=1., start_from_line=0, end_line=0):
                 # If end_line = 0, then only the first condition needs to be met
                 # If end_line = MAX, then this is never true, and the loading will stop when there are no more data
                 if num_exercises >= num_data_use and num_lines > end_line:
-                    if VERBOSE > 1:
+                    if LOADING_VERBOSE > 1:
                         print('Stop loading training data...')
                     break
 
@@ -184,7 +184,7 @@ def load_data(filename, perc_data_use=1., start_from_line=0, end_line=0):
                     labels[instance_properties['instance_id']] = label
                 data.append(InstanceData(instance_properties=instance_properties))
 
-        if VERBOSE > 1:
+        if LOADING_VERBOSE > 1:
             print('Done loading ' + str(len(data)) + ' instances across ' + str(num_exercises) +
                   ' exercises.\n')
 

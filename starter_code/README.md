@@ -3,6 +3,45 @@
 This archive contains a baseline model and evaluation script for Duolingo's 2018 Shared Task on Second Language Acquisition Modeling (SLAM). 
 The model is L2-regularized logistic regression, trained with SGD weighted by frequency.   
 
+# Structure
+
+## Count features (Run once)
+
+Count how many distinct values there are for each categorical attribute
+
+## Feature selection and Dataset building (Optional if a preprocessed dataset is provided)
+
+This phase has the following steps:
+
+- Load the *raw* data as provided by duolingo:
+
+    Since these data have a lot of features and consist of more than 2.6 million instances, its impossible to load it in a standard computer all at once, so its performed in chunks.
+
+- Encode the features of the samples in an efficient manner. Specifically,
+
+    - userID    -> integer representation (0, n) where n=2593 distinct user  
+    - countries -> one hot encoding  (64 values)
+    - client    -> one hot encoding  (3 values)
+    - session   -> one hot encoding  (3 values)
+    - format    -> one hot encoding  (3 values)
+    - token     -> word embeddings   (2226 different words) 
+
+    - days      -> as is (integer)
+    - hour      -> as is (continuous value)
+    
+    - part of speech -> *not used*   (16 values)
+    - dependency label -> *not used* (41 values)
+
+- Add dimension in time (for every sample look back T number of instances)
+
+- Save the preprocessed data
+ 
+## Train a model
+
+- Load preprocessed dataset
+- Input to the LSTM
+- Predict 
+
 ## Execute
 
 1. Unpack data with the script in the folder data

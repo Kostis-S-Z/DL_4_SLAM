@@ -2,6 +2,7 @@ import os
 from io import open
 from pathlib import Path
 import pickle as pickle
+import json
 
 from future.builtins import range
 
@@ -25,7 +26,7 @@ pred_path = en_es_predictions
 
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
-TRAINING_PERC = 0.05  # Control chunk size
+TRAINING_PERC = 0.1  # Control chunk size
 EN_ES_NUM_EX = 824012  # Number of exercises on the English-Spanish dataset
 
 TRAINING_DATA_USE = TRAINING_PERC * EN_ES_NUM_EX  # Get actual number of exercises to train on
@@ -34,6 +35,8 @@ VERBOSE = 2  # 0, 1 or 2. The more verbose, the more print statements
 
 # dictionaries of features for the one hot encoding
 n_attr_dicts = [{}, {}, {}, {}, {}, {}, {}, {}]
+all_features = ['user', 'countries', 'client', 'session', 'format', 'token', 'part_of_speech', 'dependency_label']
+# all_features = ['client', 'session', 'format', 'part_of_speech']
 
 
 def main():
@@ -53,7 +56,7 @@ def load_in_chunks():
 
     for chunk in range(num_chunks - 1):
         if VERBOSE > 0:
-            print("Training with chunk", chunk + 1)
+            print("Loading chunk", chunk + 1, "out of", num_chunks)
 
         # Start loading data from the last point
         training_data, training_labels, end_line, instance_count, num_exercises = load_data(train_path,
@@ -65,7 +68,6 @@ def load_in_chunks():
 
         # Make the ending line of this batch, the starting point of the next batch
         start_line = end_line
-        print(n_attr_dicts)
 
     if VERBOSE > 0:
         print("Last batch")
@@ -257,15 +259,20 @@ def load_data(filename, train_data_use, start_from_line=0, end_line=0):
 
 def save_feature_dict():
     """
-    saves feature dicts in file "featreDicts.p"
+    saves feature dicts in file "feature_dicts.p"
     """
 
-    # with open("featureDicts.json", "w") as fp:
-    #    json.dump(n_attr_dicts, fp)
-
     print("Saving feature dict...")
-    print("save n_attr_dicts", n_attr_dicts)
-    pickle.dump(n_attr_dicts, open("featureDicts.p", "wb"))
+    print("values for:")
+    for i in range(len(n_attr_dicts)):
+        print(all_features[i], "has", len(n_attr_dicts[i]), "values")
+
+    with open('feature_dicts.json', 'w') as fp:
+        fp.write(
+            '[' +
+            ',\n'.join(json.dumps(i) for i in n_attr_dicts) +
+            ']\n')
+
     print("saving finished ")
 
 
@@ -275,16 +282,17 @@ def load_feature_dict(features_to_use):
     """
 
     # assume the necessary file exists
-    assert os.path.isfile("featureDicts.p")
+    assert os.path.isfile("feature_dicts.json")
     print("loading feature dicts...")
     all_categorical_features = ['user', 'countries', 'client', 'session', 'format', 'token', 'part_of_speech',
                                 'dependency_label']
-    featureDicts = pickle.load(open("featureDicts.p", "rb"))
+
+    feature_dicts = json.load(open("feature_dicts.json", "r"))
 
     new_n_attr_dicts = []
     for i, attribute in enumerate(all_categorical_features):
         if attribute in features_to_use:
-            new_n_attr_dicts.append(featureDicts[i])
+            new_n_attr_dicts.append(feature_dicts[i])
 
     print("loading finished")
 

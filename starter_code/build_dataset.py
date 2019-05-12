@@ -27,13 +27,13 @@ def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, 
     # n_features and number_of_features should be the same
 
     # Build train data
-    build_data("train", train_path, path_to_save, time_steps, feature_dict, TRAINING_PERC, verbose)
+    build_data("train", train_path, path_to_save, time_steps, feature_dict, n_features, TRAINING_PERC, verbose)
 
     # Build test data
-    build_data("test", test_path, path_to_save, time_steps, feature_dict, TEST_PERC, verbose)
+    build_data("test", test_path, path_to_save, time_steps, feature_dict, n_features, TEST_PERC, verbose)
 
 
-def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, percentage_use, verbose):
+def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_features, percentage_use, verbose):
     """
     Loads chunks of the data from data_path in sizes of percentage_use
     preprocess them depending on time_steps, features_to_use, n_threshold
@@ -51,7 +51,7 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, pe
     # Choose type of data and shape
     n = 2500000  # 2.500.000 instances
     t = time_steps  # time steps to look back to
-    m = info(feature_dict.copy())  # number of features per sample
+    m = n_features  # actual length of sample vector!
     data_type = np.dtype('float64')
     dataset_shape = (n, t, m)
     labels_shape = (n,)
@@ -108,39 +108,6 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, pe
     print("Saved {} {} samples".format(total_samples, phase_type))
 
 
-def info(feature_dict_demo):
-
-    # THIS IS JUST A DEMO
-
-    print("EACH FEATURE CONTAINS: {} DISTINCT VALUES".format([len(val[1]) for key, val in feature_dict_demo.items()]))
-
-    number_of_features = 0
-    # The size of tokens features depends on the word embedding
-    tokens = feature_dict_demo.pop('token', None)
-    number_of_features += EMBED_LENGTH
-
-    # The size of users is just one integer (float)
-    users = feature_dict_demo.pop('users', None)
-    number_of_features += 1  # TODO THIS IS ALSO BINARY LENGTH
-
-    # The size of countries can also be one integer (float
-    countries = feature_dict_demo.pop('countries', None)
-    number_of_features += 1  # TODO THIS IS ALSO BINARY LENGTH
-
-    # The size of days and hours is just one float each
-    days = feature_dict_demo.pop('days', None)
-    hours = feature_dict_demo.pop('hours', None)  # CHANGE HOURS TO THE CORRECT NAME
-    number_of_features += 2
-
-    # The rest will be one hot encoding
-    number_of_features += np.sum([len(val[1]) for key, val in feature_dict_demo.items()])
-    print("EACH FEATURE CONTAINS: {} DISTINCT VALUES".format([len(val[1]) for key, val in feature_dict_demo.items()]))
-    print("TOTAL NUMBER OF DISTINCT VALUES", np.sum([len(val[1]) for key, val in feature_dict_demo.items()]))
-    print("Feature size: ", number_of_features)
-
-    return number_of_features
-
-
 def build_feature_dict(features_to_use, n_threshold, verbose):
     """
     Some explanation on this feature dict:
@@ -179,7 +146,14 @@ def build_feature_dict(features_to_use, n_threshold, verbose):
         elif current_feature == 'user':
             # feature_dict['user'] = (n_features, ....)
             # binary encoding needs this many spaces reserved: round_up(2_log(number_of_things_to_encode))
-            n_features += math.ceil(len(index_dict))
+            number_of_users = len(n_attr_dict)
+            user_vector_length = max(math.ceil(math.log(number_of_users)), 1)
+            n_features += user_vector_length
+        elif current_feature == 'countries':
+            # binary encoding needs this many spaces reserved: round_up(2_log(number_of_things_to_encode))
+            number_of_countries = len(n_attr_dict)
+            user_vector_length = max(math.ceil(math.log(number_of_countries)), 1)
+            n_features += user_vector_length
         else:
             # convert feature-count-dict to feature-index-dict
             index_dict = convert_to_index_dict(n_attr_dict, n_threshold)

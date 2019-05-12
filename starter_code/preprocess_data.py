@@ -1,12 +1,11 @@
 import numpy as np
-import math
 from sklearn.preprocessing import LabelEncoder
 
 
 # vector length of the word embedding of the token
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
 
-PREPROCESSING_VERBOSE = 0
+PREPROCESSING_VERBOSE = 1
 
 
 def preprocess(time_steps, data, feature_dict, n_features, labels_dict=None):
@@ -49,7 +48,7 @@ def data_in_time(time_steps, data_x):
     # m is the number of features of each sample
     m = data_x.shape[1]
 
-    data_new = np.zeros((n, t, m))  # TODO this is super memory heavy!
+    data_new = np.zeros((n, t, m))  # this is super memory heavy!
 
     # only add history for samples that have at least t samples before them
     for i in range(time_steps, len(data_x)):
@@ -87,7 +86,7 @@ def load_emb_dict(embed_length):
     return embeddings_index
 
 
-def create_binary_dict(values_list):
+def create_binary_dict(values_list, vector_length):
     """
     Create a dictionary representation between a string value (user, countries)
     and a numpy array of their binary encoding
@@ -100,10 +99,12 @@ def create_binary_dict(values_list):
 
     for i, elem in enumerate(int_list):
         # ignore the first two elements since bin(elem) is of the form 0b010110
-        bin_value = np.array([int(x) for x in bin(elem)[2:]])
+        # bin_value = np.array([int(x) for x in bin(elem)[2:]])
+        bin_value = format(elem, str(vector_length) + 'b')
+
         # flip it so that it doesn't matter that all binary arrays are different sizes
         # (because the zeros are at the end)
-        bin_value = np.flipud(bin_value)
+        # bin_value = np.flipud(bin_value)
         values_dict[values_list[i]] = bin_value
 
     return values_dict
@@ -116,19 +117,17 @@ def vectorize(data, features_to_use, n_features):
 
     # Load binary representation of users
     if 'user' in features_to_use:
-        number_of_ids = features_to_use['user'][0]
-        len_user_vector = max(math.ceil(math.log(number_of_ids)), 1)
+        len_user_vector = features_to_use['user'][0]
         # create a dictionary between a userId and its binary numpy array
         users_list = list(features_to_use['user'][1].keys())
-        user_bin_dict = create_binary_dict(users_list)
+        user_bin_dict = create_binary_dict(users_list, len_user_vector)
 
     # Load binary representation of countries
     if 'countries' in features_to_use:
-        number_of_countries = features_to_use['countries'][0]
-        len_countries_vector = max(math.ceil(math.log(number_of_countries)), 1)
+        len_countries_vector = features_to_use['countries'][0]
         # create a dictionary between a country and its binary numpy array
         countries_list = list(features_to_use['countries'][1].keys())
-        countries_bin_dict = create_binary_dict(countries_list)
+        countries_bin_dict = create_binary_dict(countries_list, len_countries_vector)
 
     # Load word embeddings dictionary
     if 'token' in features_to_use:
@@ -142,8 +141,8 @@ def vectorize(data, features_to_use, n_features):
     embedded = 0
 
     # Keep track if binary representation is correct
-    user_encoded = 0
-    user_not_encoded = 0
+    users_encoded = 0
+    users_not_encoded = 0
 
     countries_encoded = 0
     countries_not_encoded = 0
@@ -177,9 +176,9 @@ def vectorize(data, features_to_use, n_features):
             if feature_value in user_bin_dict:
                 binary_user = user_bin_dict[feature_value]
                 data_vector[i, index_counter:index_counter + len_user_vector] = binary_user
-                user_encoded += 1
+                users_encoded += 1
             else:
-                user_not_encoded += 1
+                users_not_encoded += 1
 
             index_counter += len_user_vector
 
@@ -211,7 +210,7 @@ def vectorize(data, features_to_use, n_features):
          
         if PREPROCESSING_VERBOSE > 1:
             print("number of words not embedded: ", len(not_embedded), "number of words embedded: ", embedded)
-            print("number of users encoded : ", user_encoded, " / number of users not encoded: ", user_not_encoded)
+            print("number of users encoded : ", users_encoded, " / number of users not encoded: ", users_not_encoded)
             print("number of countries encoded : ", countries_encoded, " / number of countries not encoded: ",
                   countries_not_encoded)
 

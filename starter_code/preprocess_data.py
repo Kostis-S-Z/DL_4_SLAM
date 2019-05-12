@@ -2,7 +2,7 @@ import numpy as np
 import pickle
 import os
 import math
-
+from sklearn.preprocessing import LabelEncoder
 from data import VERBOSE
 # vector length of the word embedding of the token
 EMBED_LENGTH = 50 # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
@@ -27,12 +27,16 @@ def preprocess(time_steps, data, features_to_use, n_threshold, labels_dict=None)
 
     # Extract features?
     feature_dict, n_features = build_feature_dict(features_to_use, n_threshold)
-
-    #create word embedding of the tokens
+    print(feature_dict)
+    exit()
+    # load word embeddings dictionary from GloVe file
     embeddings_dict = load_emb_dict()
+    # create a dictionary between a userId and its binary numpy array
+    user_bin_dict = create_user_dict(feature_dict)
+    #print('feature_dict')
 
     # Convert features to one-hot encoding
-    data_vectors = one_hot_encode(new_data, feature_dict, n_features, features_to_use, embeddings_dict)
+    data_vectors = one_hot_encode(new_data, feature_dict, n_features, features_to_use, embeddings_dict, user_bin_dict)
 
     # Make a 3D matrix of sample x features x history
     if labels_dict is not None:
@@ -99,14 +103,33 @@ def load_emb_dict():
         print('Loaded %s word embedding vectors.' % len(embeddings_index))
     return embeddings_index
 
+def create_user_dict(feature_dict):
+    """
+    create a dictionary between userID strings and a numpy array of their binary encoding
+    """
+    user_dict = {}
+    userIDs = list(feature_dict['user'][1].keys())
+    label_encoder = LabelEncoder()
+    label_encoder.fit(userIDs)
+    int_list = label_encoder.transform(userIDs)
+    for i,elem in enumerate(int_list):
+        # ignore the first two elements since bin(elem) is of the form 0b010110
+        bin_userID = np.array([int(x) for x in bin(elem)[2:]])
+        # flip it so that it doesn't matter that all binary arrays are different sizes (because the zeros are at the end)
+        bin_userID = np.flipud(bin_userID)
+        user_dict[userIDs[i]] = bin_userID
+    return user_dict
 
-def one_hot_encode(training_data, feature_index_dict, n_features, features_to_use, embeddings_dict):
+
+def one_hot_encode(training_data, feature_index_dict, n_features, features_to_use, embeddings_dict, user_bin_dict):
 
     if VERBOSE > 1:
         print("start building one hot encoding")
     one_hot_vec = np.zeros((len(training_data), n_features + 2))
     not_embedded = []
     embedded = 0
+    encoded = 0
+    not_encoded = 1
 
     # for all training examples compute one hot encoding
     for i, training_example in enumerate(training_data):
@@ -131,8 +154,18 @@ def one_hot_encode(training_data, feature_index_dict, n_features, features_to_us
                     embedded +=1
                 else:
                     not_embedded.append(feature_value)
+            # user is encoded in binary coding
             elif feature_attribute == 'user':
-
+                index_attribute = feature_index_dict['user'][0]
+                # feature_value is the userID string. Look it up in the dictionary to convert it to binary
+                if feature_value in user_bin_dict:
+                    binary_userID = user_bin_dict[feature_value]
+                    one_hot_vec[i, index_attribute:index_attribute + binary_userID.shape[0]] = binary_userID
+                    encoded += 1
+                else:
+                    print(user_bin_dict)
+                    exit()
+                    not_encoded +=1
 
 
             # calculate the right index for that feature and compute the one-hot-encoding
@@ -144,6 +177,7 @@ def one_hot_encode(training_data, feature_index_dict, n_features, features_to_us
 
     if VERBOSE > 1:
         print("number of words not embedded: ", len(not_embedded), "number of words embedded: ", embedded)
+        print("number of users encoded in binary: ", encoded, " / number of users not encoded: ", not_encoded)
         print("finished one hot encoding")
 
     return one_hot_vec
@@ -185,9 +219,13 @@ def build_feature_dict(features_to_use, n_threshold):
             # update amount of different features seen until now
             n_features += EMBED_LENGTH
         elif current_feature == 'user':
-            feature_dict['user'] = (n_features, ....)
-            # binary encoding needs this many spaces reserved: round_up(2_log(number_of_things_to_encode))
-            n_features += math.ceil(len(index_dict))
+            # user is encoded in binary format
+            index_dict = convert_to_index_dict(n_attr_dict, n_threshold)
+            feature_dict[current_feature] = (n_features, index_dict)
+            # binary encoding needs x spaces reserved where x = round_up(2_log(number_of_things_to_encode))
+            # if len(index_dict) < 2 you get 0. But we always want at least one space reserved, so we do max(x,1)
+            num_bin = max(math.ceil(math.log(len(index_dict))),1)
+            n_features += num_bin
         else:
             # convert feature-count-dict to feature-index-dict
             index_dict = convert_to_index_dict(n_attr_dict, n_threshold)

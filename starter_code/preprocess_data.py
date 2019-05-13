@@ -17,7 +17,7 @@ def preprocess(time_steps, data, feature_dict, n_features, labels_dict=None):
     labels = []
 
     # Convert Objects to list of IDs and Labels in the correct order and remove the first T samples that have no history
-    for i in range(len(data) - time_steps):
+    for i in range(time_steps, len(data)):
         id_list.append(data[i].instance_id)
         # If the data are training data then they come in pair with labels
         if labels_dict is not None:

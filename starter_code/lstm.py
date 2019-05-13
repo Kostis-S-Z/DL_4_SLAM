@@ -39,14 +39,14 @@ THRESHOLD_OF_OCC = 0
 
 # If you want to build a new data set with you features put preprocessed_data_id = ""
 # If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
-use_pre_processed_data = False
-preprocessed_data_id = "12_5_20.29"  # "11_5_21.15"
+use_pre_processed_data = True
+preprocessed_data_id = "13_5_15.7"  # "11_5_21.15"
 
 # Model parameters
 
 # Use pre trained model
-use_pre_trained_model = False
-PRE_TRAINED_MODEL_ID = "12_5_20.34"
+use_pre_trained_model = True
+PRE_TRAINED_MODEL_ID = "13_5_15.14"
 
 now = datetime.datetime.now()
 MODEL_ID = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
@@ -92,10 +92,10 @@ def run_lstm(data_id):
     e.g when split 15% the last batch will contain ~200.000 exercises where as the others ~125.000
     """
     training_percentage_chunk = 0.05  # USE 0.008 WHEN NOT IN GCP
-    training_size_chunk = training_percentage_chunk * EN_ES_NUM_TRAIN_EX
+    training_size_chunk = 1000#training_percentage_chunk * EN_ES_NUM_TRAIN_EX
 
     test_percentage_chunk = 0.1  # USE 0.05 WHEN NOT IN GCP
-    test_size_chunk = test_percentage_chunk * EN_ES_NUM_TEST_EX
+    test_size_chunk = 1000 #test_percentage_chunk * EN_ES_NUM_TEST_EX
 
     lstm_model = SimpleLSTM(net_architecture, **model_params)
 
@@ -108,8 +108,8 @@ def run_lstm(data_id):
         start = 0
         end = training_size_chunk
 
-        num_train_chunks = int(1./training_percentage_chunk)
-        # num_train_chunks = 1
+        #num_train_chunks = int(1./training_percentage_chunk)
+        num_train_chunks = 2
 
         for chunk in range(num_train_chunks):
 
@@ -124,7 +124,6 @@ def run_lstm(data_id):
             start = end
             end = end + training_size_chunk
 
-    exit()
     # Testing
     predictions = {}
 

@@ -8,8 +8,8 @@ from preprocess_data import preprocess
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
-TRAINING_PERC = 0.005  # Control how much (%) of the training data to actually use for training
-TEST_PERC = 0.01
+TRAINING_PERC = 0.05  # Control how much (%) of the training data to actually use for training
+TEST_PERC = 0.1
 
 # vector length of the word embedding of the token
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
@@ -38,8 +38,8 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
     and saves them in the directory path_to_save
     """
 
-    # num_chunks = int(1 / percentage_use)
-    num_chunks = 2  # DEBUG: use if you want to test a really small part of the data
+    num_chunks = int(1 / percentage_use)
+    # num_chunks = 2  # DEBUG: use if you want to test a really small part of the data
 
     start_line = 0
     total_samples = 0
@@ -55,7 +55,7 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
     # Initialize dataset file
     dataset_file = open_file(path_to_save + phase_type + "_data.h5", mode="a", title=phase_type + " Dataset")
     atom = Atom.from_dtype(data_type)
-    atom_str = Atom.from_kind('string', 10)
+    atom_str = Atom.from_kind('string', 20)  # this sets how big the string can be!
     dataset = dataset_file.create_carray(dataset_file.root, 'Dataset', atom, dataset_shape)
 
     if phase_type == 'train':

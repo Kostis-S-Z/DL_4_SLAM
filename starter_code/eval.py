@@ -71,6 +71,8 @@ def load_labels(filename):
                 continue
             else:
                 line = line.split()
+            if len(line) == 1:
+                continue
             instance_id = line[0]
             label = float(line[1])
             labels[instance_id] = label

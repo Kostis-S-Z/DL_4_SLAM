@@ -40,13 +40,13 @@ THRESHOLD_OF_OCC = 0
 # If you want to build a new data set with you features put preprocessed_data_id = ""
 # If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
 use_pre_processed_data = False
-preprocessed_data_id = "13_5_15.57"  # "11_5_21.15"
+preprocessed_data_id = "13_5_17.41"  # "11_5_21.15"
 
 # Model parameters
 
 # Use pre trained model
 use_pre_trained_model = False
-PRE_TRAINED_MODEL_ID = "13_5_15.32"
+PRE_TRAINED_MODEL_ID = "13_5_17.42"
 
 now = datetime.datetime.now()
 MODEL_ID = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
@@ -56,14 +56,19 @@ net_architecture = {
     0: 128,
     1: 1
 }
+class_weight = {
+    0: 1.,
+    1: 50.
+}
 
 model_params = {
     "batch_size": 64,  # number of samples in a batch
     "lr": 0.01,  # learning rate
     "epochs": 20,  # number of epochs
-    "time_steps": 100  # how many time steps to look back to
+    "time_steps": 100,  # how many time steps to look back to
+    'activation': 'sigmoid',
+    'optimizer': 'adam'
 }
-
 
 def main():
 
@@ -94,7 +99,8 @@ def run_lstm(data_id):
     if DEBUG:
         training_percentage_chunk = 0.008
         test_percentage_chunk = 0.05
-        model_params['epochs'] = 2
+        if model_params['epochs'] > 5:
+            model_params['epochs'] = 2
     else:
         training_percentage_chunk = 0.05
         test_percentage_chunk = 0.1
@@ -207,7 +213,9 @@ class SimpleLSTM:
             "batch_size": 64,  # number of samples in a batch
             "lr": 0.01,  # learning rate
             "epochs": 10,  # number of epochs
-            "time_steps": 50  # how many time steps to look back to
+            "time_steps": 50,  # how many time steps to look back to
+            'activation': 'sigmoid',
+            'optimizer': 'adam'
         }
 
         for var, default in var_defaults.items():
@@ -229,19 +237,14 @@ class SimpleLSTM:
         """
 
         hidden_0 = self.net_architecture[0]
-        # hidden_1 = self.net_architecture[1]
-        # hidden_2 = self.net_architecture[2]
-
         output = self.net_architecture[1]
 
         model = Sequential()
 
         # return sequencxes should be false
         model.add(LSTM(hidden_0, return_sequences=False, input_shape=(self.time_steps, self.input_shape)))
-        # model.add(LSTM(hidden_1, return_sequences=False))
-        # model.add(LSTM(hidden_2, return_sequences=False))
 
-        model.add(Dense(output, activation='sigmoid'))
+        model.add(Dense(output, activation=self.activation))
 
         if KERAS_VERBOSE > 0:
             print(model.summary())
@@ -264,7 +267,7 @@ class SimpleLSTM:
             model = trained_model
 
         # loss is binary_crossentropy because we're doing binary classification (correct / incorrect)
-        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        model.compile(loss='binary_crossentropy', optimizer=self.optimizer, metrics=['accuracy'])
 
         # Fit the training data to the model and use a part of the data for validation
         print("x_train: ", x_train.shape)

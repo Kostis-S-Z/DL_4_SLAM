@@ -11,7 +11,7 @@ from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed
 # Data evaluation functions
 import data
 from data import get_paths, write_predictions, EN_ES_NUM_TRAIN_EX, EN_ES_NUM_TEST_EX
-from build_dataset import build_dataset
+from build_dataset import build_dataset, DEBUG
 from eval import evaluate
 
 get_paths()
@@ -91,10 +91,15 @@ def run_lstm(data_id):
     The chunks are split evenly, except the last one. The last one will contain a bit more.
     e.g when split 15% the last batch will contain ~200.000 exercises where as the others ~125.000
     """
-    training_percentage_chunk = 0.05  # USE 0.008 WHEN NOT IN GCP
-    training_size_chunk = training_percentage_chunk * EN_ES_NUM_TRAIN_EX
+    if DEBUG:
+        training_percentage_chunk = 0.008
+        test_percentage_chunk = 0.05
+        model_params['epochs'] = 2
+    else:
+        training_percentage_chunk = 0.05
+        test_percentage_chunk = 0.1
 
-    test_percentage_chunk = 0.1  # USE 0.05 WHEN NOT IN GCP
+    training_size_chunk = training_percentage_chunk * EN_ES_NUM_TRAIN_EX
     test_size_chunk = test_percentage_chunk * EN_ES_NUM_TEST_EX
 
     lstm_model = SimpleLSTM(net_architecture, **model_params)
@@ -108,8 +113,11 @@ def run_lstm(data_id):
         start = 0
         end = training_size_chunk
 
-        num_train_chunks = int(1./training_percentage_chunk)
-        # num_train_chunks = 2
+
+        if DEBUG:
+            num_train_chunks = 2
+        else:
+            num_train_chunks = int(1. / training_percentage_chunk)
 
         for chunk in range(num_train_chunks):
 
@@ -130,8 +138,10 @@ def run_lstm(data_id):
     start = 0
     end = test_size_chunk
 
-    num_test_chunks = int(1./test_percentage_chunk)
-    # num_test_chunks = 2
+    if DEBUG:
+        num_test_chunks = 2
+    else:
+        num_test_chunks = int(1./test_percentage_chunk)
 
     for chunk in range(num_test_chunks):
         test_data, test_id = load_preprocessed_data(data_id, "test", i_start=start, i_end=end)

@@ -39,14 +39,14 @@ THRESHOLD_OF_OCC = 0
 
 # If you want to build a new data set with you features put preprocessed_data_id = ""
 # If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
-use_pre_processed_data = False
-preprocessed_data_id = "14_5_14.16"  # "11_5_21.15"
+use_pre_processed_data = True
+preprocessed_data_id = "14_5_17.16"  # "11_5_21.15"
 
 # Model parameters
 
 # Use pre trained model
-use_pre_trained_model = False
-PRE_TRAINED_MODEL_ID = "13_5_16.1"
+use_pre_trained_model = True
+PRE_TRAINED_MODEL_ID = "14_5_17.16"
 
 now = datetime.datetime.now()
 MODEL_ID = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
@@ -195,12 +195,40 @@ def write_results(results):
     """
     with open("models_results.out", "a+") as f:
         f.write("---- Model " + MODEL_ID + " ----\n")
-        f.write("    ---------------------------------------------------\n")
+        f.write("    ----------------------- Parameters --------------------------\n")
+
+        # model_params
+        for k in (model_params.keys()):
+            f.write("    {:<15} {:<15}\n".format(k, model_params[k]))
+        f.write("    -------------------------------------------------------------\n")
+        f.write("    {:<35} {:<15}\n".format('--Features_to_use-', ''))
+        f.write("    ")
+
+        # Featurs_to_use
+        for k in FEATURES_TO_USE[0:-1]:
+            f.write(k + ", ")
+        f.write(FEATURES_TO_USE[-1] + "\n")
+        f.write("    threshold " + str(THRESHOLD_OF_OCC) + "\n")
+        f.write("    -------------------------------------------------------------\n")
+
+        # net_architechture
+        f.write("    {:<25} {:<15}\n".format('--net_architechture-', ''))
+        for k in sorted(net_architecture.keys()):
+            f.write("    {:<15} {:<15}\n".format(k, net_architecture[k]))
+        f.write("    -------------------------------------------------------------\n")
+
+        # class_weights
+        f.write("    {:<25} {:<15}\n".format('--class_weights-', ''))
+        for k in sorted(class_weights.keys()):
+            f.write("    {:<15} {:<15}\n".format(k, int(class_weights[k])))
+        f.write("    -------------------------------------------------------------\n")
+
+        f.write("    ------------------------ Results ----------------------------\n")
         f.write("    {:<35} {:<15}\n".format('Metric', 'Value'))
-        f.write("    ---------------------------------------------------\n")
+        f.write("    -------------------------------------------------------------\n")
         for k in sorted(results.keys()):
             f.write("    {:<35} {:<15}\n".format(k, results[k]))
-        f.write("    ---------------------------------------------------\n\n")
+        f.write("    -------------------------------------------------------------\n\n\n")
         f.close()
 
 

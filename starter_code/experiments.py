@@ -10,7 +10,7 @@ Default Params:
 FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'token', 'time', 'days']
 THRESHOLD_OF_OCC = 0
 
-net_architecture = {
+net_architecture = {.
     0: 128,
     1: 1
 }

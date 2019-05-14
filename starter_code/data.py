@@ -26,7 +26,7 @@ import os
 from pathlib import Path
 from future.utils import iteritems
 
-LOADING_VERBOSE = 0
+LOADING_VERBOSE = 2
 
 OS = 'unix'  # make sure the paths work for both WINDOWS and unix
 train_path = ""
@@ -37,6 +37,9 @@ pred_path = ""
 # Number of exercises on the English-Spanish train and test dataset
 EN_ES_NUM_TRAIN_EX = 824012
 EN_ES_NUM_TEST_EX = 115770  # This is actually dev
+
+EN_ES_NUM_TRAIN_SAMPLES = 2622957
+EN_ES_NUM_TEST_SAMPLES = 387374
 
 
 def get_paths():
@@ -130,7 +133,7 @@ def load_data(filename, perc_data_use=1., start_from_line=0, end_line=0):
                 # If end_line = MAX, then this is never true, and the loading will stop when there are no more data
                 if num_exercises >= num_data_use and num_lines > end_line:
                     if LOADING_VERBOSE > 1:
-                        print('Stop loading training data...')
+                        print('Stop loading data...')
                     break
 
             # If the line starts with #, then we're beginning a new exercise
@@ -185,13 +188,13 @@ def load_data(filename, perc_data_use=1., start_from_line=0, end_line=0):
                 data.append(InstanceData(instance_properties=instance_properties))
 
         if LOADING_VERBOSE > 1:
-            print('Done loading ' + str(len(data)) + ' instances across ' + str(num_exercises) +
+            print('Done loading ' + str(instance_count) + ' instances across ' + str(num_exercises) +
                   ' exercises.\n')
 
     if training:
         return data, labels, num_lines, instance_count, num_exercises
     else:
-        return data
+        return data, num_lines
 
 
 def write_predictions(predictions):

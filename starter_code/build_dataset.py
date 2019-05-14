@@ -2,14 +2,15 @@ import os
 import numpy as np
 import math
 from tables import *
-from data import load_data, LOADING_VERBOSE
+from data import load_data, LOADING_VERBOSE, EN_ES_NUM_TRAIN_SAMPLES, EN_ES_NUM_TEST_SAMPLES
 from count_features import load_feature_dict
 from preprocess_data import preprocess
 
 # If you want to run it on computer
-# loads small amount of data at a time, builds and saves small dataset, train on small dataset (must not be the whole saved dataset)
+# loads small amount of data at a time, builds and saves small dataset, train on small dataset
+# (must not be the whole saved dataset)
 # trains for just 2 epochs
-DEBUG = 1
+DEBUG = False
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
@@ -34,10 +35,11 @@ def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, 
     feature_dict, n_features = build_feature_dict(features_to_use, n_threshold, verbose)
 
     # Build train data
-    build_data("train", train_path, path_to_save, time_steps, feature_dict, n_features, TRAINING_PERC, verbose)
+    # build_data("train", train_path, path_to_save, time_steps, feature_dict, n_features, TRAINING_PERC, verbose)
 
     # Build test data
     build_data("test", test_path, path_to_save, time_steps, feature_dict, n_features, TEST_PERC, verbose)
+    exit()
 
 
 def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_features, percentage_use, verbose):
@@ -50,13 +52,17 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
     if DEBUG:
         num_chunks = 2
     else:
-        num_chunks = int(1 / percentage_use)
+        num_chunks = int(1. / percentage_use)
 
     start_line = 0
     total_samples = 0
 
     # Choose type of data and shape
-    n = 2622957  # 2.622.957 instances
+    if phase_type == "train":
+        n = EN_ES_NUM_TRAIN_SAMPLES
+    else:
+        n = EN_ES_NUM_TEST_SAMPLES
+
     t = time_steps  # time steps to look back to
     m = n_features  # actual length of sample vector!
     data_type = np.dtype('float64')
@@ -74,11 +80,11 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
     else:
         dataset_id = dataset_file.create_carray(dataset_file.root, 'IDs', atom_str, labels_shape)
 
-    for chunk in range(num_chunks - 1):
+    for chunk in range(num_chunks):
         # If in the last chunk, use all of the data left
-        print("\n--Loading {} chunk {} out of {}-- \n".format(phase_type, chunk + 1, num_chunks - 1))
+        print("\n--Loading {} chunk {} out of {}-- \n".format(phase_type, chunk + 1, num_chunks))
 
-        if chunk != num_chunks - 1:
+        if chunk != num_chunks:
             end_line = 0
         else:
             end_line = MAX  # the reader will read until the end of file and will exit
@@ -91,7 +97,8 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
             data, _, labels = preprocess(time_steps, data, feature_dict, m, labels_dict=labels)
         else:
             # Testing
-            data = load_data(data_path, perc_data_use=percentage_use, start_from_line=start_line, end_line=end_line)
+            data, end_line = load_data(data_path, perc_data_use=percentage_use,
+                                       start_from_line=start_line, end_line=end_line)
 
             data, data_id, _ = preprocess(time_steps, data, feature_dict, m)
 

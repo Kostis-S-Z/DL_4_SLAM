@@ -10,7 +10,7 @@ from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed
 
 # Data evaluation functions
 import data
-from data import get_paths, write_predictions, EN_ES_NUM_TRAIN_EX, EN_ES_NUM_TEST_EX
+from data import get_paths, write_predictions, EN_ES_NUM_TRAIN_SAMPLES, EN_ES_NUM_TEST_SAMPLES
 from build_dataset import build_dataset, DEBUG
 from eval import evaluate
 
@@ -22,7 +22,7 @@ key_path = data.key_path
 pred_path = data.pred_path
 
 VERBOSE = 1  # 0 or 1
-KERAS_VERBOSE = 1  # 0 or 1
+KERAS_VERBOSE = 2  # 0 or 1
 
 # FEATURES_TO_USE = ['user']  # 2593
 # FEATURES_TO_USE = ['countries']  # 64
@@ -40,13 +40,13 @@ THRESHOLD_OF_OCC = 0
 # If you want to build a new data set with you features put preprocessed_data_id = ""
 # If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
 use_pre_processed_data = False
-preprocessed_data_id = "13_5_17.41"  # "11_5_21.15"
+preprocessed_data_id = "14_5_14.1"  # "11_5_21.15"
 
 # Model parameters
 
 # Use pre trained model
-use_pre_trained_model = False
-PRE_TRAINED_MODEL_ID = "13_5_17.42"
+use_pre_trained_model = True
+PRE_TRAINED_MODEL_ID = "13_5_16.1"
 
 now = datetime.datetime.now()
 MODEL_ID = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
@@ -65,10 +65,11 @@ model_params = {
     "batch_size": 64,  # number of samples in a batch
     "lr": 0.01,  # learning rate
     "epochs": 20,  # number of epochs
-    "time_steps": 100,  # how many time steps to look back to
+    "time_steps": 50,  # how many time steps to look back to
     'activation': 'sigmoid',
     'optimizer': 'adam'
 }
+
 
 def main():
 
@@ -105,8 +106,8 @@ def run_lstm(data_id):
         training_percentage_chunk = 0.05
         test_percentage_chunk = 0.1
 
-    training_size_chunk = training_percentage_chunk * EN_ES_NUM_TRAIN_EX
-    test_size_chunk = test_percentage_chunk * EN_ES_NUM_TEST_EX
+    training_size_chunk = training_percentage_chunk * EN_ES_NUM_TRAIN_SAMPLES
+    test_size_chunk = test_percentage_chunk * EN_ES_NUM_TEST_SAMPLES
 
     lstm_model = SimpleLSTM(net_architecture, **model_params)
 
@@ -118,7 +119,6 @@ def run_lstm(data_id):
         # Train as normal
         start = 0
         end = training_size_chunk
-
 
         if DEBUG:
             num_train_chunks = 2

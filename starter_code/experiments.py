@@ -1,9 +1,9 @@
-from lstm import build_dataset, train_path, test_path, run_lstm, write_predictions, evaluate, pred_path, key_path
+from lstm import build_dataset, train_path, test_path, run_lstm, write_predictions, evaluate, pred_path, key_path, use_pre_processed_data
 import os
 import datetime
 
 # import all parameters that we might change in our experiments
-from lstm import FEATURES_TO_USE, THRESHOLD_OF_OCC, net_architecture, class_weight, model_params
+from lstm import FEATURES_TO_USE, THRESHOLD_OF_OCC, net_architecture, class_weights, model_params
 '''
 Default Params:
 
@@ -15,7 +15,7 @@ net_architecture = {
     1: 1
 }
 
-class_weight = {
+class_weights = {
     0: 1.,
     1: 50.
 }
@@ -113,7 +113,7 @@ def set_params(model_id=None, preproc_data_id=None):
         use_pre_processed_data = True
         global preprocessed_data_id
         preprocessed_data_id = preproc_data_id
-        
+
 def save_constant_parameters(experiment_name, variable_param):
     """
     Save all constant parameters in the experiments file
@@ -149,8 +149,8 @@ def save_constant_parameters(experiment_name, variable_param):
 
         # class_weights
         f.write("    {:<25} {:<15}\n".format('--class_weights-', ''))
-        for k in sorted(class_weight.keys()):
-            f.write("    {:<15} {:<15}\n".format(k, int(class_weight[k])))
+        for k in sorted(class_weights.keys()):
+            f.write("    {:<15} {:<15}\n".format(k, int(class_weights[k])))
         f.write("    -------------------------------------------------------------\n\n\n")
         f.close()
 

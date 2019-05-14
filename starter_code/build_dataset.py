@@ -10,14 +10,14 @@ from preprocess_data import preprocess
 # loads small amount of data at a time, builds and saves small dataset, train on small dataset
 # (must not be the whole saved dataset)
 # trains for just 2 epochs
-DEBUG = False
+DEBUG = True
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
 if DEBUG:
-    TRAINING_PERC = 0.005
-    TEST_PERC = 0.01
+    TRAINING_PERC = 0.0005
+    TEST_PERC = 0.001
 else:
     TRAINING_PERC = 0.01  # Control how much (%) of the training data to actually use for training
     TEST_PERC = 0.05

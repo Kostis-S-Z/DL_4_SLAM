@@ -100,8 +100,8 @@ def run_lstm(data_id):
         if model_params['epochs'] > 5:
             model_params['epochs'] = 2
 
-        training_percentage_chunk = 0.001
-        test_percentage_chunk = 0.01
+        training_percentage_chunk = 0.0001
+        test_percentage_chunk = 0.001
 
         num_train_chunks = 2
         num_test_chunks = 2

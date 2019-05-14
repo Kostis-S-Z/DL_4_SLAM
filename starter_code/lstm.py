@@ -39,13 +39,13 @@ THRESHOLD_OF_OCC = 0
 
 # If you want to build a new data set with you features put preprocessed_data_id = ""
 # If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
-use_pre_processed_data = True
+use_pre_processed_data = False
 preprocessed_data_id = "14_5_14.16"  # "11_5_21.15"
 
 # Model parameters
 
 # Use pre trained model
-use_pre_trained_model = True
+use_pre_trained_model = False
 PRE_TRAINED_MODEL_ID = "13_5_16.1"
 
 now = datetime.datetime.now()
@@ -56,18 +56,17 @@ net_architecture = {
     0: 128,
     1: 1
 }
-class_weight = {
-    0: 1.,
-    1: 85.
+class_weights = {
+    0: 15,
+    1: 85
 }
 
 model_params = {
     "batch_size": 64,  # number of samples in a batch
-    "lr": 0.01,  # learning rate
     "epochs": 10,  # number of epochs
-    "time_steps": 50,  # how many time steps to look back to
+    "time_steps": 70,  # how many time steps to look back to
     'activation': 'sigmoid',
-    'optimizer': 'adam'
+    'optimizer': 'nadam'
 }
 
 
@@ -93,18 +92,26 @@ def run_lstm(data_id):
     """
     Train a model with a chunk of the data, then save the weights, the load another chunk, load the weights and
     resume training. This is done to go make it possible to train a full model in system with limited memory.
-
+2500000
     The chunks are split evenly, except the last one. The last one will contain a bit more.
     e.g when split 15% the last batch will contain ~200.000 exercises where as the others ~125.000
     """
     if DEBUG:
-        training_percentage_chunk = 0.008
-        test_percentage_chunk = 0.05
         if model_params['epochs'] > 5:
             model_params['epochs'] = 2
+
+        training_percentage_chunk = 0.001
+        test_percentage_chunk = 0.01
+
+        num_train_chunks = 2
+        num_test_chunks = 2
+
     else:
-        training_percentage_chunk = 0.05
-        test_percentage_chunk = 0.1
+        training_percentage_chunk = 0.01
+        test_percentage_chunk = 0.05
+
+        num_train_chunks = 20  # int(1. / training_percentage_chunk)  # Train with 500.000 samples
+        num_test_chunks = 20  # int(1./test_percentage_chunk)  #
 
     training_size_chunk = training_percentage_chunk * EN_ES_NUM_TRAIN_SAMPLES
     test_size_chunk = test_percentage_chunk * EN_ES_NUM_TEST_SAMPLES
@@ -113,19 +120,16 @@ def run_lstm(data_id):
 
     if use_pre_trained_model:
         # Load pre trained model
-        print("Using pre trained model!")
+        print("Using pre trained model! Skipping training...")
         lstm_model.model = lstm_model.load_model(PRE_TRAINED_MODEL_ID)
     else:
         # Train as normal
         start = 0
         end = training_size_chunk
 
-        if DEBUG:
-            num_train_chunks = 2
-        else:
-            num_train_chunks = int(1. / training_percentage_chunk)
-
         for chunk in range(num_train_chunks):
+
+            print("\n--Training on chunk {} out of {}-- \n".format(chunk + 1, num_train_chunks))
 
             train_data, train_labels = load_preprocessed_data(data_id, "train", i_start=start, i_end=end)
 
@@ -144,12 +148,9 @@ def run_lstm(data_id):
     start = 0
     end = test_size_chunk
 
-    if DEBUG:
-        num_test_chunks = 2
-    else:
-        num_test_chunks = int(1./test_percentage_chunk)
-
     for chunk in range(num_test_chunks):
+        print("\n--Testing on chunk {} out of {}-- \n".format(chunk + 1, num_test_chunks))
+
         test_data, test_id = load_preprocessed_data(data_id, "test", i_start=start, i_end=end)
 
         predictions.update(lstm_model.predict(test_data, test_id))
@@ -211,7 +212,6 @@ class SimpleLSTM:
         """
         var_defaults = {
             "batch_size": 64,  # number of samples in a batch
-            "lr": 0.01,  # learning rate
             "epochs": 10,  # number of epochs
             "time_steps": 50,  # how many time steps to look back to
             'activation': 'sigmoid',
@@ -276,7 +276,7 @@ class SimpleLSTM:
         print("y_train 0: ", y_train[0])
         print("batch size: ", self.batch_size)
         print("keras verbose: ", KERAS_VERBOSE)
-        model.fit(x_train, y_train, shuffle=False, epochs=self.epochs, validation_split=0.1,
+        model.fit(x_train, y_train, shuffle=False, epochs=self.epochs, validation_split=0.1, class_weight=class_weights,
                   batch_size=self.batch_size, verbose=KERAS_VERBOSE)
 
         # save the model to a class variable for further use afterwards (only reading from this variable, no changing)
@@ -293,14 +293,8 @@ class SimpleLSTM:
         pred_labels = self.model.predict(test_data)
 
         pred_dict = {}
+        # Create dictionary of ID : prediction
         for i in range(len(ids)):
-            # It looks like the is sample i with a future, but it's actualy sample i+n_timesteps with a history.
-            # Because in the labels the first n_timesteps are being deleted. Kind of like this:
-            # x = [1,2,3,4,5] Labels: [a,b,c,d,e] t = 2 to all x's in index range(0,2) 2 is added
-            # (not 3 and 4 because they don't have 2 after them so x becomes [1-2-3, 2-3-4, 3-4-5]
-            # Now in the y's the first n_timesteps labels are deleted. So you get [c,d,e]
-            # This is exactly 3,4 and 5 with t previous time_steps and the labels of 3,4,5
-
             instance_id = ids[i].decode()  # Convert numpy bytes b'rsAkJBG001' to rsAkJBG001
             pred_dict[instance_id] = float(pred_labels[i])
 

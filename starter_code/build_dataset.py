@@ -14,12 +14,13 @@ DEBUG = False
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
+
 if DEBUG:
-    TRAINING_PERC = 0.008
-    TEST_PERC = 0.005
+    TRAINING_PERC = 0.005
+    TEST_PERC = 0.01
 else:
-    TRAINING_PERC = 0.05  # Control how much (%) of the training data to actually use for training
-    TEST_PERC = 0.1
+    TRAINING_PERC = 0.01  # Control how much (%) of the training data to actually use for training
+    TEST_PERC = 0.05
 
 # vector length of the word embedding of the token
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
@@ -31,6 +32,8 @@ def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, 
     if not os.path.exists(path_to_save):
         os.makedirs(path_to_save)
 
+    print("Building dataset...")
+
     # Dictionary of features containing only the features that we want to use
     feature_dict, n_features = build_feature_dict(features_to_use, n_threshold, verbose)
 
@@ -39,6 +42,8 @@ def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, 
 
     # Build test data
     build_data("test", test_path, path_to_save, time_steps, feature_dict, n_features, TEST_PERC, verbose)
+
+    print("Dataset done!")
 
 
 def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_features, percentage_use, verbose):
@@ -51,7 +56,7 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
     if DEBUG:
         num_chunks = 2
     else:
-        num_chunks = int(1. / percentage_use)
+        num_chunks = 20  # int(1. / percentage_use)  # Build dataset of 20 chunks
 
     start_line = 0
     total_samples = 0
@@ -120,7 +125,7 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
 
     dataset_file.flush()  # TODO should i put this in the loop?
     dataset_file.close()
-    print("Saved {} {} samples".format(total_samples, phase_type))
+    print("Dataset built with {} {} samples".format(total_samples, phase_type))
 
 
 def build_feature_dict(features_to_use, n_threshold, verbose):

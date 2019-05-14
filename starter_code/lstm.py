@@ -39,8 +39,8 @@ THRESHOLD_OF_OCC = 0
 
 # If you want to build a new data set with you features put preprocessed_data_id = ""
 # If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
-use_pre_processed_data = False
-preprocessed_data_id = "14_5_14.1"  # "11_5_21.15"
+use_pre_processed_data = True
+preprocessed_data_id = "14_5_14.16"  # "11_5_21.15"
 
 # Model parameters
 
@@ -58,13 +58,13 @@ net_architecture = {
 }
 class_weight = {
     0: 1.,
-    1: 50.
+    1: 85.
 }
 
 model_params = {
     "batch_size": 64,  # number of samples in a batch
     "lr": 0.01,  # learning rate
-    "epochs": 20,  # number of epochs
+    "epochs": 10,  # number of epochs
     "time_steps": 50,  # how many time steps to look back to
     'activation': 'sigmoid',
     'optimizer': 'adam'

@@ -35,11 +35,10 @@ def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, 
     feature_dict, n_features = build_feature_dict(features_to_use, n_threshold, verbose)
 
     # Build train data
-    # build_data("train", train_path, path_to_save, time_steps, feature_dict, n_features, TRAINING_PERC, verbose)
+    build_data("train", train_path, path_to_save, time_steps, feature_dict, n_features, TRAINING_PERC, verbose)
 
     # Build test data
     build_data("test", test_path, path_to_save, time_steps, feature_dict, n_features, TEST_PERC, verbose)
-    exit()
 
 
 def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_features, percentage_use, verbose):

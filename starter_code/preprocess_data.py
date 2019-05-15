@@ -156,10 +156,19 @@ def vectorize(data, features_to_use, n_features):
 
     data_vector = np.zeros((len(data), n_features))  # This is memory heavy!!!
 
+    count_samples = 0
+
     # For every instance in the data chunk compute the feature space
     for i, instance in enumerate(data):
 
         sample = instance.to_features()
+
+        # remove all data that is not from the most active user which is 'fNeihcnA'
+        if sample['user'] != 'fNeihcnA':
+            print(sample['user'])
+            continue
+
+        count_samples += 1
         
         index_counter = 0  # keep track on where each feature in the vector is encoded
 

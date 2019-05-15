@@ -155,10 +155,18 @@ def load_data(filename, perc_data_use=1., start_from_line=0, end_line=0):
                             else:
                                 assert '.' not in value
                                 value = int(value)
+
                         instance_properties[key] = value
+
+
+
 
             # Otherwise we're parsing a new Instance for the current exercise
             else:
+                # ignore all the users that are not the most active one
+                if instance_properties['user'] != 'fNeihcnA':
+                    continue
+
                 line = line.split()
                 instance_count += 1
                 if training:

@@ -6,21 +6,23 @@ from data import load_data, LOADING_VERBOSE, EN_ES_NUM_TRAIN_SAMPLES, EN_ES_NUM_
 from count_features import load_feature_dict
 from preprocess_data import preprocess
 
+import operator
+
 # If you want to run it on computer
 # loads small amount of data at a time, builds and saves small dataset, train on small dataset
 # (must not be the whole saved dataset)
 # trains for just 2 epochs
-DEBUG = True
+DEBUG = False
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
 if DEBUG:
-    TRAINING_PERC = 0.0005
-    TEST_PERC = 0.001
+    TRAINING_PERC = 1#0.0005
+    TEST_PERC = 1#0.001
 else:
-    TRAINING_PERC = 0.01  # Control how much (%) of the training data to actually use for training
-    TEST_PERC = 0.05
+    TRAINING_PERC = 1#0.01  # Control how much (%) of the training data to actually use for training
+    TEST_PERC = 1#0.05
 
 # vector length of the word embedding of the token
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
@@ -56,7 +58,7 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
     if DEBUG:
         num_chunks = 2
     else:
-        num_chunks = 20  # int(1. / percentage_use)  # Build dataset of 20 chunks
+        num_chunks = 1  # int(1. / percentage_use)  # Build dataset of 20 chunks
 
     start_line = 0
     total_samples = 0

@@ -50,7 +50,7 @@ def class_weights():
 
     # define the changing parameter and its value
     changing_param_name = 'class_weights'
-    changing_param_value = [{0:1, 1:1}, {0:15, 1:85}, {0:10, 1:100}, {0:5, 1:100}, {0:1, 1:100}, {0:1, 1:200}]
+    changing_param_value = [{0:1, 1:1}, {0:15, 1:85}, {0:10, 1:100}, {0:5, 1:100}, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}, {0:1, 1:200}]
 
     # set constant parameters
     set_params(epochs=10)

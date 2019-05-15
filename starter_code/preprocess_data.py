@@ -8,7 +8,7 @@ EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length fil
 PREPROCESSING_VERBOSE = 1
 
 
-def preprocess(time_steps, data, feature_dict, n_features, labels_dict=None):
+def preprocess(time_steps, data, feature_dict, USE_WORD_EMB, n_features, labels_dict=None):
     """
     Use the features we want in our own format
     """
@@ -24,7 +24,7 @@ def preprocess(time_steps, data, feature_dict, n_features, labels_dict=None):
             labels.append(labels_dict[data[i].instance_id])
 
     # Convert features to one-hot encoding
-    data_vectors = vectorize(data, feature_dict, n_features)
+    data_vectors = vectorize(data, feature_dict, USE_WORD_EMB, n_features)
 
     # TODO maybe put data in time inside build dataset and use directly PyTables
     # Make a 3D matrix of sample x features x history
@@ -110,7 +110,7 @@ def create_binary_dict(values_list, vector_length):
     return values_dict
 
 
-def vectorize(data, features_to_use, n_features):
+def vectorize(data, features_to_use, USE_WORD_EMB, n_features):
 
     if PREPROCESSING_VERBOSE > 1:
         print("start building data vector")
@@ -131,10 +131,16 @@ def vectorize(data, features_to_use, n_features):
 
     # Load word embeddings dictionary
     if 'token' in features_to_use:
-        # Get the length of the word embedding vector
-        embed_length = features_to_use['token'][0]
-        # Create word embedding of the tokens
-        embeddings_dict = load_emb_dict(embed_length)  # This is 400.000
+        if USE_WORD_EMB:
+            # Get the length of the word embedding vector
+            embed_length = features_to_use['token'][0]
+            # Create word embedding of the tokens
+            embeddings_dict = load_emb_dict(embed_length)  # This is 400.000
+        else:
+            len_token_vector = features_to_use['token'][0]
+            # create a dictionary between a token and its binary numpy array
+            token_list = list(features_to_use['token'][1].keys())
+            token_bin_dict = create_binary_dict(token_list, len_token_vector)
 
     # Keep track if word embedding is correct
     not_embedded = []
@@ -147,6 +153,9 @@ def vectorize(data, features_to_use, n_features):
     countries_encoded = 0
     countries_not_encoded = 0
 
+    tokens_encoded = 0
+    tokens_not_encoded = 0
+
     one_hot_features = features_to_use.copy()
     one_hot_features.pop('time', None)  # float
     one_hot_features.pop('days', None)  # float
@@ -158,6 +167,8 @@ def vectorize(data, features_to_use, n_features):
 
     # For every instance in the data chunk compute the feature space
     for i, instance in enumerate(data):
+        #if i> 2:
+        #    break
 
         sample = instance.to_features()
         
@@ -195,21 +206,45 @@ def vectorize(data, features_to_use, n_features):
 
             index_counter += len_countries_vector
 
-        # Then, add the WordEmbedding to the vector at the start (index_token = 0)
-        if 'token' in features_to_use:
-            # index_token = features_to_use['token'][0]  # Since i changed this from index to counter, this doesnt work
-            feature_value = sample['token']
 
-            # Make sure the word exists in the embedding dictionary
-            if feature_value in embeddings_dict:
-                data_vector[i, index_counter:index_counter + embed_length] = embeddings_dict[feature_value]
-                embedded += 1
+        if 'token' in features_to_use:
+            # add the WordEmbedding to the vector at the start (index_token = 0)
+            if USE_WORD_EMB:
+                # index_token = features_to_use['token'][0]  # Since i changed this from index to counter, this doesnt work
+                feature_value = sample['token']
+
+                # Make sure the word exists in the embedding dictionary
+                if feature_value in embeddings_dict:
+                    data_vector[i, index_counter:index_counter + embed_length] = embeddings_dict[feature_value]
+                    embedded += 1
+                else:
+                    not_embedded.append(feature_value)
+                index_counter += embed_length
+            # token is encoded in binary coding
             else:
-                not_embedded.append(feature_value)
-            index_counter += embed_length
+                feature_value = sample['token']
+                # feature_value is the token string. Look it up in the dictionary to convert it to binary
+
+                if feature_value in token_bin_dict:
+                    binary_token = token_bin_dict[feature_value]
+                    data_vector[i, index_counter:index_counter + len_token_vector] = binary_token
+                    tokens_encoded += 1
+                elif feature_value.capitalize() in token_bin_dict:
+                    binary_token = token_bin_dict[feature_value.capitalize()]
+                    data_vector[i, index_counter:index_counter + len_token_vector] = binary_token
+                    tokens_encoded += 1
+                else:
+                    tokens_not_encoded += 1
+
+                index_counter += len_user_vector
+
+
          
         if PREPROCESSING_VERBOSE > 1:
-            print("number of words not embedded: ", len(not_embedded), "number of words embedded: ", embedded)
+            if USE_WORD_EMB:
+                print("number of words not embedded: ", len(not_embedded), "number of words embedded: ", embedded)
+            else:
+                print("number of tokens encoded : ", tokens_encoded, " / number of tokens not encoded: ", tokens_not_encoded)
             print("number of users encoded : ", users_encoded, " / number of users not encoded: ", users_not_encoded)
             print("number of countries encoded : ", countries_encoded, " / number of countries not encoded: ",
                   countries_not_encoded)
@@ -231,7 +266,8 @@ def vectorize(data, features_to_use, n_features):
             index_counter += features_to_use[feature][0]
 
     if PREPROCESSING_VERBOSE > 1:
-        print("Words embedded: {} \nNOT embedded words: {} \n".format(embedded, len(not_embedded)))
+        if USE_WORD_EMB:
+            print("Words embedded: {} \nNOT embedded words: {} \n".format(embedded, len(not_embedded)))
         print("Finished Vectorizing data!")
 
     return data_vector

@@ -12,6 +12,7 @@ from preprocess_data import preprocess
 # trains for just 2 epochs
 DEBUG = True
 
+
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
@@ -26,7 +27,7 @@ else:
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
 
 
-def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, n_threshold, verbose=False):
+def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, n_threshold, USE_WORD_EMB, verbose=False):
 
     path_to_save = "proc_data/data_" + model_id + "/"
     if not os.path.exists(path_to_save):
@@ -35,18 +36,18 @@ def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, 
     print("Building dataset...")
 
     # Dictionary of features containing only the features that we want to use
-    feature_dict, n_features = build_feature_dict(features_to_use, n_threshold, verbose)
+    feature_dict, n_features = build_feature_dict(features_to_use, n_threshold, USE_WORD_EMB,  verbose)
 
     # Build train data
-    build_data("train", train_path, path_to_save, time_steps, feature_dict, n_features, TRAINING_PERC, verbose)
+    build_data("train", train_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB,  n_features, TRAINING_PERC, verbose)
 
     # Build test data
-    build_data("test", test_path, path_to_save, time_steps, feature_dict, n_features, TEST_PERC, verbose)
+    build_data("test", test_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, TEST_PERC, verbose)
 
     print("Dataset done!")
 
 
-def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_features, percentage_use, verbose):
+def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, percentage_use, verbose):
     """
     Loads chunks of the data from data_path in sizes of percentage_use
     preprocess them depending on time_steps, features_to_use, n_threshold
@@ -98,13 +99,13 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
             data, labels, end_line, _, _ = load_data(data_path, perc_data_use=percentage_use,
                                                      start_from_line=start_line, end_line=end_line)
 
-            data, _, labels = preprocess(time_steps, data, feature_dict, m, labels_dict=labels)
+            data, _, labels = preprocess(time_steps, data, feature_dict, USE_WORD_EMB, m, labels_dict=labels)
         else:
             # Testing
             data, end_line = load_data(data_path, perc_data_use=percentage_use,
                                        start_from_line=start_line, end_line=end_line)
 
-            data, data_id, _ = preprocess(time_steps, data, feature_dict, m)
+            data, data_id, _ = preprocess(time_steps, data, feature_dict, USE_WORD_EMB, m)
 
         print("Writing {} {} data with {} features".format(data.shape[0], phase_type, data.shape[2]))
 
@@ -128,7 +129,7 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
     print("Dataset built with {} {} samples".format(total_samples, phase_type))
 
 
-def build_feature_dict(features_to_use, n_threshold, verbose):
+def build_feature_dict(features_to_use, n_threshold, USE_WORD_EMB, verbose):
     """
     Some explanation on this feature dict:
     the keys are different features_attributes (eg part of speech, dependency value, token... )
@@ -158,12 +159,23 @@ def build_feature_dict(features_to_use, n_threshold, verbose):
     for i, n_attr_dict in enumerate(n_attr_dict_list):
         # current_feature is something like 'country' or 'token' etc.
         current_feature = features_to_use[i]
-        # the token feature is not one-hot encoded but is encoded by a pre-trained embedding of length EMBED_length
         if current_feature == 'token':
-            feature_dict['token'] = (EMBED_LENGTH, n_attr_dict)  # TODO Question: Why to remove the words from here?
-            # update amount of different features seen until now
-            n_features += EMBED_LENGTH
+
+            if USE_WORD_EMB:
+                # the token feature is not one-hot encoded but is encoded by a pre-trained embedding of length EMBED_length
+                feature_dict['token'] = (EMBED_LENGTH, n_attr_dict)  # TODO Question: Why to remove the words from here?
+                #update amount of different features seen until now
+                n_features += EMBED_LENGTH
+            else:
+                # binary encoding needs this many spaces reserved: round_up(2_log(number_of_things_to_encode))
+                number_of_tokens = len(n_attr_dict)
+                token_vector_length = max(math.ceil(math.log(number_of_tokens, 2)), 1)
+
+                feature_dict['token'] = (token_vector_length, n_attr_dict)
+                n_features += token_vector_length
+
         elif current_feature == 'user':
+
             # binary encoding needs this many spaces reserved: round_up(2_log(number_of_things_to_encode))
             number_of_users = len(n_attr_dict)
             user_vector_length = max(math.ceil(math.log(number_of_users, 2)), 1)

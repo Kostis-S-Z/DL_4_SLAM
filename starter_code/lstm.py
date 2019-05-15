@@ -39,17 +39,17 @@ THRESHOLD_OF_OCC = 0
 
 # If you want to build a new data set with you features put preprocessed_data_id = ""
 # If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
-use_pre_processed_data = True
+use_pre_processed_data = False
 preprocessed_data_id = "14_5_17.16"  # "11_5_21.15"
 
 # Model parameters
 
 # Use pre trained model
-use_pre_trained_model = True
+use_pre_trained_model = False
 PRE_TRAINED_MODEL_ID = "14_5_17.16"
 
 now = datetime.datetime.now()
-MODEL_ID = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
+MODEL_ID = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute) + "." + str(now.second)
 
 # Define the number of nodes in each layer, the last one is the output
 net_architecture = {
@@ -57,10 +57,9 @@ net_architecture = {
     1: 1
 }
 class_weights = {
-    0: 15,
-    1: 85
+    0: 50,#15,
+    1: 50#85
 }
-
 model_params = {
     "batch_size": 64,  # number of samples in a batch
     "epochs": 10,  # number of epochs
@@ -68,6 +67,7 @@ model_params = {
     'activation': 'sigmoid',
     'optimizer': 'nadam'
 }
+USE_WORD_EMB = 1
 
 
 def main():
@@ -77,7 +77,7 @@ def main():
     else:
         data_id = MODEL_ID
         build_dataset(MODEL_ID, train_path, test_path,
-                      model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC)
+                      model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC, USE_WORD_EMB)
 
     predictions = run_lstm(data_id)
 

@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import math
-from tables import *
+#from tables import *
 from data import load_data, LOADING_VERBOSE, EN_ES_NUM_TRAIN_SAMPLES, EN_ES_NUM_TEST_SAMPLES
 from count_features import load_feature_dict
 from preprocess_data import preprocess
@@ -26,7 +26,7 @@ else:
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
 
 
-def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, n_threshold, verbose=False):
+def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, n_threshold, data, data_vector, labels, verbose=False):
 
     path_to_save = "proc_data/data_" + model_id + "/"
     if not os.path.exists(path_to_save):
@@ -38,26 +38,27 @@ def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, 
     feature_dict, n_features = build_feature_dict(features_to_use, n_threshold, verbose)
 
     # Build train data
-    build_data("train", train_path, path_to_save, time_steps, feature_dict, n_features, TRAINING_PERC, verbose)
+    train_data, train_data_id, train_labels = build_data("train", train_path, path_to_save, time_steps, feature_dict, n_features, TRAINING_PERC, verbose, data, data_vector, labels)
 
     # Build test data
-    build_data("test", test_path, path_to_save, time_steps, feature_dict, n_features, TEST_PERC, verbose)
+    test_data, test_data_id, test_labels = build_data("test", test_path, path_to_save, time_steps, feature_dict, n_features, TEST_PERC, verbose, data, data_vector, labels)
 
     print("Dataset done!")
+    return train_data, train_data_id, train_labels, test_data, test_data_id, test_labels
 
 
-def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_features, percentage_use, verbose):
+def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_features, percentage_use, verbose, data, data_vector, labels):
     """
     Loads chunks of the data from data_path in sizes of percentage_use
     preprocess them depending on time_steps, features_to_use, n_threshold
     and saves them in the directory path_to_save
     """
 
-    if DEBUG:
-        num_chunks = 2
-    else:
-        num_chunks = 20  # int(1. / percentage_use)  # Build dataset of 20 chunks
-
+    # if DEBUG:
+    #     num_chunks = 2
+    # else:
+    #     num_chunks = 20  # int(1. / percentage_use)  # Build dataset of 20 chunks
+    num_chunks = 1
     start_line = 0
     total_samples = 0
 
@@ -74,15 +75,15 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
     labels_shape = (n,)
 
     # Initialize dataset file
-    dataset_file = open_file(path_to_save + phase_type + "_data.h5", mode="a", title=phase_type + " Dataset")
-    atom = Atom.from_dtype(data_type)
-    atom_str = Atom.from_kind('string', 20)  # this sets how big the string can be!
-    dataset = dataset_file.create_carray(dataset_file.root, 'Dataset', atom, dataset_shape)
+    # dataset_file = open_file(path_to_save + phase_type + "_data.h5", mode="a", title=phase_type + " Dataset")
+    # atom = Atom.from_dtype(data_type)
+    # atom_str = Atom.from_kind('string', 20)  # this sets how big the string can be!
+    # dataset = dataset_file.create_carray(dataset_file.root, 'Dataset', atom, dataset_shape)
 
-    if phase_type == 'train':
-        dataset_labels = dataset_file.create_carray(dataset_file.root, 'Labels', atom, labels_shape)
-    else:
-        dataset_id = dataset_file.create_carray(dataset_file.root, 'IDs', atom_str, labels_shape)
+    # if phase_type == 'train':
+    #     dataset_labels = dataset_file.create_carray(dataset_file.root, 'Labels', atom, labels_shape)
+    # else:
+    #     dataset_id = dataset_file.create_carray(dataset_file.root, 'IDs', atom_str, labels_shape)
 
     for chunk in range(num_chunks):
         # If in the last chunk, use all of the data left
@@ -95,16 +96,16 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
 
         if phase_type == 'train':
             # Training
-            data, labels, end_line, _, _ = load_data(data_path, perc_data_use=percentage_use,
-                                                     start_from_line=start_line, end_line=end_line)
+            #data, labels, end_line, _, _ = load_data(data_path, perc_data_use=percentage_use,
+            #                                         start_from_line=start_line, end_line=end_line)
 
-            data, _, labels = preprocess(time_steps, data, feature_dict, m, labels_dict=labels)
+            data, data_id, labels = preprocess(time_steps, data, data_vector, labels_dict=labels)
         else:
             # Testing
-            data, end_line = load_data(data_path, perc_data_use=percentage_use,
-                                       start_from_line=start_line, end_line=end_line)
+            #data, end_line = load_data(data_path, perc_data_use=percentage_use,
+            #                          start_from_line=start_line, end_line=end_line)
 
-            data, data_id, _ = preprocess(time_steps, data, feature_dict, m)
+            data, data_id, labels = preprocess(time_steps, data, data_vector)
 
         print("Writing {} {} data with {} features".format(data.shape[0], phase_type, data.shape[2]))
 
@@ -112,20 +113,21 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
 
         start = total_samples
         end = total_samples + n_samples
-        dataset[start:end] = data
+        #dataset[start:end] = data
 
-        if phase_type == 'train':
-            dataset_labels[start:end] = labels  # if test this is -1
-        else:
-            dataset_id[start:end] = data_id
+        # if phase_type == 'train':
+        #     dataset_labels[start:end] = labels  # if test this is -1
+        # else:
+        #     dataset_id[start:end] = data_id
 
         total_samples += n_samples
         # Make the ending line of this batch, the starting point of the next batch
         start_line = end_line
 
-    dataset_file.flush()  # TODO should i put this in the loop?
-    dataset_file.close()
+    # dataset_file.flush()  # TODO should i put this in the loop?
+    # dataset_file.close()
     print("Dataset built with {} {} samples".format(total_samples, phase_type))
+    return data, data_id, labels
 
 
 def build_feature_dict(features_to_use, n_threshold, verbose):

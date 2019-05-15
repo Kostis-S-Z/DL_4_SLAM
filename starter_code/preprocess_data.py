@@ -8,7 +8,7 @@ EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length fil
 PREPROCESSING_VERBOSE = 1
 
 
-def preprocess(time_steps, data, feature_dict, n_features, labels_dict=None):
+def preprocess(time_steps, data, data_vectors, feature_dict=None, n_features=None, labels_dict=None):
     """
     Use the features we want in our own format
     """
@@ -18,18 +18,16 @@ def preprocess(time_steps, data, feature_dict, n_features, labels_dict=None):
 
     # Convert Objects to list of IDs and Labels in the correct order and remove the first T samples that have no history
     for i in range(time_steps, len(data)):
-        id_list.append(data[i].instance_id)
+        id_list.append(data[i])
         # If the data are training data then they come in pair with labels
         if labels_dict is not None:
-            labels.append(labels_dict[data[i].instance_id])
+            labels.append(labels_dict[data[i]])
 
     # Convert features to one-hot encoding
-    data_vectors = vectorize(data, feature_dict, n_features)
+    #data_vectors = vectorize(data, feature_dict, n_features)
 
-    # TODO maybe put data in time inside build dataset and use directly PyTables
     # Make a 3D matrix of sample x features x history
     data_vectors = data_in_time(time_steps, data_vectors)
-
     return data_vectors, id_list, labels
 
 
@@ -54,7 +52,7 @@ def data_in_time(time_steps, data_x):
     for i in range(time_steps, len(data_x)):
         # if PREPROCESSING_VERBOSE > 1 and i % 100 == 0:
         #    print("Build for batch", int(i/100), "out of", (len(data_x) - self.time_steps + 1)/100)
-        data_new[i, :, :] = data_x[i-time_steps:i]
+        data_new[i, :, :] = data_x[i-time_steps+1:i+1]
     # delete the first t elements of data_new, since they contain only zeros
     data_new = data_new[time_steps:,:,:]
     # also then delete the first t elements from the id_list

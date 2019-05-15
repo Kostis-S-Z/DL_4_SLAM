@@ -39,13 +39,13 @@ THRESHOLD_OF_OCC = 0
 
 # If you want to build a new data set with you features put preprocessed_data_id = ""
 # If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
-use_pre_processed_data = True
+use_pre_processed_data = False
 preprocessed_data_id = "14_5_17.16"  # "11_5_21.15"
 
 # Model parameters
 
 # Use pre trained model
-use_pre_trained_model = True
+use_pre_trained_model = False
 PRE_TRAINED_MODEL_ID = "14_5_17.16"
 
 now = datetime.datetime.now()
@@ -64,28 +64,76 @@ class_weights = {
 model_params = {
     "batch_size": 64,  # number of samples in a batch
     "epochs": 10,  # number of epochs
-    "time_steps": 70,  # how many time steps to look back to
+    "time_steps": 3,  # how many time steps to look back to
     'activation': 'sigmoid',
     'optimizer': 'nadam'
 }
 
 
 def main():
+    n_one = 5
+    n_zero = 10
+    m = 6
+    x = np.ones((n_one, m))
+    y = np.zeros((n_zero, m))
+    z = np.concatenate((x, y), axis=0)
+    dataset = z[np.random.permutation(z.shape[0]), :]
+    split = int(0.8 * (n_one + n_zero))
+    data_vector = dataset[:, :m-1]
+    train_data = dataset[:split, :m - 1]
+    test_data = dataset[split:, :m - 1]
+    labels = dataset[:, m-1]
+    train_labels = dataset[:split,m - 1]
+    test_labels = dataset[split:,m-1]
 
-    if use_pre_processed_data:
-        data_id = preprocessed_data_id
-    else:
-        data_id = MODEL_ID
-        build_dataset(MODEL_ID, train_path, test_path,
-                      model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC)
+    ids = []
+    for i, label in enumerate(labels):
+        if label == 1:
+            ids.append('n'+str(i))
+        elif label == 0:
+            ids.append('z'+str(i))
+        else:
+            print("LABEL NOT ONE OR ZERO")
+            exit()
+    train_ids = ids[:split]
+    test_ids = ids[split:]
+    labels_dict = {}
+    for i in range(len(ids)):
+        labels_dict[ids[i]] = labels[i]
+    train_data, train_data_id, train_labels, test_data, test_data_id, test_labels = build_dataset(MODEL_ID, train_path, test_path,
+                  model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC, ids, data_vector, labels_dict)
 
-    predictions = run_lstm(data_id)
+    print("train_data: \n", train_data.T)
+    #print("test_data: \n", test_data.T)
+    print("train_labels: ", train_labels)
+    #print("test_labels: ", test_labels)
+    print("train_data_id: ", train_data_id)
+    #print("test_data_id: ", test_data_id)
+    exit()
 
-    write_predictions(predictions)
-
-    results = evaluate(pred_path, key_path)
-
-    write_results(results)
+    lstm_model = SimpleLSTM(net_architecture, **model_params)
+    lstm_model.train(train_data, train_labels)
+    predicted = lstm_model.predict(test_data, test_ids)
+    actual = test_labels
+    num = len(actual)
+    acc = 0.
+    for key,value in predicted.items():
+        if key.startswith('z') and round(value) < 0.5:
+            acc +=1
+        elif key.startswith('n') and round(value) > 0.5:
+            acc +=1
+    acc /= num
+    print(actual)
+    print(predicted)
+    print("test accuracy: ", acc)
+    print("\n WE ARE DONE")
+    # predictions = run_lstm(data_id)
+    #
+    # write_predictions(predictions)
+    #
+    # results = evaluate(pred_path, key_path)
+    #
+    # write_results(results)
 
 
 def run_lstm(data_id):
@@ -117,7 +165,6 @@ def run_lstm(data_id):
     test_size_chunk = test_percentage_chunk * EN_ES_NUM_TEST_SAMPLES
 
     lstm_model = SimpleLSTM(net_architecture, **model_params)
-
     if use_pre_trained_model:
         # Load pre trained model
         print("Using pre trained model! Skipping training...")
@@ -241,7 +288,7 @@ class SimpleLSTM:
         var_defaults = {
             "batch_size": 64,  # number of samples in a batch
             "epochs": 10,  # number of epochs
-            "time_steps": 50,  # how many time steps to look back to
+            "time_steps": 3,  # how many time steps to look back to
             'activation': 'sigmoid',
             'optimizer': 'adam'
         }
@@ -298,12 +345,6 @@ class SimpleLSTM:
         model.compile(loss='binary_crossentropy', optimizer=self.optimizer, metrics=['accuracy'])
 
         # Fit the training data to the model and use a part of the data for validation
-        print("x_train: ", x_train.shape)
-        print("x train 0: ", x_train[0][0][0])
-        print("ÿ_train: ", y_train.shape)
-        print("y_train 0: ", y_train[0])
-        print("batch size: ", self.batch_size)
-        print("keras verbose: ", KERAS_VERBOSE)
         model.fit(x_train, y_train, shuffle=False, epochs=self.epochs, validation_split=0.1, class_weight=class_weights,
                   batch_size=self.batch_size, verbose=KERAS_VERBOSE)
 
@@ -323,7 +364,7 @@ class SimpleLSTM:
         pred_dict = {}
         # Create dictionary of ID : prediction
         for i in range(len(ids)):
-            instance_id = ids[i].decode()  # Convert numpy bytes b'rsAkJBG001' to rsAkJBG001
+            instance_id = ids[i] # Convert numpy bytes b'rsAkJBG001' to rsAkJBG001
             pred_dict[instance_id] = float(pred_labels[i])
 
         return pred_dict

@@ -34,18 +34,18 @@ KERAS_VERBOSE = 2  # 0 or 1
 # FEATURES_TO_USE = ['token']  # 2226
 # TODO if you input FEATURES_TO_USE in another order then suddenly the values of format become tokens....
 
-FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'token', 'time', 'days']
-THRESHOLD_OF_OCC = 0
+FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'time', 'days', 'token']
+THRESHOLD_OF_OCC = 10
 
 # If you want to build a new data set with you features put preprocessed_data_id = ""
 # If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
-use_pre_processed_data = True
+use_pre_processed_data = False
 preprocessed_data_id = "14_5_17.16"  # "11_5_21.15"
 
 # Model parameters
 
 # Use pre trained model
-use_pre_trained_model = True
+use_pre_trained_model = False
 PRE_TRAINED_MODEL_ID = "14_5_17.16"
 
 now = datetime.datetime.now()
@@ -64,9 +64,9 @@ class_weights = {
 model_params = {
     "batch_size": 64,  # number of samples in a batch
     "epochs": 10,  # number of epochs
-    "time_steps": 70,  # how many time steps to look back to
+    "time_steps": 32,  # how many time steps to look back to
     'activation': 'sigmoid',
-    'optimizer': 'nadam'
+    'optimizer': 'adam'
 }
 
 

@@ -21,7 +21,7 @@ test_path = data.test_path
 key_path = data.key_path
 pred_path = data.pred_path
 
-VERBOSE = 1  # 0 or 1
+VERBOSE = 0  # 0 or 1
 KERAS_VERBOSE = 2  # 0 or 1
 
 # FEATURES_TO_USE = ['user']  # 2593
@@ -34,8 +34,8 @@ KERAS_VERBOSE = 2  # 0 or 1
 # FEATURES_TO_USE = ['token']  # 2226
 # TODO if you input FEATURES_TO_USE in another order then suddenly the values of format become tokens....
 
-FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'time', 'days', 'token']
-THRESHOLD_OF_OCC = 10
+FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format',  'token']
+THRESHOLD_OF_OCC = 0
 
 # If you want to build a new data set with you features put preprocessed_data_id = ""
 # If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
@@ -49,7 +49,7 @@ use_pre_trained_model = False
 PRE_TRAINED_MODEL_ID = "14_5_17.16"
 
 now = datetime.datetime.now()
-MODEL_ID = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
+MODEL_ID = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute) + "." + str(now.second)
 
 # Define the number of nodes in each layer, the last one is the output
 net_architecture = {
@@ -69,6 +69,7 @@ model_params = {
     'optimizer': 'adam'
 }
 
+USE_WORD_EMB = 0
 
 def main():
 
@@ -77,7 +78,7 @@ def main():
     else:
         data_id = MODEL_ID
         build_dataset(MODEL_ID, train_path, test_path,
-                      model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC)
+                      model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC, USE_WORD_EMB)
 
     predictions = run_lstm(data_id)
 
@@ -97,8 +98,8 @@ def run_lstm(data_id):
     e.g when split 15% the last batch will contain ~200.000 exercises where as the others ~125.000
     """
     if DEBUG:
-        if model_params['epochs'] > 5:
-            model_params['epochs'] = 2
+        #if model_params['epochs'] > 5:
+        #    model_params['epochs'] = 2
 
         training_percentage_chunk = 0.0001
         test_percentage_chunk = 0.001
@@ -107,11 +108,17 @@ def run_lstm(data_id):
         num_test_chunks = 2
 
     else:
-        training_percentage_chunk = 0.01
-        test_percentage_chunk = 0.05
+        # the size of chunk we are training with
+        training_percentage_chunk = 0.05
+        test_percentage_chunk = 0.1
 
-        num_train_chunks = 20  # int(1. / training_percentage_chunk)  # Train with 500.000 samples
-        num_test_chunks = 20  # int(1./test_percentage_chunk)  #
+        # this will use all the data
+        num_train_chunks = int(1. / training_percentage_chunk)
+        num_test_chunks = int(1./test_percentage_chunk)
+
+        # this will just train for a fixed amount of chunks
+        #num_train_chunks = 20
+        #num_test_chunks = 20
 
     training_size_chunk = training_percentage_chunk * EN_ES_NUM_TRAIN_SAMPLES
     test_size_chunk = test_percentage_chunk * EN_ES_NUM_TEST_SAMPLES
@@ -232,32 +239,37 @@ def write_results(results):
         f.close()
 
 
-def set_params(model_id=None, preproc_data_id=None, epochs=None, class_weights_1=None):
+def set_params(model_id=None, preproc_data_id=None, epochs=None, class_weights_1=None, use_word_emb=None):
     '''
     set the model_id and the prepocessed_data_id
     '''
     if model_id:
         global MODEL_ID
-        print("change MODEL_ID from", MODEL_ID)
+        #print("change MODEL_ID from", MODEL_ID)
         MODEL_ID = model_id
-        print("to", MODEL_ID)
+        #print("to", MODEL_ID)
     if preproc_data_id:
         global use_pre_processed_data
-        print("change use_prep_data from", use_pre_processed_data)
+        #print("change use_prep_data from", use_pre_processed_data)
         use_pre_processed_data = True
         global preprocessed_data_id
         preprocessed_data_id = preproc_data_id
-        print("to", use_pre_processed_data)
+        #print("to", use_pre_processed_data)
     if class_weights_1:
         global class_weights
-        print("change class weights from", class_weights)
+        #print("change class weights from", class_weights)
         class_weights = class_weights_1
-        print("to", class_weights)
+        #print("to", class_weights)
     if epochs:
         global model_params
-        print("change epochs from", model_params['epochs'])
+        #print("change epochs from", model_params['epochs'])
         model_params['epochs'] = epochs
-        print("to", model_params['epochs'])
+        #print("to", model_params['epochs'])
+    if use_word_emb== 0 or use_word_emb == 1:
+        global USE_WORD_EMB
+        #print("change Use_word_emb from", USE_WORD_EMB)
+        USE_WORD_EMB = use_word_emb
+        #print("to", USE_WORD_EMB)
 
 def save_constant_parameters(experiment_name, changing_param):
     """
@@ -329,7 +341,7 @@ def run_experiment():
     else:
         data_id = MODEL_ID
         build_dataset(MODEL_ID, train_path, test_path,
-                      model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC)
+                      model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC, USE_WORD_EMB)
 
     predictions = run_lstm(data_id)
 

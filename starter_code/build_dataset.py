@@ -19,14 +19,17 @@ if DEBUG:
     TRAINING_PERC = 0.0005
     TEST_PERC = 0.001
 else:
+    # how big every chunk is, that we build
     TRAINING_PERC = 0.2  # Control how much (%) of the training data to actually use for training
-    TEST_PERC = 0.05
+    TEST_PERC = 0.2
+
+
 
 # vector length of the word embedding of the token
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
 
 
-def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, n_threshold, verbose=False):
+def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, n_threshold, USE_WORD_EMB, verbose=False):
 
     path_to_save = "proc_data/data_" + model_id + "/"
     if not os.path.exists(path_to_save):
@@ -35,28 +38,31 @@ def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, 
     print("Building dataset...")
 
     # Dictionary of features containing only the features that we want to use
-    feature_dict, n_features = build_feature_dict(features_to_use, n_threshold, verbose)
+    feature_dict, n_features = build_feature_dict(features_to_use, n_threshold, USE_WORD_EMB, verbose)
 
     # Build train data
-    build_data("train", train_path, path_to_save, time_steps, feature_dict, n_features, TRAINING_PERC, verbose)
+    build_data("train", train_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, TRAINING_PERC, verbose)
 
     # Build test data
-    build_data("test", test_path, path_to_save, time_steps, feature_dict, n_features, TEST_PERC, verbose)
+    build_data("test", test_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, TEST_PERC, verbose)
 
     print("Dataset done!")
 
 
-def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_features, percentage_use, verbose):
+def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, percentage_use, verbose):
     """
     Loads chunks of the data from data_path in sizes of percentage_use
     preprocess them depending on time_steps, features_to_use, n_threshold
     and saves them in the directory path_to_save
     """
-
     if DEBUG:
         num_chunks = 2
     else:
-        num_chunks = 20  # int(1. / percentage_use)  # Build dataset of 20 chunks
+        # this will build num_chunks data
+
+        # this will caluclate num_chunks so that we use all the data
+        num_chunks = int(1. / percentage_use)
+
 
     start_line = 0
     total_samples = 0
@@ -98,13 +104,13 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
             data, labels, end_line, _, _ = load_data(data_path, perc_data_use=percentage_use,
                                                      start_from_line=start_line, end_line=end_line)
 
-            data, _, labels = preprocess(time_steps, data, feature_dict, m, labels_dict=labels)
+            data, _, labels = preprocess(time_steps, data, feature_dict, USE_WORD_EMB, m, labels_dict=labels)
         else:
             # Testing
             data, end_line = load_data(data_path, perc_data_use=percentage_use,
                                        start_from_line=start_line, end_line=end_line)
 
-            data, data_id, _ = preprocess(time_steps, data, feature_dict, m)
+            data, data_id, _ = preprocess(time_steps, data, feature_dict, USE_WORD_EMB, m)
 
         print("Writing {} {} data with {} features".format(data.shape[0], phase_type, data.shape[2]))
 
@@ -128,7 +134,7 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
     print("Dataset built with {} {} samples".format(total_samples, phase_type))
 
 
-def build_feature_dict(features_to_use, n_threshold, verbose):
+def build_feature_dict(features_to_use, n_threshold, USE_WORD_EMB, verbose):
     """
     Some explanation on this feature dict:
     the keys are different features_attributes (eg part of speech, dependency value, token... )
@@ -150,6 +156,7 @@ def build_feature_dict(features_to_use, n_threshold, verbose):
     # load list of all relevant n_attr_dicts
     n_attr_dict_list = load_feature_dict(features_to_use)
 
+
     # initialize final feature dict and set count to zero
     feature_dict = {}
     n_features = 0
@@ -160,9 +167,17 @@ def build_feature_dict(features_to_use, n_threshold, verbose):
         current_feature = features_to_use[i]
         # the token feature is not one-hot encoded but is encoded by a pre-trained embedding of length EMBED_length
         if current_feature == 'token':
-            feature_dict['token'] = (EMBED_LENGTH, n_attr_dict)  # TODO Question: Why to remove the words from here?
-            # update amount of different features seen until now
-            n_features += EMBED_LENGTH
+            if USE_WORD_EMB:
+                feature_dict['token'] = (EMBED_LENGTH, n_attr_dict)  # TODO Question: Why to remove the words from here?
+                # update amount of different features seen until now
+                n_features += EMBED_LENGTH
+            else:
+                # binary encoding needs this many spaces reserved: round_up(2_log(number_of_things_to_encode))
+                number_of_tokens = len(n_attr_dict)
+                token_vector_length = max(math.ceil(math.log(number_of_tokens, 2)), 1)
+
+                feature_dict['token'] = (token_vector_length, n_attr_dict)
+                n_features += token_vector_length
         elif current_feature == 'user':
             # binary encoding needs this many spaces reserved: round_up(2_log(number_of_things_to_encode))
             number_of_users = len(n_attr_dict)
@@ -188,6 +203,8 @@ def build_feature_dict(features_to_use, n_threshold, verbose):
 
     if LOADING_VERBOSE > 1:
         print("Building finished ")
+    n_features += 2
+
     return feature_dict, n_features
 
 

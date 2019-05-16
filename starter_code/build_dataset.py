@@ -19,7 +19,7 @@ if DEBUG:
     TRAINING_PERC = 0.0005
     TEST_PERC = 0.001
 else:
-    TRAINING_PERC = 0.1  # Control how much (%) of the training data to actually use for training
+    TRAINING_PERC = 0.05  # Control how much (%) of the training data to actually use for training
     TEST_PERC = 0.05
 
 # vector length of the word embedding of the token
@@ -56,7 +56,7 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
     if DEBUG:
         num_chunks = 2
     else:
-        num_chunks = int(1. / percentage_use)  # Build dataset of 20 chunks
+        num_chunks = 5  # int(1. / percentage_use)  # Build dataset of 20 chunks
 
     start_line = 0
     total_samples = 0

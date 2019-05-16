@@ -12,6 +12,8 @@ from preprocess_data import preprocess
 # trains for just 2 epochs
 DEBUG = False
 
+dataset_in_chunks = True
+
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
@@ -21,7 +23,7 @@ if DEBUG:
 else:
     # how big every chunk is, that we build
     TRAINING_PERC = 0.15  # Control how much (%) of the training data to actually use for training
-    TEST_PERC = 0.4
+    TEST_PERC = 0.3
 
 # vector length of the word embedding of the token
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
@@ -56,12 +58,12 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, US
     and saves them in the directory path_to_save
     """
     if DEBUG:
-        num_chunks = 1
+        num_chunks = 2
     else:
         # this will build num_chunks data
-        num_chunks = 1
+        # num_chunks = 2
         # this will caluclate num_chunks so that we use all the data
-        #num_chunks = int(1. / percentage_use)
+        num_chunks = int(1. / percentage_use)
 
     start_line = 0
     total_samples = 0
@@ -78,18 +80,23 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, US
     dataset_shape = (n, t, m)
     labels_shape = (n,)
 
-    # Initialize dataset file
-    dataset_file = open_file(path_to_save + phase_type + "_data.h5", mode="a", title=phase_type + " Dataset")
     atom = Atom.from_dtype(data_type)
     atom_str = Atom.from_kind('string', 20)  # this sets how big the string can be!
-    dataset = dataset_file.create_carray(dataset_file.root, 'Dataset', atom, dataset_shape)
 
-    if phase_type == 'train':
-        dataset_labels = dataset_file.create_carray(dataset_file.root, 'Labels', atom, labels_shape)
-    else:
-        dataset_id = dataset_file.create_carray(dataset_file.root, 'IDs', atom_str, labels_shape)
+    if not dataset_in_chunks:
+        print("Building ONE dataset")
+        # Initialize dataset file
+        dataset_file = open_file(path_to_save + phase_type + "_data.h5", mode="a",
+                                 title=phase_type + " Dataset")
+        dataset = dataset_file.create_carray(dataset_file.root, 'Dataset', atom, dataset_shape)
+
+        if phase_type == 'train':
+            dataset_labels = dataset_file.create_carray(dataset_file.root, 'Labels', atom, labels_shape)
+        else:
+            dataset_id = dataset_file.create_carray(dataset_file.root, 'IDs', atom_str, labels_shape)
 
     for chunk in range(num_chunks):
+
         # If in the last chunk, use all of the data left
         print("\n--Loading {} chunk {} out of {}-- \n".format(phase_type, chunk + 1, num_chunks))
 
@@ -115,21 +122,47 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, US
 
         n_samples = data.shape[0]
 
-        start = total_samples
-        end = total_samples + n_samples
-        dataset[start:end] = data
+        if dataset_in_chunks:
+            n = data.shape[0]
 
-        if phase_type == 'train':
-            dataset_labels[start:end] = labels  # if test this is -1
+            dataset_shape = (n, t, m)
+            labels_shape = (n,)
+            # Initialize dataset file
+            dataset_file = open_file(path_to_save + phase_type + "_data_chunk_" + str(chunk) + ".h5", mode="a",
+                                     title=phase_type + " Dataset")
+            dataset = dataset_file.create_carray(dataset_file.root, 'Dataset', atom, dataset_shape)
+
+            if phase_type == 'train':
+                dataset_labels = dataset_file.create_carray(dataset_file.root, 'Labels', atom, labels_shape)
+            else:
+                dataset_id = dataset_file.create_carray(dataset_file.root, 'IDs', atom_str, labels_shape)
+
+            dataset[:] = data
+
+            if phase_type == 'train':
+                dataset_labels[:] = labels  # if test this is -1
+            else:
+                dataset_id[:] = data_id
+
+            dataset_file.flush()  # TODO should i put this in the loop?
+            dataset_file.close()
         else:
-            dataset_id[start:end] = data_id
+            start = total_samples
+            end = total_samples + n_samples
+            dataset[start:end] = data
+
+            if phase_type == 'train':
+                dataset_labels[start:end] = labels  # if test this is -1
+            else:
+                dataset_id[start:end] = data_id
 
         total_samples += n_samples
         # Make the ending line of this batch, the starting point of the next batch
         start_line = end_line
 
-    dataset_file.flush()  # TODO should i put this in the loop?
-    dataset_file.close()
+    if not dataset_in_chunks:
+        dataset_file.flush()  # TODO should i put this in the loop?
+        dataset_file.close()
     print("Dataset built with {} {} samples".format(total_samples, phase_type))
 
     return total_samples

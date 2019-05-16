@@ -13,7 +13,7 @@ from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed
 # Data evaluation functions
 import data
 from data import get_paths, write_predictions, EN_ES_NUM_TRAIN_SAMPLES, EN_ES_NUM_TEST_SAMPLES
-from build_dataset import build_dataset, DEBUG
+from build_dataset import build_dataset, DEBUG, dataset_in_chunks
 from eval import evaluate
 
 get_paths()
@@ -65,7 +65,7 @@ class_weights = {
 
 model_params = {
     "batch_size": 64,  # number of samples in a batch
-    "epochs": 10,  # number of epochs
+    "epochs": 3,  # number of epochs
     "time_steps": 70,  # how many time steps to look back to
     'activation': 'sigmoid',
     'optimizer': 'adam'
@@ -147,12 +147,14 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
         for chunk in range(num_train_chunks):
             process = psutil.Process(os.getpid())
 
-
             print("\n--Training on chunk {} out of {}-- \n".format(chunk + 1, num_train_chunks))
 
             print("memory usage before loading chunk", chunk, ":", process.memory_info().rss)  # in bytes
 
-            train_data, train_labels = load_preprocessed_data(data_id, "train", i_start=start, i_end=end)
+            if dataset_in_chunks:
+                train_data, train_labels = load_preprocessed_data(data_id, "train", chunk=chunk, i_start=start, i_end=end)
+            else:
+                train_data, train_labels = load_preprocessed_data(data_id, "train", i_start=start, i_end=end)
 
             print("after loading", process.memory_info().rss)  # in bytes
 
@@ -161,7 +163,6 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
             trained_model = lstm_model.load_model(MODEL_ID)
 
             print("memory after loading model", process.memory_info().rss)  # in bytes
-
 
             lstm_model.train(train_data, train_labels, trained_model=trained_model)
 
@@ -193,11 +194,15 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
     return predictions
 
 
-def load_preprocessed_data(data_id, phase_type, i_start=0, i_end=10000):
+def load_preprocessed_data(data_id, phase_type, chunk=None, i_start=0, i_end=10000):
 
     from tables import open_file
 
-    filename = "proc_data/data_" + data_id + "/" + phase_type + "_data.h5"
+    if chunk is not None:
+        filename = "proc_data/data_" + data_id + "/" + phase_type + "_data_chunk_" + str(chunk) + ".h5"
+        print("Load ", filename)
+    else:
+        filename = "proc_data/data_" + data_id + "/" + phase_type + "_data.h5"
 
     try:
         data_file = open_file(filename, driver="H5FD_CORE")

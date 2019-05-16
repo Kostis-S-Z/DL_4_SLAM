@@ -7,6 +7,7 @@ import psutil
 # Keras imports
 from keras.models import load_model
 from keras.models import Sequential
+from keras.optimizers import Adam
 from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed
 
 # Data evaluation functions
@@ -116,8 +117,8 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
 
     else:
         # the size of chunk we are training with
-        training_percentage_chunk = 0.2
-        test_percentage_chunk = 0.4
+        training_percentage_chunk = 0.1
+        test_percentage_chunk = 0.2
 
         # this will use all the data
         num_train_chunks = int(1. / training_percentage_chunk)
@@ -437,8 +438,11 @@ class SimpleLSTM:
             print("Loading pre-existing model...")
             model = trained_model
 
+
+        adam_optim = Adam(lr=0.01)
+
         # loss is binary_crossentropy because we're doing binary classification (correct / incorrect)
-        model.compile(loss='binary_crossentropy', optimizer=self.optimizer, metrics=['accuracy'])
+        model.compile(loss='binary_crossentropy', optimizer=adam_optim, metrics=['accuracy'])
 
         # Fit the training data to the model and use a part of the data for validation
         print("x_train: ", x_train.shape)

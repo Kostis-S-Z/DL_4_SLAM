@@ -10,7 +10,7 @@ from preprocess_data import preprocess
 # loads small amount of data at a time, builds and saves small dataset, train on small dataset
 # (must not be the whole saved dataset)
 # trains for just 2 epochs
-DEBUG = True
+DEBUG = False
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
@@ -22,8 +22,6 @@ else:
     # how big every chunk is, that we build
     TRAINING_PERC = 0.15  # Control how much (%) of the training data to actually use for training
     TEST_PERC = 0.4
-
-
 
 # vector length of the word embedding of the token
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
@@ -64,8 +62,6 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, US
         num_chunks = 1
         # this will caluclate num_chunks so that we use all the data
         #num_chunks = int(1. / percentage_use)
-
-
 
     start_line = 0
     total_samples = 0

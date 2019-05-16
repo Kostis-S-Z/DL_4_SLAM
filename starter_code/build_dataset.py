@@ -20,7 +20,7 @@ if DEBUG:
     TEST_PERC = 0.001
 else:
     # how big every chunk is, that we build
-    TRAINING_PERC = 0.2  # Control how much (%) of the training data to actually use for training
+    TRAINING_PERC = 0.15  # Control how much (%) of the training data to actually use for training
     TEST_PERC = 0.2
 
 
@@ -59,9 +59,10 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, US
         num_chunks = 2
     else:
         # this will build num_chunks data
-
+        num_chunks = 1
         # this will caluclate num_chunks so that we use all the data
-        num_chunks = int(1. / percentage_use)
+        #num_chunks = int(1. / percentage_use)
+
 
 
     start_line = 0

@@ -54,7 +54,7 @@ def data_in_time(time_steps, data_x):
     for i in range(time_steps, len(data_x)):
         # if PREPROCESSING_VERBOSE > 1 and i % 100 == 0:
         #    print("Build for batch", int(i/100), "out of", (len(data_x) - self.time_steps + 1)/100)
-        data_new[i, :, :] = data_x[i-time_steps:i]
+        data_new[i, :, :] = data_x[i-time_steps+1:i+1]
     # delete the first t elements of data_new, since they contain only zeros
     data_new = data_new[time_steps:,:,:]
     # also then delete the first t elements from the id_list

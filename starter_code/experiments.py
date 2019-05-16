@@ -46,11 +46,11 @@ def class_weights():
     # define if you want to use preprocessed data from file
     use_prep_data = False
     if use_prep_data:
-        set_params(preproc_data_id='User15_5_13.59.29')
+        set_params(preproc_data_id='15_5_16.30.58')
 
     # define the changing parameter and its value
     changing_param_name = 'class_weights'
-    changing_param_value = [{0:1, 1:1}, {0:15, 1:85}, {0:10, 1:100}, {0:5, 1:100}, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}, {0:1, 1:200}]
+    changing_param_value = [{0:15, 1:85}, {0:5, 1:100}, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}]
 
     # set constant parameters
     set_params(epochs=10)

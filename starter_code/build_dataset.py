@@ -19,8 +19,8 @@ if DEBUG:
     TRAINING_PERC = 0.0005
     TEST_PERC = 0.001
 else:
-    TRAINING_PERC = 0.02  # Control how much (%) of the training data to actually use for training
-    TEST_PERC = 0.02
+    TRAINING_PERC = 0.005  # Control how much (%) of the training data to actually use for training
+    TEST_PERC = 0.005
 
 # vector length of the word embedding of the token
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use

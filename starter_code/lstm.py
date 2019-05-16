@@ -64,7 +64,7 @@ class_weights = {
 model_params = {
     "batch_size": 64,  # number of samples in a batch
     "epochs": 10,  # number of epochs
-    "time_steps": 32,  # how many time steps to look back to
+    "time_steps": 4,  # how many time steps to look back to
     'activation': 'sigmoid',
     'optimizer': 'adam'
 }
@@ -348,7 +348,7 @@ class SimpleLSTM:
         var_defaults = {
             "batch_size": 64,  # number of samples in a batch
             "epochs": 10,  # number of epochs
-            "time_steps": 50,  # how many time steps to look back to
+            "time_steps": 4,  # how many time steps to look back to
             'activation': 'sigmoid',
             'optimizer': 'adam'
         }

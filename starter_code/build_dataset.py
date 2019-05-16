@@ -17,10 +17,10 @@ if DEBUG:
     # control how much data to use in one chunk on computer
     PERC_OF_DATA_PER_CHUNK = 0.001
     # control how much data use in total
-    AMOUNT_DATA_USE = 0.002
+    AMOUNT_DATA_USE = 0.001
 else:
     # control how much data to use in one chunk in cloud
-    PERC_OF_DATA_PER_CHUNK = 0.025
+    PERC_OF_DATA_PER_CHUNK = 0.05#025
     # control how much data use in total
     AMOUNT_DATA_USE = 0.1
 

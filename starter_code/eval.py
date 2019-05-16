@@ -122,6 +122,9 @@ def compute_avg_log_loss(actual, predicted):
 
     for i in range(num):
         p = predicted[i] if actual[i] > .5 else 1. - predicted[i]
+        if p <= 0:
+            print("Math domain error in function comput_avg_loss in eval.py, p =", p)
+            continue
         loss -= math.log(p)
     loss /= num
     return loss

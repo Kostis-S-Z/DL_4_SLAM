@@ -67,7 +67,7 @@ class_weights = {
 model_params = {
     "batch_size": 64,  # number of samples in a batch
     "epochs": 3,  # number of epochs
-    "time_steps": 70,  # how many time steps to look back to
+    "time_steps": 100,  # how many time steps to look back to
     'activation': 'sigmoid',
     'optimizer': 'adam'
 }
@@ -110,7 +110,7 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
 
             # print Memory usage for debugging
             process = psutil.Process(os.getpid())
-            print("-----MEMORY subprocess before", chunk, "------", process.memory_info().rss)
+            print("-----MEMORY before training with chunk", chunk, "------", int(process.memory_info().rss/(8*10**(3))), "KB")
 
             print("\n--Training on chunk {} out of {}-- \n".format(chunk + 1, NUM_CHUNK_FILES))
 
@@ -141,10 +141,6 @@ def train_chunk(chunk, data_id, lstm_model):
     '''
      load training data, train on it and save the model
     '''
-
-    process = psutil.Process(os.getpid())
-    print("-----MEMORY before training chunk", chunk, "------", process.memory_info().rss)
-
     train_data, train_labels = load_preprocessed_data(data_id, "train", chunk)
 
     trained_model = lstm_model.load_model(MODEL_ID)
@@ -263,7 +259,7 @@ def save_constant_parameters(experiment_name, changing_param):
         os.makedirs("experiments/")
     with open("experiments/experiment_" + experiment_name, "a+") as f:
 
-        f.write("---- Experiment " + experiment_name + " ----\n\n")
+        f.write("\n\n---- Experiment " + experiment_name + " ----\n\n")
 
         f.write("    ------------------ Constant Parameters ----------------------\n")
 
@@ -281,7 +277,8 @@ def save_constant_parameters(experiment_name, changing_param):
         for k in FEATURES_TO_USE[0:-1]:
             f.write(k + ", ")
         f.write(FEATURES_TO_USE[-1] + "\n")
-        f.write("    threshold " + str(THRESHOLD_OF_OCC) + "\n")
+        f.write("    threshold      " + str(THRESHOLD_OF_OCC) + "\n")
+        f.write("    USE_WORD_EMB   " + str(USE_WORD_EMB) + "\n")
         f.write("    -------------------------------------------------------------\n")
 
         # net_architechture

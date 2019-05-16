@@ -35,7 +35,7 @@ model_params = {
 }
 '''
 
-def class_weights():
+def one_experiment():
     '''
     function that runs an example experiment
     writes the used parameters and the results to the file "experiments/experiment_..."
@@ -44,7 +44,7 @@ def class_weights():
     # set the name of the experiment
     now = datetime.datetime.now()
     experiment_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
-    experiment_name = 'class_weights_one_user_' + str(experiment_id)
+    experiment_name = 'class_weights_one_exp_' + str(experiment_id)
 
     # define if you want to use preprocessed data from file
     use_prep_data = False
@@ -53,7 +53,106 @@ def class_weights():
 
     # define the changing parameter and its value
     changing_param_name = 'class_weights'
-    changing_param_value = [{0:15, 1:85}]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
+    changing_param_value = [{0:1, 1:2}]#, {0:15, 1:85}]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
+
+    # set constant parameters
+    set_params(epochs=3)
+    set_params(use_word_emb=0)
+    #
+    #
+    #...
+
+    # save constant parameters to a new "experiment_.." file
+    save_constant_parameters(experiment_name, changing_param_name)
+
+    # run experiment for every parameter value
+    for value in changing_param_value:
+        process = psutil.Process(os.getpid())
+        print("-----MEMORY before starting experiment ------", int(process.memory_info().rss/(8*10**(3))), "KB")
+
+        # update the parameter value
+        set_params(class_weights_1=value)
+
+        # update the model_id for this new model
+        now = datetime.datetime.now()
+        new_model_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute) + "." + str(now.second)
+        set_params(model_id = new_model_id)
+
+        # evaluate the new model and save the results in the experiment file
+        oneExperiment = Process(target=run_experiment, args=(experiment_name, new_model_id, changing_param_name, value,))
+        oneExperiment.start()
+        oneExperiment.join()
+
+def class_weights_binary():
+    '''
+    function that runs an example experiment
+    writes the used parameters and the results to the file "experiments/experiment_..."
+    '''
+
+    # set the name of the experiment
+    now = datetime.datetime.now()
+    experiment_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
+    experiment_name = 'class_weights_binary_' + str(experiment_id)
+
+    # define if you want to use preprocessed data from file
+    use_prep_data = False
+    if use_prep_data:
+        set_params(preproc_data_id='16_5_10.16.47')
+
+    # define the changing parameter and its value
+    changing_param_name = 'class_weights'
+    changing_param_value = [{0:1, 1:2}, {0:15, 1:85}]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
+
+    # set constant parameters
+    set_params(epochs=3)
+    set_params(use_word_emb=0)
+    #
+    #
+    #...
+
+    # save constant parameters to a new "experiment_.." file
+    save_constant_parameters(experiment_name, changing_param_name)
+
+    # run experiment for every parameter value
+    for value in changing_param_value:
+        process = psutil.Process(os.getpid())
+        print("-----MEMORY before starting experiment ------", int(process.memory_info().rss/(8*10**(3))), "KB")
+
+        # update the parameter value
+        set_params(class_weights_1=value)
+
+        # update the model_id for this new model
+        now = datetime.datetime.now()
+        new_model_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute) + "." + str(now.second)
+        set_params(model_id = new_model_id)
+
+        # evaluate the new model and save the results in the experiment file
+        oneExperiment = Process(target=run_experiment, args=(experiment_name, new_model_id, changing_param_name, value,))
+        oneExperiment.start()
+        oneExperiment.join()
+
+        #if value == changing_param_value[0]:
+        #    set_params(preproc_data_id=new_model_id)
+
+def class_weights_embedding():
+    '''
+    function that runs an example experiment
+    writes the used parameters and the results to the file "experiments/experiment_..."
+    '''
+
+    # set the name of the experiment
+    now = datetime.datetime.now()
+    experiment_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
+    experiment_name = 'class_weights_embedding_' + str(experiment_id)
+
+    # define if you want to use preprocessed data from file
+    use_prep_data = False
+    if use_prep_data:
+        set_params(preproc_data_id='16_5_10.16.47')
+
+    # define the changing parameter and its value
+    changing_param_name = 'class_weights'
+    changing_param_value = [{0:1, 1:2}, {0:15, 1:85}]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
 
     # set constant parameters
     set_params(epochs=3)
@@ -68,7 +167,7 @@ def class_weights():
     # run experiment for every parameter value
     for value in changing_param_value:
         process = psutil.Process(os.getpid())
-        print("-----MEMORY before starting experiment ------", process.memory_info().rss)
+        print("-----MEMORY before starting experiment ------", int(process.memory_info().rss/(8*10**(3))), "KB")
 
         # update the parameter value
         set_params(class_weights_1=value)
@@ -90,5 +189,7 @@ def class_weights():
 
 # specify which experiment you want to run
 if __name__ == '__main__':
-    class_weights()
+    one_experiment()
+    #class_weights_binary()
+    #class_weights_embedding()
 

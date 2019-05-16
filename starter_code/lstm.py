@@ -340,10 +340,10 @@ def run_experiment():
         data_id = preprocessed_data_id
     else:
         data_id = MODEL_ID
-        build_dataset(MODEL_ID, train_path, test_path,
+        total_samples = build_dataset(MODEL_ID, train_path, test_path,
                       model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC, USE_WORD_EMB)
 
-    predictions = run_lstm(data_id)
+    predictions = run_lstm(data_id, total_samples )
 
     write_predictions(predictions)
 

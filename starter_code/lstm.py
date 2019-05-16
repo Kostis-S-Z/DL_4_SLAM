@@ -397,11 +397,8 @@ class SimpleLSTM:
             print("Loading pre-existing model...")
             model = trained_model
 
-
-        adam_optim = Adam(lr=0.01)
-
         # loss is binary_crossentropy because we're doing binary classification (correct / incorrect)
-        model.compile(loss='binary_crossentropy', optimizer=adam_optim, metrics=['accuracy'])
+        model.compile(loss='binary_crossentropy', optimizer=self.optimizer, metrics=['accuracy'])
 
         # Fit the training data to the model and use a part of the data for validation
         if VERBOSE > 1:

@@ -16,12 +16,12 @@ DEBUG = True
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
 if DEBUG:
-    TRAINING_PERC = 0.00005
-    TEST_PERC = 0.0001
+    TRAINING_PERC = 0.0005
+    TEST_PERC = 0.001
 else:
     # how big every chunk is, that we build
     TRAINING_PERC = 0.15  # Control how much (%) of the training data to actually use for training
-    TEST_PERC = 0.2
+    TEST_PERC = 0.
 
 
 

@@ -101,11 +101,17 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
         #if model_params['epochs'] > 5:
         #    model_params['epochs'] = 2
 
-        training_percentage_chunk = 0.0001
-        test_percentage_chunk = 0.001
+        # how much percentage of the data in the build dataset we want to use
+        training_percentage_chunk = 1#0.001
+        test_percentage_chunk = 1#0.01
 
-        num_train_chunks = 2
-        num_test_chunks = 2
+        # this will train for a fixed amount of chunks
+        #num_train_chunks = 2
+        #num_test_chunks = 2
+
+        # this will use all the data
+        num_train_chunks = int(1. / training_percentage_chunk)
+        num_test_chunks = int(1. / test_percentage_chunk)
 
     else:
         # the size of chunk we are training with
@@ -418,9 +424,9 @@ class SimpleLSTM:
 
         # Fit the training data to the model and use a part of the data for validation
         print("x_train: ", x_train.shape)
-        print("x train 0: ", x_train[0][0][0])
+        print("first sample: ", x_train[0,0,:])
         print("ÿ_train: ", y_train.shape)
-        print("y_train 0: ", y_train[0])
+        print("first label: ", y_train[0])
         print("batch size: ", self.batch_size)
         print("keras verbose: ", KERAS_VERBOSE)
         model.fit(x_train, y_train, shuffle=False, epochs=self.epochs, validation_split=0.1, class_weight=class_weights,

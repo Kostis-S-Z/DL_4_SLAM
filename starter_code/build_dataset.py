@@ -10,9 +10,10 @@ from preprocess_data import preprocess
 # loads small amount of data at a time, builds and saves small dataset, train on small dataset
 # (must not be the whole saved dataset)
 # trains for just 2 epochs
-DEBUG = True
+DEBUG = False
 
 # save build data as chunks (several files)
+
 dataset_in_chunks = False
 
 # Data parameters
@@ -21,10 +22,21 @@ MAX = 10000000  # Placeholder value to work as an on/off if statement
 if DEBUG:
     TRAINING_PERC = 0.0005
     TEST_PERC = 0.001
+
+    NUM_TRAIN_CHUNKS = 5#int(1. / TRAINING_PERC)
+    NUM_TEST_CHUNKS = 5#int(1. / TEST_PERC)
+
+    # doesntt work with debug
+    dataset_in_chunks = False
+
 else:
     # how big every chunk is, that we build
     TRAINING_PERC = 0.15  # Control how much (%) of the training data to actually use for training
     TEST_PERC = 0.3
+
+    NUM_TRAIN_CHUNKS = int(1. /TRAINING_PERC)
+    NUM_TEST_CHUNKS = int(1. / TEST_PERC)
+
 
 # vector length of the word embedding of the token
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
@@ -58,14 +70,6 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, US
     preprocess them depending on time_steps, features_to_use, n_threshold
     and saves them in the directory path_to_save
     """
-    if DEBUG:
-        # has to be the same as in lstm.py
-        num_chunks = 5
-    else:
-        # this will build num_chunks data
-        # num_chunks = 2
-        # this will caluclate num_chunks so that we use all the data
-        num_chunks = int(1. / percentage_use)
 
     start_line = 0
     total_samples = 0
@@ -73,8 +77,10 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, US
     # Choose type of data and shape
     if phase_type == "train":
         n = EN_ES_NUM_TRAIN_SAMPLES
+        num_chunks = NUM_TRAIN_CHUNKS
     else:
         n = EN_ES_NUM_TEST_SAMPLES
+        num_chunks = NUM_TEST_CHUNKS
 
     t = time_steps  # time steps to look back to
     m = n_features  # actual length of sample vector!

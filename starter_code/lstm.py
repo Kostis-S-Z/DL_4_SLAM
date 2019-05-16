@@ -14,7 +14,7 @@ from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed
 # Data evaluation functions
 import data
 from data import get_paths, write_predictions, EN_ES_NUM_TRAIN_SAMPLES, EN_ES_NUM_TEST_SAMPLES
-from build_dataset import build_dataset, DEBUG, dataset_in_chunks
+from build_dataset import build_dataset, DEBUG, dataset_in_chunks, NUM_TRAIN_CHUNKS, NUM_TEST_CHUNKS
 from eval import evaluate
 
 get_paths()
@@ -105,8 +105,8 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
         #    model_params['epochs'] = 2
 
         # how much percentage of the data in the build dataset we want to use
-        training_percentage_chunk = 0.2#0.001
-        test_percentage_chunk = 0.2#0.01
+        training_percentage_chunk = 0.5#0.001
+        test_percentage_chunk = 0.5#0.01
 
         # this will train for a fixed amount of chunks
         #num_train_chunks = 2
@@ -121,9 +121,13 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
         training_percentage_chunk = 0.1
         test_percentage_chunk = 0.2
 
-        # this will use all the data
-        num_train_chunks = int(1. / training_percentage_chunk)
-        num_test_chunks = int(1./test_percentage_chunk)
+        if dataset_in_chunks:
+            num_train_chunks = NUM_TRAIN_CHUNKS
+            num_test_chunks = NUM_TEST_CHUNKS
+        else:
+            # this will use all the data
+            num_train_chunks = int(1. / training_percentage_chunk)
+            num_test_chunks = int(1./test_percentage_chunk)
 
         # this will just train for a fixed amount of chunks
         #num_train_chunks = 20
@@ -143,9 +147,9 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
         start = 0
         end = training_size_chunk
 
-        for chunk in range(num_train_chunks):
+        for chunk in range(num_train_chunks - 1):
             process = psutil.Process(os.getpid())
-            print("-----MEMORY before", chunk, "------", process.memory_info().rss)
+            print("-----MEMORY subprocess before", chunk, "------", process.memory_info().rss)
 
             oneExperiment = Process(target=train_chunk,
                                     args=(chunk, num_train_chunks, data_id, start, end, lstm_model,))
@@ -154,6 +158,15 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
 
             start = end
             end = end + training_size_chunk
+
+
+    lstm_model = SimpleLSTM(net_architecture, **model_params)
+
+    trained_model = lstm_model.load_model(MODEL_ID)
+
+    lstm_model.model = trained_model
+
+
 
     # Testing
     predictions = {}
@@ -190,6 +203,7 @@ def train_chunk(chunk, num_train_chunks, data_id, start, end, lstm_model):
     lstm_model.train(train_data, train_labels, trained_model=trained_model)
 
     lstm_model.save_model(MODEL_ID)
+
 
 
 

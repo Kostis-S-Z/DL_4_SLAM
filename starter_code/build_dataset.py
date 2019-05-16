@@ -56,7 +56,7 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, n_
     if DEBUG:
         num_chunks = 2
     else:
-        num_chunks = 20  # int(1. / percentage_use)  # Build dataset of 20 chunks
+        num_chunks = int(1. / percentage_use)  # Build dataset of 20 chunks
 
     start_line = 0
     total_samples = 0

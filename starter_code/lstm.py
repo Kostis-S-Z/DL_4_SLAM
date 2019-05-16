@@ -110,8 +110,8 @@ def run_lstm(data_id):
         training_percentage_chunk = 0.01
         test_percentage_chunk = 0.05
 
-        num_train_chunks = 20  # int(1. / training_percentage_chunk)  # Train with 500.000 samples
-        num_test_chunks = 20  # int(1./test_percentage_chunk)  #
+        num_train_chunks = int(1. / training_percentage_chunk)  # Train with 500.000 samples
+        num_test_chunks = int(1./test_percentage_chunk)  #
 
     training_size_chunk = training_percentage_chunk * EN_ES_NUM_TRAIN_SAMPLES
     test_size_chunk = test_percentage_chunk * EN_ES_NUM_TEST_SAMPLES

@@ -10,9 +10,10 @@ from preprocess_data import preprocess
 # loads small amount of data at a time, builds and saves small dataset, train on small dataset
 # (must not be the whole saved dataset)
 # trains for just 2 epochs
-DEBUG = False
+DEBUG = True
 
-dataset_in_chunks = True
+# save build data as chunks (several files)
+dataset_in_chunks = False
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
@@ -58,7 +59,8 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, US
     and saves them in the directory path_to_save
     """
     if DEBUG:
-        num_chunks = 2
+        # has to be the same as in lstm.py
+        num_chunks = 5
     else:
         # this will build num_chunks data
         # num_chunks = 2

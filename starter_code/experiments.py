@@ -5,6 +5,9 @@ from lstm import set_params, save_constant_parameters, save_changing_param_and_r
 import os
 import datetime
 
+from multiprocessing import Process
+import psutil
+
 # import all parameters that we might change in our experiments
 #from lstm import FEATURES_TO_USE, THRESHOLD_OF_OCC, net_architecture, class_weights, model_params
 '''
@@ -50,10 +53,10 @@ def class_weights():
 
     # define the changing parameter and its value
     changing_param_name = 'class_weights'
-    changing_param_value = [{0:1, 1:1}, {0:15, 1:85}]#, {0:5, 1:100}, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}]
+    changing_param_value = [{0:5, 1:100}]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
 
     # set constant parameters
-    set_params(epochs=3)
+    set_params(epochs=1)
     set_params(use_word_emb=0)
     #
     #
@@ -64,6 +67,9 @@ def class_weights():
 
     # run experiment for every parameter value
     for value in changing_param_value:
+        process = psutil.Process(os.getpid())
+        print("-----MEMORY before starting experiment ------", process.memory_info().rss)
+
         # update the parameter value
         set_params(class_weights_1=value)
 
@@ -72,11 +78,10 @@ def class_weights():
         new_model_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute) + "." + str(now.second)
         set_params(model_id = new_model_id)
 
-        # evaluate the new model
-        results = run_experiment()
-
-        # save results to the experiment file
-        save_changing_param_and_results(experiment_name, new_model_id, changing_param_name, value, results)
+        # evaluate the new model and save the results in the experiment file
+        oneExperiment = Process(target=run_experiment, args=(experiment_name, new_model_id, changing_param_name, value,))
+        oneExperiment.start()
+        oneExperiment.join()
 
         #if value == changing_param_value[0]:
         #    set_params(preproc_data_id=new_model_id)

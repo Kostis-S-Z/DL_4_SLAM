@@ -3,6 +3,7 @@ import numpy as np
 import datetime
 import os
 import psutil
+from multiprocessing import Process
 
 # Keras imports
 from keras.models import load_model
@@ -142,35 +143,14 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
         start = 0
         end = training_size_chunk
 
-        import gc
-
         for chunk in range(num_train_chunks):
             process = psutil.Process(os.getpid())
+            print("-----MEMORY before", chunk, "------", process.memory_info().rss)
 
-            print("\n--Training on chunk {} out of {}-- \n".format(chunk + 1, num_train_chunks))
-
-            print("memory usage before loading chunk", chunk, ":", process.memory_info().rss)  # in bytes
-
-            if dataset_in_chunks:
-                train_data, train_labels = load_preprocessed_data(data_id, "train", chunk=chunk, i_start=start, i_end=end)
-            else:
-                train_data, train_labels = load_preprocessed_data(data_id, "train", i_start=start, i_end=end)
-
-            print("after loading", process.memory_info().rss)  # in bytes
-
-            gc.collect()
-
-            trained_model = lstm_model.load_model(MODEL_ID)
-
-            print("memory after loading model", process.memory_info().rss)  # in bytes
-
-            lstm_model.train(train_data, train_labels, trained_model=trained_model)
-
-            print("memory after training model", process.memory_info().rss)  # in bytes
-
-            lstm_model.save_model(MODEL_ID)
-
-
+            oneExperiment = Process(target=train_chunk,
+                                    args=(chunk, num_train_chunks, data_id, start, end, lstm_model,))
+            oneExperiment.start()
+            oneExperiment.join()
 
             start = end
             end = end + training_size_chunk
@@ -192,6 +172,26 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
         end = end + test_size_chunk
 
     return predictions
+
+
+def train_chunk(chunk, num_train_chunks, data_id, start, end, lstm_model):
+    print("\n--Training on chunk {} out of {}-- \n".format(chunk + 1, num_train_chunks))
+
+    process = psutil.Process(os.getpid())
+    print("-----MEMORY before training chunk", chunk, "------", process.memory_info().rss)
+
+    if dataset_in_chunks:
+        train_data, train_labels = load_preprocessed_data(data_id, "train", chunk=chunk, i_start=start, i_end=end)
+    else:
+        train_data, train_labels = load_preprocessed_data(data_id, "train", i_start=start, i_end=end)
+
+    trained_model = lstm_model.load_model(MODEL_ID)
+
+    lstm_model.train(train_data, train_labels, trained_model=trained_model)
+
+    lstm_model.save_model(MODEL_ID)
+
+
 
 
 def load_preprocessed_data(data_id, phase_type, chunk=None, i_start=0, i_end=10000):
@@ -364,7 +364,7 @@ def save_changing_param_and_results(experiment_name, model_id, var_name, var_val
         f.write("    --------------------------------------------------------\n\n")
         f.close()
 
-def run_experiment():
+def run_experiment(experiment_name, new_model_id, changing_param_name, value):
 
     if use_pre_processed_data:
         data_id = preprocessed_data_id
@@ -379,7 +379,7 @@ def run_experiment():
 
     results = evaluate(pred_path, key_path)
 
-    return results
+    save_changing_param_and_results(experiment_name, new_model_id, changing_param_name, value, results)
 
 class SimpleLSTM:
 
@@ -450,14 +450,15 @@ class SimpleLSTM:
         model.compile(loss='binary_crossentropy', optimizer=adam_optim, metrics=['accuracy'])
 
         # Fit the training data to the model and use a part of the data for validation
-        print("x_train: ", x_train.shape)
-        print("first sample: ", x_train[0,0,:])
-        print("ÿ_train: ", y_train.shape)
-        print("first label: ", y_train[0])
-        print("amount 1 labels", sum(y_train))
-        print("amount 0 labels", len(y_train) - sum(y_train))
-        print("batch size: ", self.batch_size)
-        print("keras verbose: ", KERAS_VERBOSE)
+        if VERBOSE > 1:
+            print("x_train: ", x_train.shape)
+            print("first sample: ", x_train[0,0,:])
+            print("ÿ_train: ", y_train.shape)
+            print("first label: ", y_train[0])
+            print("amount 1 labels", sum(y_train))
+            print("amount 0 labels", len(y_train) - sum(y_train))
+            print("batch size: ", self.batch_size)
+            print("keras verbose: ", KERAS_VERBOSE)
         model.fit(x_train, y_train, shuffle=False, epochs=self.epochs, validation_split=0.1, class_weight=class_weights,
                   batch_size=self.batch_size, verbose=KERAS_VERBOSE)
 

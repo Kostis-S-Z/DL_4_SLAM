@@ -14,7 +14,7 @@ from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed
 # Data evaluation functions
 import data
 from data import get_paths, write_predictions, EN_ES_NUM_TRAIN_SAMPLES, EN_ES_NUM_TEST_SAMPLES
-from build_dataset import build_dataset, DEBUG, dataset_in_chunks, NUM_TRAIN_CHUNKS, NUM_TEST_CHUNKS
+from build_dataset import build_dataset, DEBUG, NUM_CHUNK_FILES
 from eval import evaluate
 
 get_paths()
@@ -100,41 +100,6 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
     The chunks are split evenly, except the last one. The last one will contain a bit more.
     e.g when split 15% the last batch will contain ~200.000 exercises where as the others ~125.000
     """
-    if DEBUG:
-        #if model_params['epochs'] > 5:
-        #    model_params['epochs'] = 2
-
-        # how much percentage of the data in the build dataset we want to use
-        training_percentage_chunk = 0.5#0.001
-        test_percentage_chunk = 0.5#0.01
-
-        # this will train for a fixed amount of chunks
-        #num_train_chunks = 2
-        #num_test_chunks = 2
-
-        # this will use all the data
-        num_train_chunks = int(1. / training_percentage_chunk)
-        num_test_chunks = int(1. / test_percentage_chunk)
-
-    else:
-        # the size of chunk we are training with
-        training_percentage_chunk = 0.1
-        test_percentage_chunk = 0.2
-
-        if dataset_in_chunks:
-            num_train_chunks = NUM_TRAIN_CHUNKS
-            num_test_chunks = NUM_TEST_CHUNKS
-        else:
-            # this will use all the data
-            num_train_chunks = int(1. / training_percentage_chunk)
-            num_test_chunks = int(1./test_percentage_chunk)
-
-        # this will just train for a fixed amount of chunks
-        #num_train_chunks = 20
-        #num_test_chunks = 20
-
-    training_size_chunk = training_percentage_chunk * total_samples_train
-    test_size_chunk = test_percentage_chunk * total_samples_test
 
     lstm_model = SimpleLSTM(net_architecture, **model_params)
 
@@ -144,21 +109,17 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
         lstm_model.model = lstm_model.load_model(PRE_TRAINED_MODEL_ID)
     else:
         # Train as normal
-        start = 0
-        end = training_size_chunk
 
-        for chunk in range(num_train_chunks - 1):
+        for chunk in range(NUM_CHUNK_FILES):
             process = psutil.Process(os.getpid())
             print("-----MEMORY subprocess before", chunk, "------", process.memory_info().rss)
 
-            oneExperiment = Process(target=train_chunk,
-                                    args=(chunk, num_train_chunks, data_id, start, end, lstm_model,))
-            oneExperiment.start()
-            oneExperiment.join()
+            print("\n--Training on chunk {} out of {}-- \n".format(chunk + 1, NUM_CHUNK_FILES))
 
-            start = end
-            end = end + training_size_chunk
-
+            train_process = Process(target=train_chunk,
+                                    args=(chunk, data_id, lstm_model,))
+            train_process.start()
+            train_process.join()
 
     lstm_model = SimpleLSTM(net_architecture, **model_params)
 
@@ -166,37 +127,25 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
 
     lstm_model.model = trained_model
 
-
-
     # Testing
     predictions = {}
 
-    start = 0
-    end = test_size_chunk
+    for chunk in range(NUM_CHUNK_FILES):
+        print("\n--Testing on chunk {} out of {}-- \n".format(chunk + 1, NUM_CHUNK_FILES))
 
-    for chunk in range(num_test_chunks):
-        print("\n--Testing on chunk {} out of {}-- \n".format(chunk + 1, num_test_chunks))
-
-        test_data, test_id = load_preprocessed_data(data_id, "test", i_start=start, i_end=end)
+        test_data, test_id = load_preprocessed_data(data_id, "test", chunk)
 
         predictions.update(lstm_model.predict(test_data, test_id))
-
-        start = end
-        end = end + test_size_chunk
 
     return predictions
 
 
-def train_chunk(chunk, num_train_chunks, data_id, start, end, lstm_model):
-    print("\n--Training on chunk {} out of {}-- \n".format(chunk + 1, num_train_chunks))
+def train_chunk(chunk, data_id, lstm_model):
 
     process = psutil.Process(os.getpid())
     print("-----MEMORY before training chunk", chunk, "------", process.memory_info().rss)
 
-    if dataset_in_chunks:
-        train_data, train_labels = load_preprocessed_data(data_id, "train", chunk=chunk, i_start=start, i_end=end)
-    else:
-        train_data, train_labels = load_preprocessed_data(data_id, "train", i_start=start, i_end=end)
+    train_data, train_labels = load_preprocessed_data(data_id, "train", chunk)
 
     trained_model = lstm_model.load_model(MODEL_ID)
 
@@ -205,33 +154,24 @@ def train_chunk(chunk, num_train_chunks, data_id, start, end, lstm_model):
     lstm_model.save_model(MODEL_ID)
 
 
-
-
-
-def load_preprocessed_data(data_id, phase_type, chunk=None, i_start=0, i_end=10000):
+def load_preprocessed_data(data_id, phase_type, chunk):
 
     from tables import open_file
 
-    if chunk is not None:
-        filename = "proc_data/data_" + data_id + "/" + phase_type + "_data_chunk_" + str(chunk) + ".h5"
-        print("Load ", filename)
-    else:
-        filename = "proc_data/data_" + data_id + "/" + phase_type + "_data.h5"
+    filename = "proc_data/data_" + data_id + "/" + phase_type + "_data_chunk_" + str(chunk) + ".h5"
+    print("Load ", filename)
 
     try:
         data_file = open_file(filename, driver="H5FD_CORE")
 
-        start = i_start
-        end = i_end  # default value is 10.000
-
-        dataset = data_file.root.Dataset[start:end]
+        dataset = data_file.root.Dataset[:]
 
         if phase_type == 'train':
             print("loading training labels")
-            data_util = data_file.root.Labels[start:end]
+            data_util = data_file.root.Labels[:]
         else:
             print("loading test ids")
-            data_util = data_file.root.IDs[start:end]
+            data_util = data_file.root.IDs[:]
 
         data_file.close()
         return dataset, data_util

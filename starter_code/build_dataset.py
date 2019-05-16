@@ -10,33 +10,32 @@ from preprocess_data import preprocess
 # loads small amount of data at a time, builds and saves small dataset, train on small dataset
 # (must not be the whole saved dataset)
 # trains for just 2 epochs
-DEBUG = False
+DEBUG = True
 
-# save build data as chunks (several files)
-
-dataset_in_chunks = False
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
+# NUM_TRAIN_CHUNKS AND NUM_TEST_CHUNKS control either how many dataset chunks will be built OR
+# in one dataset file how many chunks will be inside!
+
 if DEBUG:
-    TRAINING_PERC = 0.0005
-    TEST_PERC = 0.001
+    PERC_OF_DATA_PER_CHUNK = 0.001
 
-    NUM_TRAIN_CHUNKS = 5#int(1. / TRAINING_PERC)
-    NUM_TEST_CHUNKS = 5#int(1. / TEST_PERC)
+    AMOUNT_DATA_USE = 0.002
 
-    # doesntt work with debug
-    dataset_in_chunks = False
-
+    # leads to amount_data / perc... = amount chunk_files
 else:
-    # how big every chunk is, that we build
-    TRAINING_PERC = 0.15  # Control how much (%) of the training data to actually use for training
-    TEST_PERC = 0.3
+    # IF dataset_in_chunks = False and Debug = False
+    # it means we will create a whole dataset in one file
+    # meaning 2.6 million in one file
+    # meaning ... Memory error
 
-    NUM_TRAIN_CHUNKS = int(1. /TRAINING_PERC)
-    NUM_TEST_CHUNKS = int(1. / TEST_PERC)
+    PERC_OF_DATA_PER_CHUNK = 0.1
 
+    AMOUNT_DATA_USE = 1.  # How much percentage of the whole dataset to use for building the dataset files and training
+
+NUM_CHUNK_FILES = int(AMOUNT_DATA_USE / PERC_OF_DATA_PER_CHUNK)
 
 # vector length of the word embedding of the token
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
@@ -54,17 +53,17 @@ def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, 
     feature_dict, n_features = build_feature_dict(features_to_use, n_threshold, USE_WORD_EMB, verbose)
 
     # Build train data
-    total_samples_train = build_data("train", train_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, TRAINING_PERC, verbose)
+    total_samples_train = build_data("train", train_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, verbose)
 
     # Build test data
-    total_samples_test = build_data("test", test_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, TEST_PERC, verbose)
+    total_samples_test = build_data("test", test_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, verbose)
 
     print("Dataset done!")
 
     return total_samples_train, total_samples_test
 
 
-def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, percentage_use, verbose):
+def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, verbose):
     """
     Loads chunks of the data from data_path in sizes of percentage_use
     preprocess them depending on time_steps, features_to_use, n_threshold
@@ -74,27 +73,45 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, US
     start_line = 0
     total_samples = 0
 
-    # Choose type of data and shape
-    if phase_type == "train":
-        n = EN_ES_NUM_TRAIN_SAMPLES
-        num_chunks = NUM_TRAIN_CHUNKS
-    else:
-        n = EN_ES_NUM_TEST_SAMPLES
-        num_chunks = NUM_TEST_CHUNKS
-
     t = time_steps  # time steps to look back to
     m = n_features  # actual length of sample vector!
     data_type = np.dtype('float64')
-    dataset_shape = (n, t, m)
-    labels_shape = (n,)
 
     atom = Atom.from_dtype(data_type)
     atom_str = Atom.from_kind('string', 20)  # this sets how big the string can be!
 
-    if not dataset_in_chunks:
-        print("Building ONE dataset")
+    for chunk in range(NUM_CHUNK_FILES):
+
+        # If in the last chunk, use all of the data left
+        print("\n--Loading {} chunk {} out of {}-- \n".format(phase_type, chunk + 1, NUM_CHUNK_FILES))
+
+        if chunk != NUM_CHUNK_FILES:
+            end_line = 0
+        else:
+            end_line = MAX  # the reader will read until the end of file and will exit
+
+        if phase_type == 'train':
+            # Training
+            data, labels, end_line, _, _ = load_data(data_path, perc_data_use=PERC_OF_DATA_PER_CHUNK,
+                                                     start_from_line=start_line, end_line=end_line)
+
+            data, _, labels = preprocess(time_steps, data, feature_dict, USE_WORD_EMB, m, labels_dict=labels)
+        else:
+            # Testing
+            data, end_line = load_data(data_path, perc_data_use=PERC_OF_DATA_PER_CHUNK,
+                                       start_from_line=start_line, end_line=end_line)
+
+            data, data_id, _ = preprocess(time_steps, data, feature_dict, USE_WORD_EMB, m)
+
+        print("Writing {} {} data with {} features and {} timesteps"
+              .format(data.shape[0], phase_type, data.shape[2], time_steps))
+
+        n = data.shape[0]
+
+        dataset_shape = (n, t, m)
+        labels_shape = (n,)
         # Initialize dataset file
-        dataset_file = open_file(path_to_save + phase_type + "_data.h5", mode="a",
+        dataset_file = open_file(path_to_save + phase_type + "_data_chunk_" + str(chunk) + ".h5", mode="a",
                                  title=phase_type + " Dataset")
         dataset = dataset_file.create_carray(dataset_file.root, 'Dataset', atom, dataset_shape)
 
@@ -103,74 +120,20 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, US
         else:
             dataset_id = dataset_file.create_carray(dataset_file.root, 'IDs', atom_str, labels_shape)
 
-    for chunk in range(num_chunks):
-
-        # If in the last chunk, use all of the data left
-        print("\n--Loading {} chunk {} out of {}-- \n".format(phase_type, chunk + 1, num_chunks))
-
-        if chunk != num_chunks:
-            end_line = 0
-        else:
-            end_line = MAX  # the reader will read until the end of file and will exit
+        dataset[:] = data
 
         if phase_type == 'train':
-            # Training
-            data, labels, end_line, _, _ = load_data(data_path, perc_data_use=percentage_use,
-                                                     start_from_line=start_line, end_line=end_line)
-
-            data, _, labels = preprocess(time_steps, data, feature_dict, USE_WORD_EMB, m, labels_dict=labels)
+            dataset_labels[:] = labels  # if test this is -1
         else:
-            # Testing
-            data, end_line = load_data(data_path, perc_data_use=percentage_use,
-                                       start_from_line=start_line, end_line=end_line)
+            dataset_id[:] = data_id
 
-            data, data_id, _ = preprocess(time_steps, data, feature_dict, USE_WORD_EMB, m)
+        dataset_file.flush()
+        dataset_file.close()
 
-        print("Writing {} {} data with {} features".format(data.shape[0], phase_type, data.shape[2]))
-
-        n_samples = data.shape[0]
-
-        if dataset_in_chunks:
-            n = data.shape[0]
-
-            dataset_shape = (n, t, m)
-            labels_shape = (n,)
-            # Initialize dataset file
-            dataset_file = open_file(path_to_save + phase_type + "_data_chunk_" + str(chunk) + ".h5", mode="a",
-                                     title=phase_type + " Dataset")
-            dataset = dataset_file.create_carray(dataset_file.root, 'Dataset', atom, dataset_shape)
-
-            if phase_type == 'train':
-                dataset_labels = dataset_file.create_carray(dataset_file.root, 'Labels', atom, labels_shape)
-            else:
-                dataset_id = dataset_file.create_carray(dataset_file.root, 'IDs', atom_str, labels_shape)
-
-            dataset[:] = data
-
-            if phase_type == 'train':
-                dataset_labels[:] = labels  # if test this is -1
-            else:
-                dataset_id[:] = data_id
-
-            dataset_file.flush()  # TODO should i put this in the loop?
-            dataset_file.close()
-        else:
-            start = total_samples
-            end = total_samples + n_samples
-            dataset[start:end] = data
-
-            if phase_type == 'train':
-                dataset_labels[start:end] = labels  # if test this is -1
-            else:
-                dataset_id[start:end] = data_id
-
-        total_samples += n_samples
+        total_samples += n
         # Make the ending line of this batch, the starting point of the next batch
         start_line = end_line
 
-    if not dataset_in_chunks:
-        dataset_file.flush()  # TODO should i put this in the loop?
-        dataset_file.close()
     print("Dataset built with {} {} samples".format(total_samples, phase_type))
 
     return total_samples

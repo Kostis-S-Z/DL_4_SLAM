@@ -94,11 +94,8 @@ def main():
 
 def run_lstm(data_id, total_samples_train, total_samples_test):
     """
-    Train a model with a chunk of the data, then save the weights, the load another chunk, load the weights and
+    Train a model with a whole datachunk, then save the weights and load the next datachunk and
     resume training. This is done to go make it possible to train a full model in system with limited memory.
-2500000
-    The chunks are split evenly, except the last one. The last one will contain a bit more.
-    e.g when split 15% the last batch will contain ~200.000 exercises where as the others ~125.000
     """
 
     lstm_model = SimpleLSTM(net_architecture, **model_params)
@@ -109,27 +106,27 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
         lstm_model.model = lstm_model.load_model(PRE_TRAINED_MODEL_ID)
     else:
         # Train as normal
-
         for chunk in range(NUM_CHUNK_FILES):
+
+            # print Memory usage for debugging
             process = psutil.Process(os.getpid())
             print("-----MEMORY subprocess before", chunk, "------", process.memory_info().rss)
 
             print("\n--Training on chunk {} out of {}-- \n".format(chunk + 1, NUM_CHUNK_FILES))
 
+            # start a new process that will load the "chunk"s training data, train on it and save the model
             train_process = Process(target=train_chunk,
                                     args=(chunk, data_id, lstm_model,))
             train_process.start()
             train_process.join()
 
+    # load the model that you just trained
     lstm_model = SimpleLSTM(net_architecture, **model_params)
-
     trained_model = lstm_model.load_model(MODEL_ID)
-
     lstm_model.model = trained_model
 
-    # Testing
+    # test the model on all the test data and save the results to predictions
     predictions = {}
-
     for chunk in range(NUM_CHUNK_FILES):
         print("\n--Testing on chunk {} out of {}-- \n".format(chunk + 1, NUM_CHUNK_FILES))
 
@@ -141,6 +138,9 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
 
 
 def train_chunk(chunk, data_id, lstm_model):
+    '''
+     load training data, train on it and save the model
+    '''
 
     process = psutil.Process(os.getpid())
     print("-----MEMORY before training chunk", chunk, "------", process.memory_info().rss)

@@ -6,40 +6,29 @@ from data import load_data, LOADING_VERBOSE, EN_ES_NUM_TRAIN_SAMPLES, EN_ES_NUM_
 from count_features import load_feature_dict
 from preprocess_data import preprocess
 
-# If you want to run it on computer
-# loads small amount of data at a time, builds and saves small dataset, train on small dataset
-# (must not be the whole saved dataset)
-# trains for just 2 epochs
+# run it on computer
 DEBUG = False
 
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
-# NUM_TRAIN_CHUNKS AND NUM_TEST_CHUNKS control either how many dataset chunks will be built OR
-# in one dataset file how many chunks will be inside!
-
 if DEBUG:
+    # control how much data to use in one chunk on computer
     PERC_OF_DATA_PER_CHUNK = 0.001
-
+    # control how much data use in total
     AMOUNT_DATA_USE = 0.002
-
-    # leads to amount_data / perc... = amount chunk_files
 else:
-    # IF dataset_in_chunks = False and Debug = False
-    # it means we will create a whole dataset in one file
-    # meaning 2.6 million in one file
-    # meaning ... Memory error
+    # control how much data to use in one chunk in cloud
+    PERC_OF_DATA_PER_CHUNK = 0.025
+    # control how much data use in total
+    AMOUNT_DATA_USE = 0.1
 
-    PERC_OF_DATA_PER_CHUNK = 0.1
-
-    AMOUNT_DATA_USE = 1.  # How much percentage of the whole dataset to use for building the dataset files and training
-
+# compute how many chunks we get based on how much data we want to use in total and how much data we can use in one chunk
 NUM_CHUNK_FILES = int(AMOUNT_DATA_USE / PERC_OF_DATA_PER_CHUNK)
 
 # vector length of the word embedding of the token
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
-
 
 def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, n_threshold, USE_WORD_EMB, verbose=False):
 

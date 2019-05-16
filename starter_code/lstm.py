@@ -77,10 +77,10 @@ def main():
         data_id = preprocessed_data_id
     else:
         data_id = MODEL_ID
-        total_samples = build_dataset(MODEL_ID, train_path, test_path,
+        total_samples_train, total_samples_test =  build_dataset(MODEL_ID, train_path, test_path,
                       model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC, USE_WORD_EMB)
 
-    predictions = run_lstm(data_id, total_samples)
+    predictions = run_lstm(data_id, total_samples_train, total_samples_test)
 
     write_predictions(predictions)
 
@@ -89,7 +89,7 @@ def main():
     write_results(results)
 
 
-def run_lstm(data_id, total_samples):
+def run_lstm(data_id, total_samples_train, total_samples_test):
     """
     Train a model with a chunk of the data, then save the weights, the load another chunk, load the weights and
     resume training. This is done to go make it possible to train a full model in system with limited memory.
@@ -120,8 +120,8 @@ def run_lstm(data_id, total_samples):
         #num_train_chunks = 20
         #num_test_chunks = 20
 
-    training_size_chunk = training_percentage_chunk * total_samples
-    test_size_chunk = test_percentage_chunk * total_samples
+    training_size_chunk = training_percentage_chunk * total_samples_train
+    test_size_chunk = test_percentage_chunk * total_samples_test
 
     lstm_model = SimpleLSTM(net_architecture, **model_params)
 
@@ -340,10 +340,10 @@ def run_experiment():
         data_id = preprocessed_data_id
     else:
         data_id = MODEL_ID
-        total_samples = build_dataset(MODEL_ID, train_path, test_path,
+        total_samples_train, total_samples_test = build_dataset(MODEL_ID, train_path, test_path,
                       model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC, USE_WORD_EMB)
 
-    predictions = run_lstm(data_id, total_samples )
+    predictions = run_lstm(data_id, total_samples_train, total_samples_test )
 
     write_predictions(predictions)
 

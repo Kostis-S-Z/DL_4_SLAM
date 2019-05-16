@@ -10,14 +10,14 @@ from preprocess_data import preprocess
 # loads small amount of data at a time, builds and saves small dataset, train on small dataset
 # (must not be the whole saved dataset)
 # trains for just 2 epochs
-DEBUG = False
+DEBUG = True
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
 if DEBUG:
-    TRAINING_PERC = 0.0005
-    TEST_PERC = 0.001
+    TRAINING_PERC = 0.00005
+    TEST_PERC = 0.0001
 else:
     # how big every chunk is, that we build
     TRAINING_PERC = 0.15  # Control how much (%) of the training data to actually use for training
@@ -41,12 +41,14 @@ def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, 
     feature_dict, n_features = build_feature_dict(features_to_use, n_threshold, USE_WORD_EMB, verbose)
 
     # Build train data
-    build_data("train", train_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, TRAINING_PERC, verbose)
+    total_samples_train = build_data("train", train_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, TRAINING_PERC, verbose)
 
     # Build test data
-    build_data("test", test_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, TEST_PERC, verbose)
+    total_samples_test = build_data("test", test_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, TEST_PERC, verbose)
 
     print("Dataset done!")
+
+    return total_samples_train, total_samples_test
 
 
 def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, percentage_use, verbose):
@@ -56,7 +58,7 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, US
     and saves them in the directory path_to_save
     """
     if DEBUG:
-        num_chunks = 2
+        num_chunks = 1
     else:
         # this will build num_chunks data
         num_chunks = 1
@@ -133,6 +135,7 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, US
     dataset_file.flush()  # TODO should i put this in the loop?
     dataset_file.close()
     print("Dataset built with {} {} samples".format(total_samples, phase_type))
+
     return total_samples
 
 

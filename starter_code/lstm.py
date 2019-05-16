@@ -2,6 +2,7 @@
 import numpy as np
 import datetime
 import os
+import psutil
 
 # Keras imports
 from keras.models import load_model
@@ -102,8 +103,8 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
         #    model_params['epochs'] = 2
 
         # how much percentage of the data in the build dataset we want to use
-        training_percentage_chunk = 1#0.001
-        test_percentage_chunk = 1#0.01
+        training_percentage_chunk = 0.2#0.001
+        test_percentage_chunk = 0.2#0.01
 
         # this will train for a fixed amount of chunks
         #num_train_chunks = 2
@@ -140,17 +141,34 @@ def run_lstm(data_id, total_samples_train, total_samples_test):
         start = 0
         end = training_size_chunk
 
+        import gc
+
         for chunk in range(num_train_chunks):
+            process = psutil.Process(os.getpid())
+
 
             print("\n--Training on chunk {} out of {}-- \n".format(chunk + 1, num_train_chunks))
 
+            print("memory usage before loading chunk", chunk, ":", process.memory_info().rss)  # in bytes
+
             train_data, train_labels = load_preprocessed_data(data_id, "train", i_start=start, i_end=end)
+
+            print("after loading", process.memory_info().rss)  # in bytes
+
+            gc.collect()
 
             trained_model = lstm_model.load_model(MODEL_ID)
 
+            print("memory after loading model", process.memory_info().rss)  # in bytes
+
+
             lstm_model.train(train_data, train_labels, trained_model=trained_model)
 
+            print("memory after training model", process.memory_info().rss)  # in bytes
+
             lstm_model.save_model(MODEL_ID)
+
+
 
             start = end
             end = end + training_size_chunk
@@ -427,6 +445,8 @@ class SimpleLSTM:
         print("first sample: ", x_train[0,0,:])
         print("ÿ_train: ", y_train.shape)
         print("first label: ", y_train[0])
+        print("amount 1 labels", sum(y_train))
+        print("amount 0 labels", len(y_train) - sum(y_train))
         print("batch size: ", self.batch_size)
         print("keras verbose: ", KERAS_VERBOSE)
         model.fit(x_train, y_train, shuffle=False, epochs=self.epochs, validation_split=0.1, class_weight=class_weights,

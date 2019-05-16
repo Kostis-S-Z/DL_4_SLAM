@@ -21,7 +21,7 @@ if DEBUG:
 else:
     # how big every chunk is, that we build
     TRAINING_PERC = 0.15  # Control how much (%) of the training data to actually use for training
-    TEST_PERC = 0.
+    TEST_PERC = 0.4
 
 
 

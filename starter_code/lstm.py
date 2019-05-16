@@ -64,7 +64,7 @@ class_weights = {
 model_params = {
     "batch_size": 64,  # number of samples in a batch
     "epochs": 10,  # number of epochs
-    "time_steps": 32,  # how many time steps to look back to
+    "time_steps": 70,  # how many time steps to look back to
     'activation': 'sigmoid',
     'optimizer': 'adam'
 }
@@ -109,8 +109,8 @@ def run_lstm(data_id, total_samples):
 
     else:
         # the size of chunk we are training with
-        training_percentage_chunk = 0.05
-        test_percentage_chunk = 0.1
+        training_percentage_chunk = 0.2
+        test_percentage_chunk = 0.4
 
         # this will use all the data
         num_train_chunks = int(1. / training_percentage_chunk)

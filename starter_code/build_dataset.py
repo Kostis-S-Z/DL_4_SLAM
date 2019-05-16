@@ -10,7 +10,7 @@ from preprocess_data import preprocess
 # loads small amount of data at a time, builds and saves small dataset, train on small dataset
 # (must not be the whole saved dataset)
 # trains for just 2 epochs
-DEBUG = True
+DEBUG = False
 
 
 # Data parameters

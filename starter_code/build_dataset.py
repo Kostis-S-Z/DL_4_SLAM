@@ -133,6 +133,7 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, US
     dataset_file.flush()  # TODO should i put this in the loop?
     dataset_file.close()
     print("Dataset built with {} {} samples".format(total_samples, phase_type))
+    return total_samples
 
 
 def build_feature_dict(features_to_use, n_threshold, USE_WORD_EMB, verbose):

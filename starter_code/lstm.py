@@ -92,7 +92,7 @@ def main():
     write_results(results)
 
 
-def run_lstm(data_id, total_samples_train, total_samples_test):
+def run_lstm(data_id):
     """
     Train a model with a whole datachunk, then save the weights and load the next datachunk and
     resume training. This is done to go make it possible to train a full model in system with limited memory.
@@ -219,7 +219,7 @@ def write_results(results):
         f.close()
 
 
-def set_params(model_id=None, preproc_data_id=None, epochs=None, class_weights_1=None, use_word_emb=None):
+def set_params(model_id=None, use_preproc_data=None, preproc_data_id=None, epochs=None, class_weights_1=None, use_word_emb=None):
     '''
     set the model_id and the prepocessed_data_id
     '''
@@ -228,13 +228,17 @@ def set_params(model_id=None, preproc_data_id=None, epochs=None, class_weights_1
         #print("change MODEL_ID from", MODEL_ID)
         MODEL_ID = model_id
         #print("to", MODEL_ID)
-    if preproc_data_id:
-        global use_pre_processed_data
+
+    global use_pre_processed_data
+    if preproc_data_id or use_preproc_data == True:
         #print("change use_prep_data from", use_pre_processed_data)
         use_pre_processed_data = True
         global preprocessed_data_id
         preprocessed_data_id = preproc_data_id
         #print("to", use_pre_processed_data)
+    elif use_preproc_data == False:
+        use_pre_processed_data = False
+
     if class_weights_1:
         global class_weights
         #print("change class weights from", class_weights)
@@ -324,7 +328,7 @@ def run_experiment(experiment_name, new_model_id, changing_param_name, value):
         total_samples_train, total_samples_test = build_dataset(MODEL_ID, train_path, test_path,
                       model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC, USE_WORD_EMB)
 
-    predictions = run_lstm(data_id, total_samples_train, total_samples_test )
+    predictions = run_lstm(data_id)
 
     write_predictions(predictions)
 

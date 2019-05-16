@@ -8,6 +8,8 @@ import datetime
 from multiprocessing import Process
 import psutil
 
+import shutil
+
 # import all parameters that we might change in our experiments
 #from lstm import FEATURES_TO_USE, THRESHOLD_OF_OCC, net_architecture, class_weights, model_params
 '''
@@ -56,7 +58,6 @@ def one_experiment():
     changing_param_value = [{0:1, 1:2}]#, {0:15, 1:85}]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
 
     # set constant parameters
-    set_params(epochs=3)
     set_params(use_word_emb=0)
     #
     #
@@ -104,7 +105,6 @@ def class_weights_binary():
     changing_param_value = [{0:1, 1:2}, {0:15, 1:85}]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
 
     # set constant parameters
-    set_params(epochs=3)
     set_params(use_word_emb=0)
     #
     #
@@ -131,8 +131,7 @@ def class_weights_binary():
         oneExperiment.start()
         oneExperiment.join()
 
-        #if value == changing_param_value[0]:
-        #    set_params(preproc_data_id=new_model_id)
+        set_params(preproc_data_id=new_model_id)
 
 def class_weights_embedding():
     '''
@@ -149,13 +148,14 @@ def class_weights_embedding():
     use_prep_data = False
     if use_prep_data:
         set_params(preproc_data_id='16_5_10.16.47')
+    else:
+        set_params(use_preproc_data=False)
 
     # define the changing parameter and its value
     changing_param_name = 'class_weights'
     changing_param_value = [{0:1, 1:2}, {0:15, 1:85}]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
 
     # set constant parameters
-    set_params(epochs=3)
     set_params(use_word_emb=1)
     #
     #
@@ -182,14 +182,14 @@ def class_weights_embedding():
         oneExperiment.start()
         oneExperiment.join()
 
-        #if value == changing_param_value[0]:
-        #    set_params(preproc_data_id=new_model_id)
+        set_params(preproc_data_id=new_model_id)
 
 
 
 # specify which experiment you want to run
 if __name__ == '__main__':
-    one_experiment()
-    #class_weights_binary()
-    #class_weights_embedding()
+    #one_experiment()
+    class_weights_binary()
+    shutil.rmtree("proc_data/")
+    class_weights_embedding()
 

@@ -35,7 +35,7 @@ KERAS_VERBOSE = 2  # 0 or 1
 # TODO if you input FEATURES_TO_USE in another order then suddenly the values of format become tokens....
 
 FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'time', 'days', 'token']
-THRESHOLD_OF_OCC = 10
+THRESHOLD_OF_OCC = 0
 
 # If you want to build a new data set with you features put preprocessed_data_id = ""
 # If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"

@@ -19,7 +19,7 @@ if DEBUG:
     TRAINING_PERC = 0.0005
     TEST_PERC = 0.001
 else:
-    TRAINING_PERC = 0.2  # Control how much (%) of the training data to actually use for training
+    TRAINING_PERC = 0.1  # Control how much (%) of the training data to actually use for training
     TEST_PERC = 0.05
 
 # vector length of the word embedding of the token

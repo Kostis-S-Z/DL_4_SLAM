@@ -39,13 +39,13 @@ THRESHOLD_OF_OCC = 0
 
 # If you want to build a new data set with you features put preprocessed_data_id = ""
 # If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
-use_pre_processed_data = True
+use_pre_processed_data = False
 preprocessed_data_id = "14_5_17.16"  # "11_5_21.15"
 
 # Model parameters
 
 # Use pre trained model
-use_pre_trained_model = True
+use_pre_trained_model = False
 PRE_TRAINED_MODEL_ID = "14_5_17.16"
 
 now = datetime.datetime.now()
@@ -231,6 +231,113 @@ def write_results(results):
         f.write("    -------------------------------------------------------------\n\n\n")
         f.close()
 
+
+def set_params(model_id=None, preproc_data_id=None, epochs=None, class_weights_1=None):
+    '''
+    set the model_id and the prepocessed_data_id
+    '''
+    if model_id:
+        global MODEL_ID
+        print("change MODEL_ID from", MODEL_ID)
+        MODEL_ID = model_id
+        print("to", MODEL_ID)
+    if preproc_data_id:
+        global use_pre_processed_data
+        print("change use_prep_data from", use_pre_processed_data)
+        use_pre_processed_data = True
+        global preprocessed_data_id
+        preprocessed_data_id = preproc_data_id
+        print("to", use_pre_processed_data)
+    if class_weights_1:
+        global class_weights
+        print("change class weights from", class_weights)
+        class_weights = class_weights_1
+        print("to", class_weights)
+    if epochs:
+        global model_params
+        print("change epochs from", model_params['epochs'])
+        model_params['epochs'] = epochs
+        print("to", model_params['epochs'])
+
+def save_constant_parameters(experiment_name, changing_param):
+    """
+    Save all constant parameters in the experiments file
+    """
+    if not os.path.exists("experiments/"):
+        os.makedirs("experiments/")
+    with open("experiments/experiment_" + experiment_name, "a+") as f:
+
+        f.write("---- Experiment " + experiment_name + " ----\n\n")
+
+        f.write("    ------------------ Constant Parameters ----------------------\n")
+
+        # model_params
+        for k in (model_params.keys()):
+            if k == changing_param:
+                f.write("    {:<15} {:<15}\n".format(k, '-'))
+                continue
+            f.write("    {:<15} {:<15}\n".format(k, model_params[k]))
+        f.write("    -------------------------------------------------------------\n")
+
+        # Featurs_to_use
+        f.write("    {:<35} {:<15}\n".format('--Features_to_use-', ''))
+        f.write("    ")
+        for k in FEATURES_TO_USE[0:-1]:
+            f.write(k + ", ")
+        f.write(FEATURES_TO_USE[-1] + "\n")
+        f.write("    threshold " + str(THRESHOLD_OF_OCC) + "\n")
+        f.write("    -------------------------------------------------------------\n")
+
+        # net_architechture
+        f.write("    {:<25} {:<15}\n".format('--net_architechture-','' ))
+        for k in sorted(net_architecture.keys()):
+            f.write("    {:<15} {:<15}\n".format(k, net_architecture[k]))
+        f.write("    -------------------------------------------------------------\n")
+
+        # class_weights
+        if 'class_weights' == changing_param:
+            f.write("    {:<25} {:<15}\n".format('--class_weights- ', ''))
+            f.write("     -\n")
+        else:
+            f.write("    {:<25} {:<15}\n".format('--class_weights-', ''))
+            for k in sorted(class_weights.keys()):
+                f.write("    {:<15} {:<15}\n".format(k, int(class_weights[k])))
+        f.write("    -------------------------------------------------------------\n\n\n")
+
+        f.close()
+
+def save_changing_param_and_results(experiment_name, model_id, var_name, var_value, results):
+    '''
+    save value of changing parameter and the result of the model in the experiment file
+    '''
+
+    with open("experiments/experiment_" + experiment_name, "a+") as f:
+        f.write(
+            "\n---- Model " + model_id + " ---- " + var_name + ": " + str(var_value) + "\n")
+        f.write("    --------------------------------------------------------\n")
+        f.write("    {:<35} {:<15}\n".format('Metric', 'Value'))
+        f.write("    --------------------------------------------------------\n")
+        for k in sorted(results.keys()):
+            f.write("    {:<35} {:<15}\n".format(k, results[k]))
+        f.write("    --------------------------------------------------------\n\n")
+        f.close()
+
+def run_experiment():
+
+    if use_pre_processed_data:
+        data_id = preprocessed_data_id
+    else:
+        data_id = MODEL_ID
+        build_dataset(MODEL_ID, train_path, test_path,
+                      model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC)
+
+    predictions = run_lstm(data_id)
+
+    write_predictions(predictions)
+
+    results = evaluate(pred_path, key_path)
+
+    return results
 
 class SimpleLSTM:
 

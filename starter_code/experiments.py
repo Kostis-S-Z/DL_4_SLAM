@@ -248,5 +248,6 @@ if __name__ == '__main__':
     #class_weights_binary()
     #shutil.rmtree("proc_data/")
     #class_weights_embedding()
-    reg_experiment()
+    for i in range(4):
+        reg_experiment()
 

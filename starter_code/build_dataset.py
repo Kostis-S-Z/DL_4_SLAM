@@ -19,9 +19,9 @@ if DEBUG:
     AMOUNT_DATA_USE = 0.001
 else:
     # control how much data to use in one chunk in cloud # max 0.025
-    PERC_OF_DATA_PER_CHUNK = 0.01#025
+    PERC_OF_DATA_PER_CHUNK = 0.005#025
     # control how much data use in total
-    AMOUNT_DATA_USE = 0.01
+    AMOUNT_DATA_USE = 0.005
 
 # compute how many chunks we get based on how much data we want to use in total and how much data we can use in one chunk
 NUM_CHUNK_FILES = int(AMOUNT_DATA_USE / PERC_OF_DATA_PER_CHUNK)
@@ -35,7 +35,7 @@ def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, 
     if not os.path.exists(path_to_save):
         os.makedirs(path_to_save)
 
-    print("Building dataset with ", AMOUNT_DATA_USE , " from the data and ", PERC_OF_DATA_PER_CHUNK, "% data per chunk ...")
+    print("Building dataset with ", AMOUNT_DATA_USE , " from the data and ", PERC_OF_DATA_PER_CHUNK, "from data per chunk ...")
 
     print("---->", AMOUNT_DATA_USE , "from data are more or less", AMOUNT_DATA_USE * 2500000, "samples")
 

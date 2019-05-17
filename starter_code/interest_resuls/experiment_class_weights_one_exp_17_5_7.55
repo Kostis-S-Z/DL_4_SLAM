@@ -1,0 +1,44 @@
+
+
+---- Experiment class_weights_one_exp_17_5_7.55 ----
+
+    ------------------ Constant Parameters ----------------------
+    batch_size      64             
+    epochs          60             
+    optimizer       adam           
+    time_steps      100            
+    activation      sigmoid        
+    -------------------------------------------------------------
+    --Features_to_use-                                 
+    user, countries, client, session, format, token
+    threshold      0
+    USE_WORD_EMB   0
+    -------------------------------------------------------------
+    --net_architechture-                     
+    0               128            
+    1               1              
+    -------------------------------------------------------------
+    --class_weights-                         
+     -
+    -------------------------------------------------------------
+
+
+
+---- Model 17_5_7.55.19 ---- class_weights: {0: 15, 1: 85}
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.6499885751152569
+    F1                                  0.3072289156626506
+    MCC                                 0.1578352480604196
+    accuracy                            0.7479452054794521
+    avg_log_loss                        0.9370002718416102
+    correctly predicted 0 (tn)          1263           
+    correctly predicted 1 (tp)          102            
+    incorrectly predicted 0 (fn)        189            
+    incorrectly predicted 1 (fp)        271            
+    precision:  tp / (tp+fp)            0.2734584450402145
+    ratio majority class                0.8405479452054795
+    recall:  tp / (tp+fn)               0.35051546391752575
+    --------------------------------------------------------
+

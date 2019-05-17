@@ -212,12 +212,14 @@ def reg_experiment():
 
     # set constant parameters
     set_params(use_word_emb=1)
+    set_params(epochs=20)
     #
     #
     #...
 
     # save constant parameters to a new "experiment_.." file
     save_constant_parameters(experiment_name, changing_param_name)
+
 
     # run experiment for every parameter value
     for value in changing_param_value:
@@ -237,7 +239,8 @@ def reg_experiment():
         oneExperiment.start()
         oneExperiment.join()
 
-        set_params(preproc_data_id=new_model_id)
+        if value == changing_param_value[0]:
+            set_params(preproc_data_id=new_model_id)
 
 # specify which experiment you want to run
 if __name__ == '__main__':

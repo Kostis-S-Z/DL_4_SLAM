@@ -9,7 +9,7 @@ from multiprocessing import Process
 from keras.models import load_model
 from keras.models import Sequential
 from keras.optimizers import Adam
-from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed
+from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed, BatchNormalization
 
 # Data evaluation functions
 import data
@@ -80,10 +80,10 @@ def main():
         data_id = preprocessed_data_id
     else:
         data_id = MODEL_ID
-        total_samples_train, total_samples_test =  build_dataset(MODEL_ID, train_path, test_path,
+        build_dataset(MODEL_ID, train_path, test_path,
                       model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC, USE_WORD_EMB)
 
-    predictions = run_lstm(data_id, total_samples_train, total_samples_test)
+    predictions = run_lstm(data_id)
 
     write_predictions(predictions)
 
@@ -325,7 +325,7 @@ def run_experiment(experiment_name, new_model_id, changing_param_name, value):
         data_id = preprocessed_data_id
     else:
         data_id = MODEL_ID
-        total_samples_train, total_samples_test = build_dataset(MODEL_ID, train_path, test_path,
+        build_dataset(MODEL_ID, train_path, test_path,
                       model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC, USE_WORD_EMB)
 
     predictions = run_lstm(data_id)
@@ -375,8 +375,9 @@ class SimpleLSTM:
 
         # return sequencxes should be false
         model.add(LSTM(hidden_0, return_sequences=False, input_shape=(self.time_steps, self.input_shape)))
-
+        #model.add(BatchNormalization())
         model.add(Dense(output, activation=self.activation))
+
 
         if KERAS_VERBOSE > 0:
             print(model.summary())
@@ -404,15 +405,15 @@ class SimpleLSTM:
         # Fit the training data to the model and use a part of the data for validation
         if VERBOSE > 1:
             print("x_train: ", x_train.shape)
-            print("first sample: ", x_train[0,0,:])
-            print("ÿ_train: ", y_train.shape)
-            print("first label: ", y_train[0])
-            print("amount 1 labels", sum(y_train))
-            print("amount 0 labels", len(y_train) - sum(y_train))
+            #print("first sample: ", x_train[0,0,:])
+            #print("ÿ_train: ", y_train.shape)
+            #print("first label: ", y_train[0])
+            print("amount 1 labels train", sum(y_train))
+            #print("amount 0 labels", len(y_train) - sum(y_train))
             print("batch size: ", self.batch_size)
             print("keras verbose: ", KERAS_VERBOSE)
 
-        model.fit(x_train, y_train, shuffle=False, epochs=self.epochs, validation_split=0.3, class_weight=class_weights,
+        model.fit(x_train, y_train, shuffle=False, epochs=self.epochs, validation_split=0.1, class_weight=class_weights,
                   batch_size=self.batch_size, verbose=KERAS_VERBOSE)
 
         # save the model to a class variable for further use afterwards (only reading from this variable, no changing)

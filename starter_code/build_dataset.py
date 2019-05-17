@@ -9,6 +9,8 @@ from preprocess_data import preprocess
 # run it on computer
 DEBUG = False
 
+PERC_OF_DATA_PER_CHUNK = None
+AMOUNT_DATA_USE = None
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
@@ -36,7 +38,7 @@ def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, 
     if not os.path.exists(path_to_save):
         os.makedirs(path_to_save)
 
-    print("Building dataset...")
+    print("Building dataset with ", AMOUNT_DATA_USE, "% of the data and ", PERC_OF_DATA_PER_CHUNK, "% data per chunk ...")
 
     # Dictionary of features containing only the features that we want to use
     feature_dict, n_features = build_feature_dict(features_to_use, n_threshold, USE_WORD_EMB, verbose)
@@ -216,4 +218,30 @@ def convert_to_index_dict(feature_dict, min_appearance):
             index_dict[key] = i
             i += 1
     return index_dict
+
+# set how much data to use from experiments.py
+def set_params_build_data(debug = None, data_per_chunk_debug = None, data_use_debug= None, data_per_chunk_cloud= None, data_use_cloud= None):
+
+    global PERC_OF_DATA_PER_CHUNK
+    global AMOUNT_DATA_USE
+
+    # change debug mode
+    if debug == 0 or debug == 1:
+        global DEBUG
+        DEBUG = debug
+
+    if DEBUG:
+        if data_per_chunk_debug and data_use_debug:
+            PERC_OF_DATA_PER_CHUNK = data_per_chunk_debug
+            AMOUNT_DATA_USE = data_use_debug
+        else:
+            print("did not change any parameters becasue not in DEBUG mode")
+    else:
+        if data_per_chunk_cloud and data_use_cloud:
+            PERC_OF_DATA_PER_CHUNK = data_per_chunk_cloud
+            AMOUNT_DATA_USE = data_use_cloud
+        else:
+            print("did not change any parameters becasue not in CLOUD mode")
+
+
 

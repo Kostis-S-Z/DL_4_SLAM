@@ -1,7 +1,8 @@
 #from lstm import build_dataset, train_path, test_path, run_lstm, write_predictions, evaluate, pred_path, key_path, use_pre_processed_data
 
 
-from lstm import set_params, save_constant_parameters, save_changing_param_and_results, run_experiment
+from lstm import set_params, save_constant_parameters, run_experiment
+from build_dataset import set_params_build_data
 import os
 import datetime
 
@@ -57,9 +58,14 @@ def one_experiment():
     changing_param_name = 'class_weights'
     changing_param_value = [{0:15, 1:85}]#, {0:15, 1:85}]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
 
+    # define how much data you want to use
+    set_params_build_data(debug=0)
+    set_params_build_data(data_per_chunk_cloud=0.01, data_use_cloud=0.01)
+    set_params_build_data(data_per_chunk_debug=0.0005, data_use_debug=0.0005)
+
     # set constant parameters
     set_params(use_word_emb=0)
-    set_params(epochs=100)
+    set_params(epochs=60)
     #
     #
     #...

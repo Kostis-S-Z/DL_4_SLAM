@@ -46,7 +46,7 @@ def one_experiment():
     # set the name of the experiment
     now = datetime.datetime.now()
     experiment_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
-    experiment_name = 'class_weights_one_exp_' + str(experiment_id)
+    experiment_name = 'overfit_with_more_data_' + str(experiment_id)
 
     # define if you want to use preprocessed data from file
     use_prep_data = False

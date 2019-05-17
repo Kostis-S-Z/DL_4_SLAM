@@ -67,7 +67,7 @@ class_weights = {
 model_params = {
     "batch_size": 64,  # number of samples in a batch
     "epochs": 20,  # number of epochs
-    "time_steps": 100,  # how many time steps to look back to
+    "time_steps": 60,  # how many time steps to look back to
     'activation': 'sigmoid',
     'optimizer': 'adam'
 }

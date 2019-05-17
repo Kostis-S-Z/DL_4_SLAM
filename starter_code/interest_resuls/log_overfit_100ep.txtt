@@ -1,0 +1,295 @@
+/usr/local/bin/python3.7 /Users/Jule/Documents/Uni/SS19_2/deeplearning/DL_4_SLAM/starter_code/experiments.py
+Using TensorFlow backend.
+-----MEMORY before starting experiment ------ 18760 KB
+Building dataset...
+Building feature dict ....
+loading feature dicts...
+loading finished
+Building finished
+
+--Loading train chunk 1 out of 1--
+
+Loading training instances...
+Starting to load from line 1
+Stop loading data...
+Done loading 1423 instances across 413 exercises.
+
+Writing 1323 train data with 41 features and 100 timesteps
+Dataset built with 1323 train samples
+
+--Loading test chunk 1 out of 1--
+
+Loading testing instances...
+Starting to load from line 1
+Stop loading data...
+Done loading 187 instances across 58 exercises.
+
+Writing 87 test data with 41 features and 100 timesteps
+Dataset built with 87 test samples
+Dataset done!
+-----MEMORY before training with chunk 0 ------ 3186 KB
+
+--Training on chunk 1 out of 1--
+
+Load  proc_data/data_17_5_10.15.19/train_data_chunk_0.h5
+loading training labels
+No such model (17_5_10.15.19) found to load! Starting from scratch...
+WARNING:tensorflow:From /usr/local/lib/python3.7/site-packages/tensorflow/python/framework/op_def_library.py:263: colocate_with (from tensorflow.python.framework.ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Colocations handled automatically by placer.
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+lstm_1 (LSTM)                (None, 128)               87040
+_________________________________________________________________
+batch_normalization_1 (Batch (None, 128)               512
+_________________________________________________________________
+dense_1 (Dense)              (None, 1)                 129
+=================================================================
+Total params: 87,681
+Trainable params: 87,425
+Non-trainable params: 256
+_________________________________________________________________
+None
+WARNING:tensorflow:From /usr/local/lib/python3.7/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
+Train on 1190 samples, validate on 133 samples
+Epoch 1/100
+2019-05-17 10:15:21.701664: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+ - 5s - loss: 21.9809 - acc: 0.5580 - val_loss: 28.9142 - val_acc: 0.3008
+Epoch 2/100
+ - 3s - loss: 19.4477 - acc: 0.5445 - val_loss: 19.4020 - val_acc: 0.5639
+Epoch 3/100
+ - 3s - loss: 18.5018 - acc: 0.5605 - val_loss: 12.4003 - val_acc: 0.7143
+Epoch 4/100
+ - 3s - loss: 18.1330 - acc: 0.5538 - val_loss: 11.5733 - val_acc: 0.8947
+Epoch 5/100
+ - 3s - loss: 17.8710 - acc: 0.5731 - val_loss: 8.4119 - val_acc: 0.9624
+Epoch 6/100
+ - 3s - loss: 17.0264 - acc: 0.5664 - val_loss: 11.7320 - val_acc: 0.7744
+Epoch 7/100
+ - 3s - loss: 16.9437 - acc: 0.5782 - val_loss: 9.1894 - val_acc: 0.9699
+Epoch 8/100
+ - 3s - loss: 16.3629 - acc: 0.5941 - val_loss: 10.7985 - val_acc: 0.9699
+Epoch 9/100
+ - 3s - loss: 16.2286 - acc: 0.5899 - val_loss: 9.6348 - val_acc: 0.9624
+Epoch 10/100
+ - 3s - loss: 16.0083 - acc: 0.6101 - val_loss: 10.8959 - val_acc: 0.8271
+Epoch 11/100
+ - 3s - loss: 15.6935 - acc: 0.6244 - val_loss: 13.6794 - val_acc: 0.8045
+Epoch 12/100
+ - 3s - loss: 15.4203 - acc: 0.6244 - val_loss: 11.4173 - val_acc: 0.9624
+Epoch 13/100
+ - 3s - loss: 15.4607 - acc: 0.6403 - val_loss: 13.5842 - val_acc: 0.9699
+Epoch 14/100
+ - 3s - loss: 15.5347 - acc: 0.6176 - val_loss: 13.0541 - val_acc: 0.9699
+Epoch 15/100
+ - 3s - loss: 15.0176 - acc: 0.6521 - val_loss: 12.3681 - val_acc: 0.8571
+Epoch 16/100
+ - 4s - loss: 15.0791 - acc: 0.6605 - val_loss: 14.6226 - val_acc: 0.7970
+Epoch 17/100
+ - 3s - loss: 14.3414 - acc: 0.6588 - val_loss: 12.7082 - val_acc: 0.9398
+Epoch 18/100
+ - 3s - loss: 14.0681 - acc: 0.6832 - val_loss: 15.1312 - val_acc: 0.9699
+Epoch 19/100
+ - 3s - loss: 14.3904 - acc: 0.6824 - val_loss: 14.2007 - val_acc: 0.9549
+Epoch 20/100
+ - 3s - loss: 14.0283 - acc: 0.6882 - val_loss: 13.8499 - val_acc: 0.8496
+Epoch 21/100
+ - 3s - loss: 14.4203 - acc: 0.6882 - val_loss: 11.9349 - val_acc: 0.8722
+Epoch 22/100
+ - 3s - loss: 13.8122 - acc: 0.6849 - val_loss: 15.1670 - val_acc: 0.9398
+Epoch 23/100
+ - 3s - loss: 13.7018 - acc: 0.6992 - val_loss: 14.9570 - val_acc: 0.9699
+Epoch 24/100
+ - 3s - loss: 13.6669 - acc: 0.7034 - val_loss: 20.2830 - val_acc: 0.9699
+Epoch 25/100
+ - 5s - loss: 13.2500 - acc: 0.7134 - val_loss: 15.1127 - val_acc: 0.9699
+Epoch 26/100
+ - 3s - loss: 12.9221 - acc: 0.7151 - val_loss: 14.8672 - val_acc: 0.9699
+Epoch 27/100
+ - 3s - loss: 12.5714 - acc: 0.7218 - val_loss: 17.6875 - val_acc: 0.9699
+Epoch 28/100
+ - 3s - loss: 12.6259 - acc: 0.7319 - val_loss: 16.8344 - val_acc: 0.9699
+Epoch 29/100
+ - 4s - loss: 11.8088 - acc: 0.7513 - val_loss: 16.7473 - val_acc: 0.7293
+Epoch 30/100
+ - 3s - loss: 12.7636 - acc: 0.7429 - val_loss: 15.5837 - val_acc: 0.9699
+Epoch 31/100
+ - 3s - loss: 12.4134 - acc: 0.7479 - val_loss: 24.3270 - val_acc: 0.9699
+Epoch 32/100
+ - 3s - loss: 12.0475 - acc: 0.7538 - val_loss: 20.7046 - val_acc: 0.9699
+Epoch 33/100
+ - 3s - loss: 10.9643 - acc: 0.7689 - val_loss: 13.9952 - val_acc: 0.8421
+Epoch 34/100
+ - 3s - loss: 11.2718 - acc: 0.7597 - val_loss: 14.3659 - val_acc: 0.9398
+Epoch 35/100
+ - 3s - loss: 11.3423 - acc: 0.7782 - val_loss: 25.5782 - val_acc: 0.9699
+Epoch 36/100
+ - 3s - loss: 13.1132 - acc: 0.7496 - val_loss: 24.5519 - val_acc: 0.9699
+Epoch 37/100
+ - 3s - loss: 12.0512 - acc: 0.7714 - val_loss: 14.8301 - val_acc: 0.8045
+Epoch 38/100
+ - 3s - loss: 13.1992 - acc: 0.7261 - val_loss: 14.2507 - val_acc: 0.9398
+Epoch 39/100
+ - 3s - loss: 10.8498 - acc: 0.7639 - val_loss: 21.7593 - val_acc: 0.9699
+Epoch 40/100
+ - 3s - loss: 11.4014 - acc: 0.7815 - val_loss: 18.4895 - val_acc: 0.9699
+Epoch 41/100
+ - 3s - loss: 11.3106 - acc: 0.7765 - val_loss: 19.5484 - val_acc: 0.6842
+Epoch 42/100
+ - 3s - loss: 13.5659 - acc: 0.7361 - val_loss: 18.0493 - val_acc: 0.9699
+Epoch 43/100
+ - 3s - loss: 9.7440 - acc: 0.7840 - val_loss: 18.8244 - val_acc: 0.9699
+Epoch 44/100
+ - 3s - loss: 9.2993 - acc: 0.8303 - val_loss: 16.4793 - val_acc: 0.9699
+Epoch 45/100
+ - 3s - loss: 9.3815 - acc: 0.8017 - val_loss: 23.7432 - val_acc: 0.9699
+Epoch 46/100
+ - 3s - loss: 8.8825 - acc: 0.8202 - val_loss: 20.7359 - val_acc: 0.9699
+Epoch 47/100
+ - 3s - loss: 9.5692 - acc: 0.8227 - val_loss: 20.9060 - val_acc: 0.9624
+Epoch 48/100
+ - 3s - loss: 10.3425 - acc: 0.7933 - val_loss: 21.8010 - val_acc: 0.9699
+Epoch 49/100
+ - 3s - loss: 9.2059 - acc: 0.8210 - val_loss: 16.1402 - val_acc: 0.9699
+Epoch 50/100
+ - 4s - loss: 8.3478 - acc: 0.8361 - val_loss: 21.1007 - val_acc: 0.9699
+Epoch 51/100
+ - 3s - loss: 8.0201 - acc: 0.8319 - val_loss: 24.8094 - val_acc: 0.9699
+Epoch 52/100
+ - 4s - loss: 7.0941 - acc: 0.8521 - val_loss: 21.2915 - val_acc: 0.9699
+Epoch 53/100
+ - 4s - loss: 6.5028 - acc: 0.8647 - val_loss: 24.6449 - val_acc: 0.9699
+Epoch 54/100
+ - 4s - loss: 6.2133 - acc: 0.8815 - val_loss: 24.4320 - val_acc: 0.9699
+Epoch 55/100
+ - 4s - loss: 6.3157 - acc: 0.8958 - val_loss: 23.2069 - val_acc: 0.9699
+Epoch 56/100
+ - 5s - loss: 6.6665 - acc: 0.8681 - val_loss: 28.4172 - val_acc: 0.9699
+Epoch 57/100
+ - 4s - loss: 6.0778 - acc: 0.8882 - val_loss: 19.0740 - val_acc: 0.9699
+Epoch 58/100
+ - 3s - loss: 5.4212 - acc: 0.9067 - val_loss: 18.9675 - val_acc: 0.9699
+Epoch 59/100
+ - 3s - loss: 5.2994 - acc: 0.9050 - val_loss: 25.5562 - val_acc: 0.9699
+Epoch 60/100
+ - 3s - loss: 5.4642 - acc: 0.9017 - val_loss: 26.7294 - val_acc: 0.9699
+Epoch 61/100
+ - 5s - loss: 6.6666 - acc: 0.9059 - val_loss: 16.9091 - val_acc: 0.9323
+Epoch 62/100
+ - 4s - loss: 7.5437 - acc: 0.8739 - val_loss: 18.0106 - val_acc: 0.9699
+Epoch 63/100
+ - 5s - loss: 6.5879 - acc: 0.8765 - val_loss: 26.7060 - val_acc: 0.9699
+Epoch 64/100
+ - 5s - loss: 6.2083 - acc: 0.8924 - val_loss: 19.2616 - val_acc: 0.9549
+Epoch 65/100
+ - 3s - loss: 6.3247 - acc: 0.8950 - val_loss: 19.4089 - val_acc: 0.8872
+Epoch 66/100
+ - 4s - loss: 6.2523 - acc: 0.8773 - val_loss: 27.6741 - val_acc: 0.9699
+Epoch 67/100
+ - 4s - loss: 5.9555 - acc: 0.9034 - val_loss: 17.1332 - val_acc: 0.9398
+Epoch 68/100
+ - 3s - loss: 5.7431 - acc: 0.9025 - val_loss: 17.4469 - val_acc: 0.9023
+Epoch 69/100
+ - 3s - loss: 5.5189 - acc: 0.8815 - val_loss: 26.4904 - val_acc: 0.9699
+Epoch 70/100
+ - 3s - loss: 4.2551 - acc: 0.9269 - val_loss: 22.2604 - val_acc: 0.9699
+Epoch 71/100
+ - 3s - loss: 3.9171 - acc: 0.9437 - val_loss: 18.7060 - val_acc: 0.9398
+Epoch 72/100
+ - 3s - loss: 3.9363 - acc: 0.9286 - val_loss: 27.7925 - val_acc: 0.9699
+Epoch 73/100
+ - 3s - loss: 3.2540 - acc: 0.9580 - val_loss: 22.8788 - val_acc: 0.9624
+Epoch 74/100
+ - 3s - loss: 2.8023 - acc: 0.9521 - val_loss: 26.8972 - val_acc: 0.9699
+Epoch 75/100
+ - 3s - loss: 2.3125 - acc: 0.9681 - val_loss: 25.3621 - val_acc: 0.9699
+Epoch 76/100
+ - 3s - loss: 2.0944 - acc: 0.9832 - val_loss: 29.1228 - val_acc: 0.9699
+Epoch 77/100
+ - 3s - loss: 2.1203 - acc: 0.9681 - val_loss: 25.9698 - val_acc: 0.9699
+Epoch 78/100
+ - 4s - loss: 2.0071 - acc: 0.9815 - val_loss: 27.7831 - val_acc: 0.9699
+Epoch 79/100
+ - 3s - loss: 2.2185 - acc: 0.9613 - val_loss: 29.7666 - val_acc: 0.9699
+Epoch 80/100
+ - 3s - loss: 2.0387 - acc: 0.9714 - val_loss: 25.5116 - val_acc: 0.9699
+Epoch 81/100
+ - 3s - loss: 1.8619 - acc: 0.9672 - val_loss: 29.9781 - val_acc: 0.9699
+Epoch 82/100
+ - 4s - loss: 1.6335 - acc: 0.9882 - val_loss: 27.9514 - val_acc: 0.9699
+Epoch 83/100
+ - 3s - loss: 1.8379 - acc: 0.9723 - val_loss: 25.7664 - val_acc: 0.9699
+Epoch 84/100
+ - 3s - loss: 1.6246 - acc: 0.9874 - val_loss: 31.0778 - val_acc: 0.9699
+Epoch 85/100
+ - 3s - loss: 1.6348 - acc: 0.9790 - val_loss: 25.5176 - val_acc: 0.9699
+Epoch 86/100
+ - 4s - loss: 1.2714 - acc: 0.9941 - val_loss: 30.5227 - val_acc: 0.9699
+Epoch 87/100
+ - 4s - loss: 1.1324 - acc: 0.9882 - val_loss: 27.2706 - val_acc: 0.9699
+Epoch 88/100
+ - 4s - loss: 1.0315 - acc: 0.9958 - val_loss: 28.2215 - val_acc: 0.9699
+Epoch 89/100
+ - 3s - loss: 1.0540 - acc: 0.9916 - val_loss: 28.4829 - val_acc: 0.9699
+Epoch 90/100
+ - 3s - loss: 0.9349 - acc: 0.9966 - val_loss: 27.5551 - val_acc: 0.9699
+Epoch 91/100
+ - 3s - loss: 0.9311 - acc: 0.9950 - val_loss: 29.5528 - val_acc: 0.9699
+Epoch 92/100
+ - 3s - loss: 0.7510 - acc: 0.9950 - val_loss: 28.2639 - val_acc: 0.9699
+Epoch 93/100
+ - 3s - loss: 0.6236 - acc: 0.9983 - val_loss: 28.4457 - val_acc: 0.9699
+Epoch 94/100
+ - 3s - loss: 0.5125 - acc: 0.9966 - val_loss: 29.1531 - val_acc: 0.9699
+Epoch 95/100
+ - 3s - loss: 0.4212 - acc: 0.9992 - val_loss: 28.6854 - val_acc: 0.9699
+Epoch 96/100
+ - 3s - loss: 0.3592 - acc: 0.9992 - val_loss: 28.7886 - val_acc: 0.9699
+Epoch 97/100
+ - 3s - loss: 0.3246 - acc: 1.0000 - val_loss: 28.3959 - val_acc: 0.9699
+Epoch 98/100
+ - 3s - loss: 0.2995 - acc: 1.0000 - val_loss: 28.2582 - val_acc: 0.9699
+Epoch 99/100
+ - 3s - loss: 0.2796 - acc: 1.0000 - val_loss: 28.2832 - val_acc: 0.9699
+Epoch 100/100
+ - 3s - loss: 0.2623 - acc: 1.0000 - val_loss: 28.0219 - val_acc: 0.9699
+WARNING:tensorflow:From /usr/local/lib/python3.7/site-packages/tensorflow/python/framework/op_def_library.py:263: colocate_with (from tensorflow.python.framework.ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Colocations handled automatically by placer.
+2019-05-17 10:20:40.520741: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+WARNING:tensorflow:From /usr/local/lib/python3.7/site-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
+
+--Testing on chunk 1 out of 1--
+
+Load  proc_data/data_17_5_10.15.19/test_data_chunk_0.h5
+loading test ids
+Overwriting previous predictions!
+Math domain error in function comput_avg_loss in eval.py, amount:  0 out of 10
+Verified that our environment is calculating metrics correctly.
+
+Loading labels for exercises...
+Loading predictions for exercises...
+Math domain error in function comput_avg_loss in eval.py, amount:  4 out of 87
+------------------------------------------------------------
+Metric                              Value
+------------------------------------------------------------
+    AUC                                 0.5103950103950103
+    F1                                  0.0
+    MCC                                 -0.04519668588329723
+    accuracy                            0.8390804597701149
+    avg_log_loss                        0.7422333462522333
+    correctly predicted 0 (tn)          73
+    correctly predicted 1 (tp)          0
+    incorrectly predicted 0 (fn)        13
+    incorrectly predicted 1 (fp)        1
+    precision:  tp / (tp+fp)            0.0
+    ratio majority class                0.8505747126436781
+    recall:  tp / (tp+fn)               0.0
+------------------------------------------------------------
+
+Process finished with exit code 0

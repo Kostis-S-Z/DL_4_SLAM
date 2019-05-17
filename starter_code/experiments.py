@@ -2,7 +2,6 @@
 
 
 from lstm import set_params, save_constant_parameters, run_experiment
-from build_dataset import set_params_build_data
 import os
 import datetime
 
@@ -47,7 +46,7 @@ def one_experiment():
     # set the name of the experiment
     now = datetime.datetime.now()
     experiment_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
-    experiment_name = 'overfit_with_more_data_' + str(experiment_id)
+    experiment_name = 'overfit_' + str(experiment_id)
 
     # define if you want to use preprocessed data from file
     use_prep_data = False
@@ -58,14 +57,9 @@ def one_experiment():
     changing_param_name = 'class_weights'
     changing_param_value = [{0:15, 1:85}]#, {0:15, 1:85}]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
 
-    # define how much data you want to use
-    set_params_build_data(debug=0)
-    set_params_build_data(data_per_chunk_cloud=0.001, data_use_cloud=0.001)
-    #set_params_build_data(data_per_chunk_debug=0.0005, data_use_debug=0.0005)
-
     # set constant parameters
     set_params(use_word_emb=0)
-    set_params(epochs=60)
+    set_params(epochs=1)
     #
     #
     #...

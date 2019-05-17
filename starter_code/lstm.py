@@ -13,8 +13,8 @@ from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed, Ba
 
 # Data evaluation functions
 import data
-from data import get_paths, write_predictions, EN_ES_NUM_TRAIN_SAMPLES, EN_ES_NUM_TEST_SAMPLES
-from build_dataset import build_dataset, DEBUG, NUM_CHUNK_FILES
+from data import get_paths, write_predictions
+from build_dataset import build_dataset, DEBUG, NUM_CHUNK_FILES, AMOUNT_DATA_USE, PERC_OF_DATA_PER_CHUNK
 from eval import evaluate
 
 get_paths()
@@ -275,6 +275,14 @@ def save_constant_parameters(experiment_name, changing_param):
             f.write("    {:<15} {:<15}\n".format(k, model_params[k]))
         f.write("    -------------------------------------------------------------\n")
 
+        # data usage
+        f.write("    {:<35} {:<15}\n".format('-- Data -', ''))
+        f.write("    DEBUG                    " + str(DEBUG) + "\n")
+        f.write("    AMOUNT_DATA_USE          " + str(AMOUNT_DATA_USE) + "\n")
+        f.write("    PERC_OF_DATA_PER_CHUNK   " + str(PERC_OF_DATA_PER_CHUNK) + "\n")
+        f.write("    NUM_CHUNK_FILES          " + str(NUM_CHUNK_FILES) + "\n")
+        f.write("    -------------------------------------------------------------\n")
+
         # Featurs_to_use
         f.write("    {:<35} {:<15}\n".format('--Features_to_use-', ''))
         f.write("    ")
@@ -320,6 +328,8 @@ def save_changing_param_and_results(experiment_name, model_id, var_name, var_val
         f.close()
 
 def run_experiment(experiment_name, new_model_id, changing_param_name, value):
+
+    print("Run in DEBUG mode: ", DEBUG)
 
     if use_pre_processed_data:
         data_id = preprocessed_data_id

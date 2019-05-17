@@ -9,9 +9,6 @@ from preprocess_data import preprocess
 # run it on computer
 DEBUG = False
 
-PERC_OF_DATA_PER_CHUNK = None
-AMOUNT_DATA_USE = None
-
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
@@ -19,12 +16,12 @@ if DEBUG:
     # control how much data to use in one chunk on computer # max 0.001
     PERC_OF_DATA_PER_CHUNK = 0.0005
     # control how much data use in total
-    AMOUNT_DATA_USE = 0.0005
+    AMOUNT_DATA_USE = 0.001
 else:
     # control how much data to use in one chunk in cloud # max 0.025
-    PERC_OF_DATA_PER_CHUNK = 0.01#05#025
+    PERC_OF_DATA_PER_CHUNK = 0.01#025
     # control how much data use in total
-    AMOUNT_DATA_USE = 0.01#05
+    AMOUNT_DATA_USE = 0.01
 
 # compute how many chunks we get based on how much data we want to use in total and how much data we can use in one chunk
 NUM_CHUNK_FILES = int(AMOUNT_DATA_USE / PERC_OF_DATA_PER_CHUNK)
@@ -38,9 +35,9 @@ def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, 
     if not os.path.exists(path_to_save):
         os.makedirs(path_to_save)
 
-    print("Building dataset with ", AMOUNT_DATA_USE, "% of the data and ", PERC_OF_DATA_PER_CHUNK, "% data per chunk ...")
+    print("Building dataset with ", AMOUNT_DATA_USE , " from the data and ", PERC_OF_DATA_PER_CHUNK, "% data per chunk ...")
 
-    print(AMOUNT_DATA_USE, "are more or less", AMOUNT_DATA_USE * 2500000, "samples")
+    print("---->", AMOUNT_DATA_USE , "from data are more or less", AMOUNT_DATA_USE * 2500000, "samples")
 
     # Dictionary of features containing only the features that we want to use
     feature_dict, n_features = build_feature_dict(features_to_use, n_threshold, USE_WORD_EMB, verbose)
@@ -220,30 +217,4 @@ def convert_to_index_dict(feature_dict, min_appearance):
             index_dict[key] = i
             i += 1
     return index_dict
-
-# set how much data to use from experiments.py
-def set_params_build_data(debug = None, data_per_chunk_debug = None, data_use_debug= None, data_per_chunk_cloud= None, data_use_cloud= None):
-
-    global PERC_OF_DATA_PER_CHUNK
-    global AMOUNT_DATA_USE
-
-    # change debug mode
-    if debug == 0 or debug == 1:
-        global DEBUG
-        DEBUG = debug
-
-    if DEBUG:
-        if data_per_chunk_debug and data_use_debug:
-            PERC_OF_DATA_PER_CHUNK = data_per_chunk_debug
-            AMOUNT_DATA_USE = data_use_debug
-        else:
-            print("did not change any parameters becasue not in DEBUG mode")
-    else:
-        if data_per_chunk_cloud and data_use_cloud:
-            PERC_OF_DATA_PER_CHUNK = data_per_chunk_cloud
-            AMOUNT_DATA_USE = data_use_cloud
-        else:
-            print("did not change any parameters becasue not in CLOUD mode")
-
-
 

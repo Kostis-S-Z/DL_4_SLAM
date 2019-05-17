@@ -256,6 +256,7 @@ def set_params(model_id=None, use_preproc_data=None, preproc_data_id=None, epoch
         USE_WORD_EMB = use_word_emb
         #print("to", USE_WORD_EMB)
     if dropout:
+        print("setting dropout to: ", dropout)
         model_params['dropout'] = dropout
 
 def save_constant_parameters(experiment_name, changing_param):

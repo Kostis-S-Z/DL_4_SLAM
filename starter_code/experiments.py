@@ -207,7 +207,7 @@ def reg_experiment():
 
     # define the changing parameter and its value
     changing_param_name = 'dropout'
-    changing_param_value = [0.0,0.2]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
+    changing_param_value = [0.0,0.1, 0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
 
     # set constant parameters
     set_params(use_word_emb=1)

@@ -40,6 +40,8 @@ def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, 
 
     print("Building dataset with ", AMOUNT_DATA_USE, "% of the data and ", PERC_OF_DATA_PER_CHUNK, "% data per chunk ...")
 
+    print(AMOUNT_DATA_USE, "are more or less", AMOUNT_DATA_USE * 2500000, "samples")
+
     # Dictionary of features containing only the features that we want to use
     feature_dict, n_features = build_feature_dict(features_to_use, n_threshold, USE_WORD_EMB, verbose)
 

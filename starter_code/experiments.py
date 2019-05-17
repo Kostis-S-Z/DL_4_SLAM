@@ -60,8 +60,8 @@ def one_experiment():
 
     # define how much data you want to use
     set_params_build_data(debug=0)
-    set_params_build_data(data_per_chunk_cloud=0.01, data_use_cloud=0.01)
-    set_params_build_data(data_per_chunk_debug=0.0005, data_use_debug=0.0005)
+    set_params_build_data(data_per_chunk_cloud=0.001, data_use_cloud=0.001)
+    #set_params_build_data(data_per_chunk_debug=0.0005, data_use_debug=0.0005)
 
     # set constant parameters
     set_params(use_word_emb=0)

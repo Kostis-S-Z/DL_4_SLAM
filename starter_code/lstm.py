@@ -115,15 +115,23 @@ def run_lstm(data_id):
             print("\n--Training on chunk {} out of {}-- \n".format(chunk + 1, NUM_CHUNK_FILES))
 
             # start a new process that will load the "chunk"s training data, train on it and save the model
-            train_process = Process(target=train_chunk,
-                                    args=(chunk, data_id, lstm_model,))
-            train_process.start()
-            train_process.join()
+            #train_process = Process(target=train_chunk,
+            #                        args=(chunk, data_id, lstm_model,))
+            #train_process.start()
+            #train_process.join()
+
+            train_data, train_labels = load_preprocessed_data(data_id, "train", chunk)
+
+            trained_model = lstm_model.load_model(MODEL_ID)
+
+            lstm_model.train(train_data, train_labels, trained_model=trained_model)
+
+            lstm_model.save_model(MODEL_ID)
 
     # load the model that you just trained
-    lstm_model = SimpleLSTM(net_architecture, **model_params)
+    #lstm_model = SimpleLSTM(net_architecture, **model_params)
     trained_model = lstm_model.load_model(MODEL_ID)
-    lstm_model.model = trained_model
+    #lstm_model.model = trained_model
 
     # test the model on all the test data and save the results to predictions
     predictions = {}

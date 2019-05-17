@@ -385,7 +385,7 @@ class SimpleLSTM:
 
         # return sequencxes should be false
         model.add(LSTM(hidden_0, return_sequences=False, input_shape=(self.time_steps, self.input_shape)))
-        #model.add(BatchNormalization())
+        model.add(BatchNormalization())
         model.add(Dense(output, activation=self.activation))
 
 

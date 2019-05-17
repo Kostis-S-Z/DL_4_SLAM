@@ -59,7 +59,7 @@ def one_experiment():
 
     # set constant parameters
     set_params(use_word_emb=0)
-    set_params(epochs=1)
+    set_params(epochs=60)
     #
     #
     #...

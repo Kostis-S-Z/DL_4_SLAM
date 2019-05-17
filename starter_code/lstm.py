@@ -239,7 +239,7 @@ def set_params(model_id=None, use_preproc_data=None, preproc_data_id=None, epoch
         #print("to", use_pre_processed_data)
     elif use_preproc_data == False:
         use_pre_processed_data = False
-
+    global model_params
     if class_weights_1:
         global class_weights
         #print("change class weights from", class_weights)

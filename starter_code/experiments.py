@@ -196,7 +196,7 @@ def reg_experiment():
     # set the name of the experiment
     now = datetime.datetime.now()
     experiment_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
-    experiment_name = 'class_weights_embedding_' + str(experiment_id)
+    experiment_name = 'regularization_' + str(experiment_id)
 
     # define if you want to use preprocessed data from file
     use_prep_data = False
@@ -206,8 +206,8 @@ def reg_experiment():
         set_params(use_preproc_data=False)
 
     # define the changing parameter and its value
-    changing_param_name = 'class_weights'
-    changing_param_value = [0,1,3,4]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
+    changing_param_name = 'dropout'
+    changing_param_value = [0.0,0.2]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
 
     # set constant parameters
     set_params(use_word_emb=1)

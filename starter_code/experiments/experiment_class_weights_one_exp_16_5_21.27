@@ -1,0 +1,69 @@
+
+
+---- Experiment class_weights_one_exp_16_5_21.27 ----
+
+    ------------------ Constant Parameters ----------------------
+    epochs          3              
+    time_steps      100            
+    optimizer       adam           
+    activation      sigmoid        
+    batch_size      64             
+    -------------------------------------------------------------
+    --Features_to_use-                                 
+    user, countries, client, session, format, token
+    threshold      0
+    USE_WORD_EMB   0
+    -------------------------------------------------------------
+    --net_architechture-                     
+    0               128            
+    1               1              
+    -------------------------------------------------------------
+    --class_weights-                         
+     -
+    -------------------------------------------------------------
+
+
+
+
+---- Experiment class_weights_one_exp_16_5_21.27 ----
+
+    ------------------ Constant Parameters ----------------------
+    epochs          3              
+    time_steps      100            
+    activation      sigmoid        
+    batch_size      64             
+    optimizer       adam           
+    -------------------------------------------------------------
+    --Features_to_use-                                 
+    user, countries, client, session, format, token
+    threshold      0
+    USE_WORD_EMB   0
+    -------------------------------------------------------------
+    --net_architechture-                     
+    0               128            
+    1               1              
+    -------------------------------------------------------------
+    --class_weights-                         
+     -
+    -------------------------------------------------------------
+
+
+
+---- Model 16_5_21.27.29 ---- class_weights: {0: 1, 1: 2}
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.05965628286428451
+    F1                                  0.24368383748313785
+    MCC                                 0.003547127198292033
+    accuracy                            0.13873629949753977
+    avg_log_loss                        nan            
+    correctly predicted 0 (tn)          3              
+    correctly predicted 1 (tp)          5329           
+    incorrectly predicted 0 (fn)        0              
+    incorrectly predicted 1 (fp)        33079          
+    precision:  tp / (tp+fp)            0.13874713601333055
+    ratio majority class                0.8612637005024603
+    recall:  tp / (tp+fn)               1.0            
+    --------------------------------------------------------
+

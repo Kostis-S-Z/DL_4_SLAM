@@ -1,0 +1,25 @@
+
+
+---- Experiment class_weights_one_exp_16_5_21.25 ----
+
+    ------------------ Constant Parameters ----------------------
+    optimizer       adam           
+    epochs          3              
+    batch_size      64             
+    time_steps      100            
+    activation      sigmoid        
+    -------------------------------------------------------------
+    --Features_to_use-                                 
+    user, countries, client, session, format, token
+    threshold      0
+    USE_WORD_EMB   0
+    -------------------------------------------------------------
+    --net_architechture-                     
+    0               128            
+    1               1              
+    -------------------------------------------------------------
+    --class_weights-                         
+     -
+    -------------------------------------------------------------
+
+

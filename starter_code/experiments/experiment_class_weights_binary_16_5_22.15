@@ -1,0 +1,63 @@
+
+
+---- Experiment class_weights_binary_16_5_22.15 ----
+
+    ------------------ Constant Parameters ----------------------
+    time_steps      100            
+    activation      sigmoid        
+    batch_size      64             
+    optimizer       adam           
+    epochs          3              
+    -------------------------------------------------------------
+    --Features_to_use-                                 
+    user, countries, client, session, format, token
+    threshold      0
+    USE_WORD_EMB   0
+    -------------------------------------------------------------
+    --net_architechture-                     
+    0               128            
+    1               1              
+    -------------------------------------------------------------
+    --class_weights-                         
+     -
+    -------------------------------------------------------------
+
+
+
+---- Model 16_5_22.15.30 ---- class_weights: {0: 1, 1: 2}
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.01049296222050004
+    F1                                  0.2524813612038604
+    MCC                                 0.004930235607331943
+    accuracy                            0.14445912879630476
+    avg_log_loss                        nan            
+    correctly predicted 0 (tn)          11             
+    correctly predicted 1 (tp)          11040          
+    incorrectly predicted 0 (fn)        0              
+    incorrectly predicted 1 (fp)        65372          
+    precision:  tp / (tp+fp)            0.14447992461916975
+    ratio majority class                0.8555408712036953
+    recall:  tp / (tp+fn)               1.0            
+    --------------------------------------------------------
+
+
+---- Model 16_5_23.30.40 ---- class_weights: {0: 15, 1: 85}
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.01049296222050004
+    F1                                  0.2524813612038604
+    MCC                                 0.004930235607331943
+    accuracy                            0.14445912879630476
+    avg_log_loss                        nan            
+    correctly predicted 0 (tn)          11             
+    correctly predicted 1 (tp)          11040          
+    incorrectly predicted 0 (fn)        0              
+    incorrectly predicted 1 (fp)        65372          
+    precision:  tp / (tp+fp)            0.14447992461916975
+    ratio majority class                0.8555408712036953
+    recall:  tp / (tp+fn)               1.0            
+    --------------------------------------------------------
+

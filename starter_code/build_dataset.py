@@ -14,15 +14,15 @@ DEBUG = False
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
 if DEBUG:
-    # control how much data to use in one chunk on computer
-    PERC_OF_DATA_PER_CHUNK = 0.001
+    # control how much data to use in one chunk on computer # max 0.001
+    PERC_OF_DATA_PER_CHUNK = 0.0005
     # control how much data use in total
-    AMOUNT_DATA_USE = 0.001
+    AMOUNT_DATA_USE = 0.0005
 else:
-    # control how much data to use in one chunk in cloud
-    PERC_OF_DATA_PER_CHUNK = 0.025#025
+    # control how much data to use in one chunk in cloud # max 0.025
+    PERC_OF_DATA_PER_CHUNK = 0.005#025
     # control how much data use in total
-    AMOUNT_DATA_USE = 0.2
+    AMOUNT_DATA_USE = 0.005
 
 # compute how many chunks we get based on how much data we want to use in total and how much data we can use in one chunk
 NUM_CHUNK_FILES = int(AMOUNT_DATA_USE / PERC_OF_DATA_PER_CHUNK)

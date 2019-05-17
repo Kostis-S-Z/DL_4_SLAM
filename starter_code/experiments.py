@@ -55,15 +55,16 @@ def one_experiment():
 
     # define the changing parameter and its value
     changing_param_name = 'class_weights'
-    changing_param_value = [{0:1, 1:2}]#, {0:15, 1:85}]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
+    changing_param_value = [{0:15, 1:85}]#, {0:15, 1:85}]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
 
     # set constant parameters
     set_params(use_word_emb=0)
+    set_params(epochs=60)
     #
     #
     #...
 
-    # save constant parameters to a new "experiment_.." file
+    # save constant parameters to a new "experiment_.." filgithx+P@2ub
     save_constant_parameters(experiment_name, changing_param_name)
 
     # run experiment for every parameter value
@@ -188,8 +189,8 @@ def class_weights_embedding():
 
 # specify which experiment you want to run
 if __name__ == '__main__':
-    #one_experiment()
-    class_weights_binary()
-    shutil.rmtree("proc_data/")
-    class_weights_embedding()
+    one_experiment()
+    #class_weights_binary()
+    #shutil.rmtree("proc_data/")
+    #class_weights_embedding()
 

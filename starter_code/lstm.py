@@ -66,7 +66,7 @@ class_weights = {
 
 model_params = {
     "batch_size": 64,  # number of samples in a batch
-    "epochs": 3,  # number of epochs
+    "epochs": 20,  # number of epochs
     "time_steps": 100,  # how many time steps to look back to
     'activation': 'sigmoid',
     'optimizer': 'adam'
@@ -411,7 +411,8 @@ class SimpleLSTM:
             print("amount 0 labels", len(y_train) - sum(y_train))
             print("batch size: ", self.batch_size)
             print("keras verbose: ", KERAS_VERBOSE)
-        model.fit(x_train, y_train, shuffle=False, epochs=self.epochs, validation_split=0.1, class_weight=class_weights,
+
+        model.fit(x_train, y_train, shuffle=False, epochs=self.epochs, validation_split=0.3, class_weight=class_weights,
                   batch_size=self.batch_size, verbose=KERAS_VERBOSE)
 
         # save the model to a class variable for further use afterwards (only reading from this variable, no changing)

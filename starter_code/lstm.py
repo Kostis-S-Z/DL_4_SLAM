@@ -10,6 +10,8 @@ from keras.models import load_model
 from keras.models import Sequential
 from keras.optimizers import Adam
 from keras.layers import Dense, Activation, Embedding, LSTM, TimeDistributed, BatchNormalization
+from keras.utils import plot_model
+
 
 # Data evaluation functions
 import data
@@ -67,10 +69,11 @@ class_weights = {
 model_params = {
     "batch_size": 64,  # number of samples in a batch
     "epochs": 20,  # number of epochs
+    "lr": 0.001,
     "time_steps": 60,  # how many time steps to look back to
     'activation': 'sigmoid',
-    'dropout': 0.0,
-    'recurrent_dropout': 0.0
+    'dropout': 0.4,
+    'recurrent_dropout': 0.1
 }
 
 USE_WORD_EMB = 0
@@ -83,6 +86,7 @@ def main():
         data_id = MODEL_ID
         build_dataset(MODEL_ID, train_path, test_path,
                       model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC, USE_WORD_EMB)
+
 
     predictions = run_lstm(data_id)
 
@@ -111,7 +115,7 @@ def run_lstm(data_id):
 
             # print Memory usage for debugging
             process = psutil.Process(os.getpid())
-            print("-----MEMORY before training with chunk", chunk, "------", int(process.memory_info().rss/(8*10**(3))), "KB")
+            #print("-----MEMORY before training with chunk", chunk, "------", int(process.memory_info().rss/(8*10**(3))), "KB")
 
             print("\n--Training on chunk {} out of {}-- \n".format(chunk + 1, NUM_CHUNK_FILES))
 
@@ -125,6 +129,8 @@ def run_lstm(data_id):
     lstm_model = SimpleLSTM(net_architecture, **model_params)
     trained_model = lstm_model.load_model(MODEL_ID)
     lstm_model.model = trained_model
+
+    #plot_model(lstm_model.model, to_file="model.png")
 
     # test the model on all the test data and save the results to predictions
     predictions = {}
@@ -220,43 +226,36 @@ def write_results(results):
         f.close()
 
 
-def set_params(model_id=None, use_preproc_data=None, preproc_data_id=None, epochs=None, class_weights_1=None, use_word_emb=None, dropout=None):
+def set_params(model_id=None, use_preproc_data=None, preproc_data_id=None, epochs=None, class_weights_1=None, use_word_emb=None, dropout=None, lr=None):
     '''
     set the model_id and the prepocessed_data_id
     '''
     if model_id:
         global MODEL_ID
-        #print("change MODEL_ID from", MODEL_ID)
         MODEL_ID = model_id
-        #print("to", MODEL_ID)
 
     global use_pre_processed_data
     if preproc_data_id or use_preproc_data == True:
-        #print("change use_prep_data from", use_pre_processed_data)
         use_pre_processed_data = True
         global preprocessed_data_id
         preprocessed_data_id = preproc_data_id
-        #print("to", use_pre_processed_data)
     elif use_preproc_data == False:
         use_pre_processed_data = False
-    global model_params
+
     if class_weights_1:
         global class_weights
-        #print("change class weights from", class_weights)
         class_weights = class_weights_1
-        #print("to", class_weights)
-    if epochs:
-        global model_params
-        #print("change epochs from", model_params['epochs'])
-        model_params['epochs'] = epochs
-        #print("to", model_params['epochs'])
+
     if use_word_emb== 0 or use_word_emb == 1:
         global USE_WORD_EMB
-        #print("change Use_word_emb from", USE_WORD_EMB)
         USE_WORD_EMB = use_word_emb
-        #print("to", USE_WORD_EMB)
+
+    global model_params
+    if epochs:
+        model_params['epochs'] = epochs
+    if lr:
+        model_params['lr'] = lr
     if dropout:
-        print("setting dropout to: ", dropout)
         model_params['dropout'] = dropout
 
 def save_constant_parameters(experiment_name, changing_param):
@@ -333,8 +332,6 @@ def save_changing_param_and_results(experiment_name, model_id, var_name, var_val
 
 def run_experiment(experiment_name, new_model_id, changing_param_name, value):
 
-    print("Run in DEBUG mode: ", DEBUG)
-
     if use_pre_processed_data:
         data_id = preprocessed_data_id
     else:
@@ -359,6 +356,7 @@ class SimpleLSTM:
         var_defaults = {
             "batch_size": 64,  # number of samples in a batch
             "epochs": 10,  # number of epochs
+            "lr": 0.001,
             "time_steps": 50,  # how many time steps to look back to
             'activation': 'sigmoid',
             'dropout': 0.0,
@@ -416,7 +414,7 @@ class SimpleLSTM:
             model = trained_model
 
         # loss is binary_crossentropy because we're doing binary classification (correct / incorrect)
-        adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+        adam = Adam(lr= self.lr, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
         model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy'])
 
         # Fit the training data to the model and use a part of the data for validation

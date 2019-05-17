@@ -35,10 +35,10 @@ def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, 
     if not os.path.exists(path_to_save):
         os.makedirs(path_to_save)
 
-    print("Building dataset with ", AMOUNT_DATA_USE , " from the data and ", PERC_OF_DATA_PER_CHUNK, "from data per chunk ...")
+    print("Building dataset...")
 
-    print("---->", AMOUNT_DATA_USE , "from data are more or less", AMOUNT_DATA_USE * 2500000, "samples")
-    print("---->", AMOUNT_DATA_USE, "from data are more or less", AMOUNT_DATA_USE * 2500000, "samples")
+    print("AMOUNT_DATA_USE:        ", AMOUNT_DATA_USE , "--->", AMOUNT_DATA_USE * 2500000, "samples")
+    print("PERC_OF_DATA_PER_CHUNK  ", PERC_OF_DATA_PER_CHUNK, "--->", PERC_OF_DATA_PER_CHUNK * 2500000, "samples\n")
 
     # Dictionary of features containing only the features that we want to use
     feature_dict, n_features = build_feature_dict(features_to_use, n_threshold, USE_WORD_EMB, verbose)

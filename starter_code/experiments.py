@@ -18,25 +18,27 @@ Default Params:
 FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format', 'token', 'time', 'days']
 THRESHOLD_OF_OCC = 0
 
-net_architecture = {.
+# Define the number of nodes in each layer, the last one is the output
+net_architecture = {
     0: 128,
     1: 1
 }
-
 class_weights = {
     0: 15,
-    1: 85.
+    1: 85
 }
 
 model_params = {
     "batch_size": 64,  # number of samples in a batch
     "epochs": 20,  # number of epochs
-    "time_steps": 100,  # how many time steps to look back to
+    "lr": 0.001,
+    "time_steps": 60,  # how many time steps to look back to
     'activation': 'sigmoid',
-    'optimizer': 'adam',
-    'dropout': 0.0,
-    'recurrent_dropout: 0.0
+    'dropout': 0.4,
+    'recurrent_dropout': 0.1
 }
+
+USE_WORD_EMB = 0
 '''
 
 def one_experiment():
@@ -187,6 +189,58 @@ def class_weights_embedding():
 
         set_params(preproc_data_id=new_model_id)
 
+def lr_experiment():
+    '''
+    function that runs an example experiment
+    writes the used parameters and the results to the file "experiments/experiment_..."
+    '''
+    print("LR_EXPERIMENT\n")
+
+    # set the name of the experiment
+    now = datetime.datetime.now()
+    experiment_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
+    experiment_name = 'lr_' + str(experiment_id)
+
+    # define if you want to use preprocessed data from file
+    use_prep_data = False
+    if use_prep_data:
+        set_params(preproc_data_id='16_5_10.16.47')
+    else:
+        set_params(use_preproc_data=False)
+
+    # define the changing parameter and its value
+    changing_param_name = 'lr'
+    changing_param_value = [0.00001, 0.00003, 0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03,  0.1]
+
+    # set constant parameters
+    set_params(use_word_emb=1)
+    set_params(epochs=20)
+    #
+    #
+    #...
+
+    # save constant parameters to a new "experiment_.." file
+    save_constant_parameters(experiment_name, changing_param_name)
+
+
+    # run experiment for every parameter value
+    for value in changing_param_value:
+        # update the changing parameter value
+        set_params(lr = value)
+
+        # update the model_id for this new model
+        now = datetime.datetime.now()
+        new_model_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute) + "." + str(now.second)
+        set_params(model_id = new_model_id)
+
+        # evaluate the new model and save the results in the experiment file
+        oneExperiment = Process(target=run_experiment, args=(experiment_name, new_model_id, changing_param_name, value,))
+        oneExperiment.start()
+        oneExperiment.join()
+
+        if value == changing_param_value[0]:
+            set_params(preproc_data_id=new_model_id)
+
 def reg_experiment():
     '''
     function that runs an example experiment
@@ -212,7 +266,7 @@ def reg_experiment():
 
     # set constant parameters
     set_params(use_word_emb=1)
-    set_params(epochs=20)
+    set_params(epochs=1)
     #
     #
     #...
@@ -248,5 +302,5 @@ if __name__ == '__main__':
     #class_weights_binary()
     #shutil.rmtree("proc_data/")
     #class_weights_embedding()
-    reg_experiment()
-
+    #reg_experiment()
+    lr_experiment()

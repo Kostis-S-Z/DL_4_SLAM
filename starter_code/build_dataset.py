@@ -7,16 +7,16 @@ from count_features import load_feature_dict
 from preprocess_data import preprocess
 
 # run it on computer
-DEBUG = False
+DEBUG = True
 
 # Data parameters
 MAX = 10000000  # Placeholder value to work as an on/off if statement
 
 if DEBUG:
     # control how much data to use in one chunk on computer # max 0.001
-    PERC_OF_DATA_PER_CHUNK = 0.0005
+    PERC_OF_DATA_PER_CHUNK = 0.004
     # control how much data use in total
-    AMOUNT_DATA_USE = 0.001
+    AMOUNT_DATA_USE = 0.004
 else:
     # control how much data to use in one chunk in cloud # max 0.025
     PERC_OF_DATA_PER_CHUNK = 0.004#025

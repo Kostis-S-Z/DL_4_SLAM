@@ -69,7 +69,8 @@ model_params = {
     "epochs": 20,  # number of epochs
     "time_steps": 60,  # how many time steps to look back to
     'activation': 'sigmoid',
-    'optimizer': 'adam'
+    'dropout': 0.0,
+    'recurrent_dropout': 0.0
 }
 
 USE_WORD_EMB = 0
@@ -219,7 +220,7 @@ def write_results(results):
         f.close()
 
 
-def set_params(model_id=None, use_preproc_data=None, preproc_data_id=None, epochs=None, class_weights_1=None, use_word_emb=None):
+def set_params(model_id=None, use_preproc_data=None, preproc_data_id=None, epochs=None, class_weights_1=None, use_word_emb=None, dropout=None):
     '''
     set the model_id and the prepocessed_data_id
     '''
@@ -254,6 +255,8 @@ def set_params(model_id=None, use_preproc_data=None, preproc_data_id=None, epoch
         #print("change Use_word_emb from", USE_WORD_EMB)
         USE_WORD_EMB = use_word_emb
         #print("to", USE_WORD_EMB)
+    if dropout:
+        model_params['dropout'] = dropout
 
 def save_constant_parameters(experiment_name, changing_param):
     """
@@ -357,7 +360,8 @@ class SimpleLSTM:
             "epochs": 10,  # number of epochs
             "time_steps": 50,  # how many time steps to look back to
             'activation': 'sigmoid',
-            'optimizer': 'adam'
+            'dropout': 0.0,
+            'recurrent_dropout':0.0
         }
 
         for var, default in var_defaults.items():
@@ -384,7 +388,8 @@ class SimpleLSTM:
         model = Sequential()
 
         # return sequencxes should be false
-        model.add(LSTM(hidden_0, return_sequences=False, input_shape=(self.time_steps, self.input_shape)))
+
+        model.add(LSTM(hidden_0, return_sequences=False, input_shape=(self.time_steps, self.input_shape), dropout = self.dropout, recurrent_dropout = self.recurrent_dropout))
         #model.add(BatchNormalization())
         model.add(Dense(output, activation=self.activation))
 
@@ -410,7 +415,8 @@ class SimpleLSTM:
             model = trained_model
 
         # loss is binary_crossentropy because we're doing binary classification (correct / incorrect)
-        model.compile(loss='binary_crossentropy', optimizer=self.optimizer, metrics=['accuracy'])
+        adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+        model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy'])
 
         # Fit the training data to the model and use a part of the data for validation
         if VERBOSE > 1:

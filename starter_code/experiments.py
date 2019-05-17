@@ -33,7 +33,9 @@ model_params = {
     "epochs": 20,  # number of epochs
     "time_steps": 100,  # how many time steps to look back to
     'activation': 'sigmoid',
-    'optimizer': 'adam'
+    'optimizer': 'adam',
+    'dropout': 0.0,
+    'recurrent_dropout: 0.0
 }
 '''
 
@@ -185,12 +187,62 @@ def class_weights_embedding():
 
         set_params(preproc_data_id=new_model_id)
 
+def reg_experiment():
+    '''
+    function that runs an example experiment
+    writes the used parameters and the results to the file "experiments/experiment_..."
+    '''
 
+    # set the name of the experiment
+    now = datetime.datetime.now()
+    experiment_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
+    experiment_name = 'class_weights_embedding_' + str(experiment_id)
+
+    # define if you want to use preprocessed data from file
+    use_prep_data = False
+    if use_prep_data:
+        set_params(preproc_data_id='16_5_10.16.47')
+    else:
+        set_params(use_preproc_data=False)
+
+    # define the changing parameter and its value
+    changing_param_name = 'class_weights'
+    changing_param_value = [0,1,3,4]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
+
+    # set constant parameters
+    set_params(use_word_emb=1)
+    #
+    #
+    #...
+
+    # save constant parameters to a new "experiment_.." file
+    save_constant_parameters(experiment_name, changing_param_name)
+
+    # run experiment for every parameter value
+    for value in changing_param_value:
+        process = psutil.Process(os.getpid())
+        print("-----MEMORY before starting experiment ------", int(process.memory_info().rss/(8*10**(3))), "KB")
+
+        # update the parameter value
+        set_params(dropout = value)
+
+        # update the model_id for this new model
+        now = datetime.datetime.now()
+        new_model_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute) + "." + str(now.second)
+        set_params(model_id = new_model_id)
+
+        # evaluate the new model and save the results in the experiment file
+        oneExperiment = Process(target=run_experiment, args=(experiment_name, new_model_id, changing_param_name, value,))
+        oneExperiment.start()
+        oneExperiment.join()
+
+        set_params(preproc_data_id=new_model_id)
 
 # specify which experiment you want to run
 if __name__ == '__main__':
-    one_experiment()
+    #one_experiment()
     #class_weights_binary()
     #shutil.rmtree("proc_data/")
     #class_weights_embedding()
+    reg_experiment()
 

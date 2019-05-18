@@ -265,7 +265,7 @@ def emb_experiment():
     changing_param_value = [0,1]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
 
     # set constant parameters
-    set_params(epochs=1)
+    set_params(epochs=20)
     set_params(dropout=0.3)
     #
     #

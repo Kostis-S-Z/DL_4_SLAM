@@ -1,0 +1,223 @@
+
+
+---- Experiment regularization_17_5_14.3 ----
+
+    ------------------ Constant Parameters ----------------------
+    batch_size      64             
+    activation      sigmoid        
+    dropout         -              
+    epochs          20             
+    time_steps      60             
+    recurrent_dropout 0.0            
+    -------------------------------------------------------------
+    -- Data -                                          
+    DEBUG                    True
+    AMOUNT_DATA_USE          0.004
+    PERC_OF_DATA_PER_CHUNK   0.004
+    NUM_CHUNK_FILES          1
+    -------------------------------------------------------------
+    --Features_to_use-                                 
+    user, countries, client, session, format, token
+    threshold      0
+    USE_WORD_EMB   1
+    -------------------------------------------------------------
+    --net_architechture-                     
+    0               128            
+    1               1              
+    -------------------------------------------------------------
+    --class_weights-                         
+    0               15             
+    1               85             
+    -------------------------------------------------------------
+
+
+
+---- Model 17_5_14.3.39 ---- dropout: 0.0
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.6959044953447192
+    F1                                  0.3246492985971944
+    MCC                                 0.19809899758603008
+    accuracy                            0.7732166890982504
+    avg_log_loss                        0.512329129263343
+    correctly predicted 0 (tn)          1068           
+    correctly predicted 1 (tp)          81             
+    incorrectly predicted 0 (fn)        124            
+    incorrectly predicted 1 (fp)        213            
+    precision:  tp / (tp+fp)            0.2755102040816326
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.3951219512195122
+    --------------------------------------------------------
+
+
+---- Model 17_5_14.10.1 ---- dropout: 0.1
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7413872546219608
+    F1                                  0.3897280966767372
+    MCC                                 0.2789001033708635
+    accuracy                            0.7281292059219381
+    avg_log_loss                        0.5610597517249428
+    correctly predicted 0 (tn)          953            
+    correctly predicted 1 (tp)          129            
+    incorrectly predicted 0 (fn)        76             
+    incorrectly predicted 1 (fp)        328            
+    precision:  tp / (tp+fp)            0.28227571115973743
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.6292682926829268
+    --------------------------------------------------------
+
+
+---- Model 17_5_14.16.15 ---- dropout: 0.2
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7261209801793568
+    F1                                  0.3596638655462185
+    MCC                                 0.2359520668689193
+    accuracy                            0.743606998654105
+    avg_log_loss                        0.5108658828261196
+    correctly predicted 0 (tn)          998            
+    correctly predicted 1 (tp)          107            
+    incorrectly predicted 0 (fn)        98             
+    incorrectly predicted 1 (fp)        283            
+    precision:  tp / (tp+fp)            0.2743589743589744
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.5219512195121951
+    --------------------------------------------------------
+
+
+---- Model 17_5_14.22.27 ---- dropout: 0.3
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7388168542106966
+    F1                                  0.38731218697829717
+    MCC                                 0.27252917057715387
+    accuracy                            0.753028263795424
+    avg_log_loss                        0.4985083979178942
+    correctly predicted 0 (tn)          1003           
+    correctly predicted 1 (tp)          116            
+    incorrectly predicted 0 (fn)        89             
+    incorrectly predicted 1 (fp)        278            
+    precision:  tp / (tp+fp)            0.29441624365482233
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.5658536585365853
+    --------------------------------------------------------
+
+
+---- Model 17_5_14.28.39 ---- dropout: 0.4
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7365853658536585
+    F1                                  0.38           
+    MCC                                 0.2628647160582357
+    accuracy                            0.7496635262449529
+    avg_log_loss                        0.4965266661350762
+    correctly predicted 0 (tn)          1000           
+    correctly predicted 1 (tp)          114            
+    incorrectly predicted 0 (fn)        91             
+    incorrectly predicted 1 (fp)        281            
+    precision:  tp / (tp+fp)            0.28860759493670884
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.5560975609756098
+    --------------------------------------------------------
+
+
+---- Model 17_5_14.34.52 ---- dropout: 0.5
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7382342301174768
+    F1                                  0.36243822075782534
+    MCC                                 0.23959285141968073
+    accuracy                            0.7395693135935397
+    avg_log_loss                        0.5150687078941323
+    correctly predicted 0 (tn)          989            
+    correctly predicted 1 (tp)          110            
+    incorrectly predicted 0 (fn)        95             
+    incorrectly predicted 1 (fp)        292            
+    precision:  tp / (tp+fp)            0.2736318407960199
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.5365853658536586
+    --------------------------------------------------------
+
+
+---- Model 17_5_14.41.3 ---- dropout: 0.6
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7351725976276157
+    F1                                  0.3752212389380531
+    MCC                                 0.2565881102828666
+    accuracy                            0.7624495289367429
+    avg_log_loss                        0.5082250514094686
+    correctly predicted 0 (tn)          1027           
+    correctly predicted 1 (tp)          106            
+    incorrectly predicted 0 (fn)        99             
+    incorrectly predicted 1 (fp)        254            
+    precision:  tp / (tp+fp)            0.29444444444444445
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.5170731707317073
+    --------------------------------------------------------
+
+
+---- Model 17_5_14.47.20 ---- dropout: 0.7
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7290264846442376
+    F1                                  0.3714821763602252
+    MCC                                 0.2529080988904679
+    accuracy                            0.7745625841184388
+    avg_log_loss                        0.5072295765217502
+    correctly predicted 0 (tn)          1052           
+    correctly predicted 1 (tp)          99             
+    incorrectly predicted 0 (fn)        106            
+    incorrectly predicted 1 (fp)        229            
+    precision:  tp / (tp+fp)            0.3018292682926829
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.48292682926829267
+    --------------------------------------------------------
+
+
+---- Model 17_5_14.53.38 ---- dropout: 0.8
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7134289141486263
+    F1                                  0.35193133047210295
+    MCC                                 0.23587377795370615
+    accuracy                            0.7967698519515478
+    avg_log_loss                        0.5165545814845629
+    correctly predicted 0 (tn)          1102           
+    correctly predicted 1 (tp)          82             
+    incorrectly predicted 0 (fn)        123            
+    incorrectly predicted 1 (fp)        179            
+    precision:  tp / (tp+fp)            0.31417624521072796
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.4            
+    --------------------------------------------------------
+
+
+---- Model 17_5_14.59.46 ---- dropout: 0.9
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.6576531292245007
+    F1                                  0.17073170731707318
+    MCC                                 0.18280014979532844
+    accuracy                            0.8627187079407806
+    avg_log_loss                        0.5243980469648775
+    correctly predicted 0 (tn)          1261           
+    correctly predicted 1 (tp)          21             
+    incorrectly predicted 0 (fn)        184            
+    incorrectly predicted 1 (fp)        20             
+    precision:  tp / (tp+fp)            0.5121951219512195
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.1024390243902439
+    --------------------------------------------------------
+

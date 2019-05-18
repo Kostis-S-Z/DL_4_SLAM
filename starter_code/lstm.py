@@ -226,7 +226,7 @@ def write_results(results):
         f.close()
 
 
-def set_params(model_id=None, use_preproc_data=None, preproc_data_id=None, epochs=None, class_weights_1=None, use_word_emb=None, dropout=None, lr=None):
+def set_params(model_id=None, use_preproc_data=None, preproc_data_id=None, epochs=None, class_weights_1=None, use_word_emb=None, dropout=None, lr=None, time_steps=None):
     '''
     set the model_id and the prepocessed_data_id
     '''
@@ -257,6 +257,8 @@ def set_params(model_id=None, use_preproc_data=None, preproc_data_id=None, epoch
         model_params['lr'] = lr
     if dropout:
         model_params['dropout'] = dropout
+    if time_steps:
+        model_params['time_steps'] = time_steps
 
 def save_constant_parameters(experiment_name, changing_param):
     """

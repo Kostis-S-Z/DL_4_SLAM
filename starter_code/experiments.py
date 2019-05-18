@@ -303,4 +303,5 @@ if __name__ == '__main__':
     #shutil.rmtree("proc_data/")
     #class_weights_embedding()
     #reg_experiment()
-    lr_experiment()
+    for i in range(4):
+        lr_experiment()

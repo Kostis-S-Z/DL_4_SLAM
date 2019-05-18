@@ -421,7 +421,6 @@ class SimpleLSTM:
         if VERBOSE > 1:
             print("x_train: ", x_train.shape)
             #print("first sample: ", x_train[0,0,:])
-            #print("ÿ_train: ", y_train.shape)
             #print("first label: ", y_train[0])
             print("amount 1 labels train", sum(y_train))
             #print("amount 0 labels", len(y_train) - sum(y_train))

@@ -199,7 +199,7 @@ def lr_experiment():
     writes the used parameters and the results to the file "experiments/experiment_..."
     """
 
-    print("LR_EXPERIMENT\n")
+    print("LR_EXPERIMENT \n")
 
     # set the name of the experiment
     now = datetime.datetime.now()

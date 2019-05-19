@@ -1,0 +1,71 @@
+
+
+---- Experiment class_weights_19_5_11.8 ----
+
+    ------------------ Constant Parameters ----------------------
+    epochs          20             
+    recurrent_dropout 0.1            
+    activation      sigmoid        
+    dropout         0.3            
+    lr              0.001          
+    batch_size      64             
+    time_steps      60             
+    -------------------------------------------------------------
+    -- Data -                                          
+    DEBUG                    True
+    AMOUNT_DATA_USE          0.004
+    PERC_OF_DATA_PER_CHUNK   0.004
+    NUM_CHUNK_FILES          1
+    -------------------------------------------------------------
+    --Features_to_use-                                 
+    user, countries, client, session, format, token
+    threshold      0
+    USE_WORD_EMB   1
+    -------------------------------------------------------------
+    --net_architechture-                     
+    0               128            
+    1               1              
+    -------------------------------------------------------------
+    --class_weights-                         
+     -
+    -------------------------------------------------------------
+
+
+
+---- Model 19_5_11.8.41 ---- class_weights: {0: 50, 1: 50}
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.729060756649721
+    F1                                  0.28125        
+    MCC                                 0.31047012680337877
+    accuracy                            0.8761776581426649
+    avg_log_loss                        0.3596654701621821
+    correctly predicted 0 (tn)          1266           
+    correctly predicted 1 (tp)          36             
+    incorrectly predicted 0 (fn)        169            
+    incorrectly predicted 1 (fp)        15             
+    precision:  tp / (tp+fp)            0.7058823529411765
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.17560975609756097
+    --------------------------------------------------------
+
+
+---- Model 19_5_11.15.25 ---- class_weights: {0: 30, 1: 70}
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7406941985110718
+    F1                                  0.3788300835654596
+    MCC                                 0.29935281061483904
+    accuracy                            0.8499327052489906
+    avg_log_loss                        0.3802661541085305
+    correctly predicted 0 (tn)          1195           
+    correctly predicted 1 (tp)          68             
+    incorrectly predicted 0 (fn)        137            
+    incorrectly predicted 1 (fp)        86             
+    precision:  tp / (tp+fp)            0.44155844155844154
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.33170731707317075
+    --------------------------------------------------------
+

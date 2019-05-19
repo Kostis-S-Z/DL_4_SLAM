@@ -1,14 +1,14 @@
 import numpy as np
-from sklearn.preprocessing import LabelEncoder
-
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 
 # vector length of the word embedding of the token
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
 
+
 PREPROCESSING_VERBOSE = 1
 
 
-def preprocess(time_steps, data, feature_dict, USE_WORD_EMB, n_features, labels_dict=None):
+def preprocess(time_steps, data, feature_dict, USE_WORD_EMB, NORMALIZE, n_features, labels_dict=None):
     """
     Use the features we want in our own format
     """
@@ -27,6 +27,13 @@ def preprocess(time_steps, data, feature_dict, USE_WORD_EMB, n_features, labels_
     data_vectors = vectorize(data, feature_dict, USE_WORD_EMB, n_features)
 
     # For future: maybe put data in time inside build dataset and use directly PyTables
+
+    # normalization
+    if NORMALIZE:
+        scaler = MinMaxScaler(feature_range=(0, 1))
+        scaler = scaler.fit(data_vectors)
+        data_vectors = scaler.transform(data_vectors)
+
 
     # Make a 3D matrix of sample x features x history
     data_vectors = data_in_time(time_steps, data_vectors)
@@ -268,6 +275,9 @@ def vectorize(data, features_to_use, USE_WORD_EMB, n_features):
         if USE_WORD_EMB:
             print("Words embedded: {} \nNOT embedded words: {} \n".format(embedded, len(not_embedded)))
         print("Finished Vectorizing data!")
+
+
+
 
     return data_vector
 

@@ -42,6 +42,7 @@ FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format',  'token']
 THRESHOLD_OF_OCC = 0
 
 USE_WORD_EMB = 0
+NORMALIZE = 0
 
 # If you want to build a new data set with you features put preprocessed_data_id = ""
 # If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
@@ -85,7 +86,7 @@ def main():
     else:
         data_id = MODEL_ID
         build_dataset(MODEL_ID, train_path, test_path,
-                      model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC, USE_WORD_EMB)
+                      model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC, USE_WORD_EMB, NORMALIZE)
 
     predictions = run_lstm(data_id)
 
@@ -106,7 +107,7 @@ def run_experiment(experiment_name, new_model_id, changing_param_name, value):
     else:
         data_id = MODEL_ID
         build_dataset(MODEL_ID, train_path, test_path,
-                      model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC, USE_WORD_EMB)
+                      model_params["time_steps"], FEATURES_TO_USE, THRESHOLD_OF_OCC, USE_WORD_EMB, NORMALIZE)
 
     predictions = run_lstm(data_id)
 
@@ -205,7 +206,7 @@ def load_preprocessed_data(data_id, phase_type, chunk):
 
 
 def set_params(features_to_use=None, model_id=None, use_preproc_data=None, preproc_data_id=None, epochs=None,
-               class_weights_1=None, use_word_emb=None, dropout=None, lr=None, time_steps=None):
+               class_weights_1=None, use_word_emb=None, dropout=None, lr=None, time_steps=None, normalize=None):
     """
     Set the model_id and the prepocessed_data_id to specific parameter values
     """
@@ -233,6 +234,10 @@ def set_params(features_to_use=None, model_id=None, use_preproc_data=None, prepr
     if use_word_emb== 0 or use_word_emb == 1:
         global USE_WORD_EMB
         USE_WORD_EMB = use_word_emb
+
+    if normalize== 0 or normalize == 1:
+        global NORMALIZE
+        NORMALIZE = normalize
 
     global model_params
     if epochs:
@@ -306,6 +311,7 @@ def save_changing_param_and_results(experiment_name, model_id, var_name, var_val
 
 
 def save_constant_parameters(experiment_name, changing_param):
+    print(changing_param)
     """
     Save all constant parameters in the experiments file
     """
@@ -341,6 +347,10 @@ def save_constant_parameters(experiment_name, changing_param):
         f.write(FEATURES_TO_USE[-1] + "\n")
         f.write("    threshold      " + str(THRESHOLD_OF_OCC) + "\n")
         f.write("    USE_WORD_EMB   " + str(USE_WORD_EMB) + "\n")
+        if 'NORMALIZE' == changing_param:
+            f.write("    NORMALIZE      -" + "\n")
+        else:
+            f.write("    NORMALIZE      " + str(NORMALIZE) + "\n")
         f.write("    -------------------------------------------------------------\n")
 
         # net_architechture

@@ -32,7 +32,7 @@ NUM_CHUNK_FILES = int(AMOUNT_DATA_USE / PERC_OF_DATA_PER_CHUNK)
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
 
 
-def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, n_threshold, USE_WORD_EMB, verbose=False):
+def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, n_threshold, USE_WORD_EMB, NORMALIZE, verbose=False):
 
     path_to_save = "proc_data/data_" + model_id + "/"
     if not os.path.exists(path_to_save):
@@ -47,17 +47,17 @@ def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, 
     feature_dict, n_features = build_feature_dict(features_to_use, n_threshold, USE_WORD_EMB, verbose)
 
     # Build train data
-    build_data("train", train_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, verbose)
+    build_data("train", train_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, NORMALIZE, n_features, verbose)
 
     # Build test data
-    build_data("test", test_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, verbose)
+    build_data("test", test_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, NORMALIZE, n_features, verbose)
 
     print("Dataset done!")
 
     return
 
 
-def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, n_features, verbose):
+def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, USE_WORD_EMB, NORMALIZE, n_features, verbose):
     """
     Loads chunks of the data from data_path in sizes of percentage_use
     preprocess them depending on time_steps, features_to_use, n_threshold
@@ -89,13 +89,13 @@ def build_data(phase_type, data_path, path_to_save, time_steps, feature_dict, US
             data, labels, end_line, _, _ = load_data(data_path, perc_data_use=PERC_OF_DATA_PER_CHUNK,
                                                      start_from_line=start_line, end_line=end_line)
 
-            data, _, labels = preprocess(time_steps, data, feature_dict, USE_WORD_EMB, m, labels_dict=labels)
+            data, _, labels = preprocess(time_steps, data, feature_dict, USE_WORD_EMB, NORMALIZE, m, labels_dict=labels)
         else:
             # Testing
             data, end_line = load_data(data_path, perc_data_use=PERC_OF_DATA_PER_CHUNK,
                                        start_from_line=start_line, end_line=end_line)
 
-            data, data_id, _ = preprocess(time_steps, data, feature_dict, USE_WORD_EMB, m)
+            data, data_id, _ = preprocess(time_steps, data, feature_dict, USE_WORD_EMB, NORMALIZE, m)
 
         print("Writing {} {} data with {} features and {} timesteps"
               .format(data.shape[0], phase_type, data.shape[2], time_steps))

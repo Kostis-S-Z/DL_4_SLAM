@@ -1,0 +1,90 @@
+
+
+---- Experiment class_weight_19_5_15.50 ----
+
+    ------------------ Constant Parameters ----------------------
+    activation      sigmoid        
+    epochs          20             
+    batch_size      64             
+    time_steps      60             
+    lr              0.001          
+    recurrent_dropout 0.1            
+    dropout         0.3            
+    -------------------------------------------------------------
+    -- Data -                                          
+    DEBUG                    True
+    AMOUNT_DATA_USE          0.004
+    PERC_OF_DATA_PER_CHUNK   0.004
+    NUM_CHUNK_FILES          1
+    -------------------------------------------------------------
+    --Features_to_use-                                 
+    user, countries, client, session, format, token
+    threshold      0
+    USE_WORD_EMB   1
+    -------------------------------------------------------------
+    --net_architechture-                     
+    0               128            
+    1               1              
+    -------------------------------------------------------------
+    --class_weights-                         
+     -
+    -------------------------------------------------------------
+
+
+
+---- Model 19_5_15.50.36 ---- class_weights: {0: 15, 1: 85}
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7241027398564384
+    F1                                  0.358974358974359
+    MCC                                 0.2351781485900677
+    accuracy                            0.7476446837146703
+    avg_log_loss                        0.4980388379418098
+    correctly predicted 0 (tn)          1006           
+    correctly predicted 1 (tp)          105            
+    incorrectly predicted 0 (fn)        100            
+    incorrectly predicted 1 (fp)        275            
+    precision:  tp / (tp+fp)            0.27631578947368424
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.5121951219512195
+    --------------------------------------------------------
+
+
+---- Model 19_5_15.57.25 ---- class_weights: {0: 5, 1: 95}
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.727008244321319
+    F1                                  0.31266846361185985
+    MCC                                 0.1950851305039201
+    accuracy                            0.4851951547779273
+    avg_log_loss                        0.8971422106467584
+    correctly predicted 0 (tn)          547            
+    correctly predicted 1 (tp)          174            
+    incorrectly predicted 0 (fn)        31             
+    incorrectly predicted 1 (fp)        734            
+    precision:  tp / (tp+fp)            0.19162995594713655
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.848780487804878
+    --------------------------------------------------------
+
+
+---- Model 19_5_16.4.1 ---- class_weights: {0: 1, 1: 99}
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7078463852554217
+    F1                                  0.2545915136162128
+    MCC                                 0.08464544719906128
+    accuracy                            0.2079407806191117
+    avg_log_loss                        2.007401651379836
+    correctly predicted 0 (tn)          108            
+    correctly predicted 1 (tp)          201            
+    incorrectly predicted 0 (fn)        4              
+    incorrectly predicted 1 (fp)        1173           
+    precision:  tp / (tp+fp)            0.1462882096069869
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.9804878048780488
+    --------------------------------------------------------
+

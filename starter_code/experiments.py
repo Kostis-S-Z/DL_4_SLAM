@@ -142,7 +142,7 @@ def class_weights_binary():
         set_params(preproc_data_id=new_model_id)
 
 
-def class_weight_experiment():
+def class_weights_experiment():
     """
     function that runs an example experiment
     writes the used parameters and the results to the file "experiments/experiment_..."
@@ -410,7 +410,7 @@ if __name__ == '__main__':
     #class_weights_binary()
     #shutil.rmtree("proc_data/")
     for i in range(5):
-        class_weights_embedding()
+        class_weights_experiment()
     #reg_experiment()
     # class_weights_binary()
 

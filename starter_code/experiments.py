@@ -406,21 +406,16 @@ def reg_experiment():
 
 # specify which experiment you want to run
 if __name__ == '__main__':
-<<<<<<< HEAD
     #one_experiment()
     #class_weights_binary()
     #shutil.rmtree("proc_data/")
     for i in range(5):
         class_weights_embedding()
     #reg_experiment()
-=======
-    one_experiment()
     # class_weights_binary()
 
     # shutil.rmtree("proc_data/")
     # class_weights_embedding()
     # reg_experiment()
 
->>>>>>> 0bddb45805c680d7fe7ac2903421a6293c8e38cb
-    # for i in range(5):
-    #     timesteps_experiment()
+

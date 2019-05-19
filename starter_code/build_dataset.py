@@ -27,6 +27,7 @@ else:
 # in total and how much data we can use in one chunk
 NUM_CHUNK_FILES = int(AMOUNT_DATA_USE / PERC_OF_DATA_PER_CHUNK)
 
+
 # vector length of the word embedding of the token
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
 

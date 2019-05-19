@@ -41,7 +41,6 @@ KERAS_VERBOSE = 2  # 0 or 1
 FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format',  'token']
 THRESHOLD_OF_OCC = 0
 
-
 USE_WORD_EMB = 0
 
 # If you want to build a new data set with you features put preprocessed_data_id = ""
@@ -116,6 +115,7 @@ def run_experiment(experiment_name, new_model_id, changing_param_name, value):
     results = evaluate(pred_path, key_path)
 
     save_changing_param_and_results(experiment_name, new_model_id, changing_param_name, value, results)
+
 
 
 def run_lstm(data_id):

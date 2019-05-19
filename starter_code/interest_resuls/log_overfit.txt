@@ -1,0 +1,242 @@
+Using TensorFlow backend.
+-----MEMORY before starting experiment ------ 33809 KB
+Building dataset...
+Building feature dict .... 
+loading feature dicts...
+loading finished
+Building finished 
+
+--Loading train chunk 1 out of 1-- 
+
+Loading training instances...
+Starting to load from line 1
+Stop loading data...
+Done loading 13370 instances across 4121 exercises.
+
+Writing 13270 train data with 41 features and 100 timesteps
+Dataset built with 13270 train samples
+
+--Loading test chunk 1 out of 1-- 
+
+Loading testing instances...
+Starting to load from line 1
+Stop loading data...
+Done loading 1925 instances across 579 exercises.
+
+Writing 1825 test data with 41 features and 100 timesteps
+Dataset built with 1825 test samples
+Dataset done!
+-----MEMORY before training with chunk 0 ------ 22024 KB
+
+--Training on chunk 1 out of 1-- 
+
+Load  proc_data/data_17_5_7.55.19/train_data_chunk_0.h5
+loading training labels
+No such model (17_5_7.55.19) found to load! Starting from scratch...
+WARNING:tensorflow:From /usr/local/lib/python3.5/dist-packages/tensorflow/python/framework/op_def_library.py:263: colocate_with (from tensorflow.python.framework.ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Colocations handled automatically by placer.
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+lstm_1 (LSTM)                (None, 128)               87040     
+_________________________________________________________________
+dense_1 (Dense)              (None, 1)                 129       
+=================================================================
+Total params: 87,169
+Trainable params: 87,169
+Non-trainable params: 0
+_________________________________________________________________
+None
+WARNING:tensorflow:From /usr/local/lib/python3.5/dist-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
+Train on 9289 samples, validate on 3981 samples
+Epoch 1/60
+2019-05-17 07:55:22.981891: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2019-05-17 07:55:25.001610: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2019-05-17 07:55:25.002484: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x555f33b9c190 executing computations on platform CUDA. Devices:
+2019-05-17 07:55:25.002534: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): Tesla K80, Compute Capability 3.7
+2019-05-17 07:55:25.007407: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2300000000 Hz
+2019-05-17 07:55:25.007794: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x555f33e0e540 executing computations on platform Host. Devices:
+2019-05-17 07:55:25.007824: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
+2019-05-17 07:55:25.008461: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1433] Found device 0 with properties: 
+name: Tesla K80 major: 3 minor: 7 memoryClockRate(GHz): 0.8235
+pciBusID: 0000:00:04.0
+totalMemory: 11.17GiB freeMemory: 11.10GiB
+2019-05-17 07:55:25.008495: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1512] Adding visible gpu devices: 0
+2019-05-17 07:55:25.377852: I tensorflow/core/common_runtime/gpu/gpu_device.cc:984] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-05-17 07:55:25.377939: I tensorflow/core/common_runtime/gpu/gpu_device.cc:990]      0 
+2019-05-17 07:55:25.377951: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1003] 0:   N 
+2019-05-17 07:55:25.378294: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 10754 MB memory) -> physical GPU (device: 0, name: Tesla K80, pci bus id: 0000:00:04.0, compute capability: 3.7)
+2019-05-17 07:55:26.245391: I tensorflow/stream_executor/dso_loader.cc:152] successfully opened CUDA library libcublas.so.10.0 locally
+ - 34s - loss: 17.2493 - acc: 0.5976 - val_loss: 33.3684 - val_acc: 0.7234
+Epoch 2/60
+ - 30s - loss: 16.6233 - acc: 0.6079 - val_loss: 32.7930 - val_acc: 0.6963
+Epoch 3/60
+ - 30s - loss: 16.0998 - acc: 0.6259 - val_loss: 33.1040 - val_acc: 0.6717
+Epoch 4/60
+ - 30s - loss: 15.6918 - acc: 0.6317 - val_loss: 33.1006 - val_acc: 0.6511
+Epoch 5/60
+ - 31s - loss: 15.4969 - acc: 0.6396 - val_loss: 33.1837 - val_acc: 0.6436
+Epoch 6/60
+ - 31s - loss: 15.3048 - acc: 0.6506 - val_loss: 33.1090 - val_acc: 0.6579
+Epoch 7/60
+ - 30s - loss: 15.2001 - acc: 0.6560 - val_loss: 33.3820 - val_acc: 0.6757
+Epoch 8/60
+ - 31s - loss: 15.0717 - acc: 0.6618 - val_loss: 33.4939 - val_acc: 0.6797
+Epoch 9/60
+ - 30s - loss: 14.9684 - acc: 0.6606 - val_loss: 33.0489 - val_acc: 0.6609
+Epoch 10/60
+ - 30s - loss: 14.7971 - acc: 0.6644 - val_loss: 34.2637 - val_acc: 0.7151
+Epoch 11/60
+ - 30s - loss: 14.6599 - acc: 0.6825 - val_loss: 34.3247 - val_acc: 0.6993
+Epoch 12/60
+ - 30s - loss: 14.5475 - acc: 0.6829 - val_loss: 33.7232 - val_acc: 0.6822
+Epoch 13/60
+ - 30s - loss: 14.4086 - acc: 0.6978 - val_loss: 34.6324 - val_acc: 0.7064
+Epoch 14/60
+ - 30s - loss: 14.2884 - acc: 0.7045 - val_loss: 34.2081 - val_acc: 0.6812
+Epoch 15/60
+ - 29s - loss: 14.1119 - acc: 0.6974 - val_loss: 33.7731 - val_acc: 0.6569
+Epoch 16/60
+ - 31s - loss: 13.9810 - acc: 0.7109 - val_loss: 34.7390 - val_acc: 0.6564
+Epoch 17/60
+ - 30s - loss: 13.6633 - acc: 0.7162 - val_loss: 34.3769 - val_acc: 0.6669
+Epoch 18/60
+ - 30s - loss: 13.4120 - acc: 0.7273 - val_loss: 34.9021 - val_acc: 0.6546
+Epoch 19/60
+ - 30s - loss: 13.0225 - acc: 0.7413 - val_loss: 35.5180 - val_acc: 0.6300
+Epoch 20/60
+ - 30s - loss: 12.8285 - acc: 0.7453 - val_loss: 34.3858 - val_acc: 0.6318
+Epoch 21/60
+ - 30s - loss: 12.3841 - acc: 0.7520 - val_loss: 34.8644 - val_acc: 0.6423
+Epoch 22/60
+ - 30s - loss: 11.9681 - acc: 0.7628 - val_loss: 37.4930 - val_acc: 0.6574
+Epoch 23/60
+ - 30s - loss: 11.8369 - acc: 0.7667 - val_loss: 38.6626 - val_acc: 0.6742
+Epoch 24/60
+ - 30s - loss: 11.1253 - acc: 0.7857 - val_loss: 39.5888 - val_acc: 0.6760
+Epoch 25/60
+ - 30s - loss: 10.8643 - acc: 0.7985 - val_loss: 38.3604 - val_acc: 0.6712
+Epoch 26/60
+ - 31s - loss: 10.2607 - acc: 0.8076 - val_loss: 38.9650 - val_acc: 0.6719
+Epoch 27/60
+ - 30s - loss: 9.8708 - acc: 0.8187 - val_loss: 42.5837 - val_acc: 0.6817
+Epoch 28/60
+ - 30s - loss: 10.0371 - acc: 0.8100 - val_loss: 44.0802 - val_acc: 0.7008
+Epoch 29/60
+ - 30s - loss: 9.4175 - acc: 0.8253 - val_loss: 43.2819 - val_acc: 0.6825
+Epoch 30/60
+ - 30s - loss: 8.9191 - acc: 0.8306 - val_loss: 45.4801 - val_acc: 0.6895
+Epoch 31/60
+ - 30s - loss: 8.3773 - acc: 0.8443 - val_loss: 46.5440 - val_acc: 0.6963
+Epoch 32/60
+ - 30s - loss: 7.9065 - acc: 0.8514 - val_loss: 50.6171 - val_acc: 0.6961
+Epoch 33/60
+ - 30s - loss: 7.4456 - acc: 0.8635 - val_loss: 55.4393 - val_acc: 0.7224
+Epoch 34/60
+ - 30s - loss: 6.8723 - acc: 0.8782 - val_loss: 58.8123 - val_acc: 0.7129
+Epoch 35/60
+ - 30s - loss: 7.0417 - acc: 0.8750 - val_loss: 53.7343 - val_acc: 0.6973
+Epoch 36/60
+ - 30s - loss: 6.8736 - acc: 0.8784 - val_loss: 53.6776 - val_acc: 0.6986
+Epoch 37/60
+ - 30s - loss: 6.2147 - acc: 0.8877 - val_loss: 67.0577 - val_acc: 0.7307
+Epoch 38/60
+ - 30s - loss: 5.5949 - acc: 0.9042 - val_loss: 69.4619 - val_acc: 0.7259
+Epoch 39/60
+ - 30s - loss: 5.3755 - acc: 0.9066 - val_loss: 65.9631 - val_acc: 0.7159
+Epoch 40/60
+ - 30s - loss: 5.8288 - acc: 0.8945 - val_loss: 61.7024 - val_acc: 0.7129
+Epoch 41/60
+ - 30s - loss: 5.3495 - acc: 0.9045 - val_loss: 66.3782 - val_acc: 0.7189
+Epoch 42/60
+ - 30s - loss: 4.9540 - acc: 0.9114 - val_loss: 67.2446 - val_acc: 0.7071
+Epoch 43/60
+ - 30s - loss: 4.8471 - acc: 0.9164 - val_loss: 61.8477 - val_acc: 0.6940
+Epoch 44/60
+ - 30s - loss: 4.3886 - acc: 0.9242 - val_loss: 67.8484 - val_acc: 0.7151
+Epoch 45/60
+ - 30s - loss: 4.0373 - acc: 0.9312 - val_loss: 69.9267 - val_acc: 0.7071
+Epoch 46/60
+ - 30s - loss: 4.1031 - acc: 0.9282 - val_loss: 68.1142 - val_acc: 0.6953
+Epoch 47/60
+ - 31s - loss: 3.6461 - acc: 0.9384 - val_loss: 75.0029 - val_acc: 0.7074
+Epoch 48/60
+ - 30s - loss: 3.6864 - acc: 0.9343 - val_loss: 69.1821 - val_acc: 0.7046
+Epoch 49/60
+ - 30s - loss: 3.2534 - acc: 0.9445 - val_loss: 71.4395 - val_acc: 0.7101
+Epoch 50/60
+ - 30s - loss: 3.0321 - acc: 0.9485 - val_loss: 77.7592 - val_acc: 0.7079
+Epoch 51/60
+ - 30s - loss: 2.8680 - acc: 0.9527 - val_loss: 86.8250 - val_acc: 0.7239
+Epoch 52/60
+ - 30s - loss: 3.0729 - acc: 0.9496 - val_loss: 78.5433 - val_acc: 0.7194
+Epoch 53/60
+ - 30s - loss: 2.8376 - acc: 0.9518 - val_loss: 81.2622 - val_acc: 0.7167
+Epoch 54/60
+ - 30s - loss: 2.5696 - acc: 0.9572 - val_loss: 78.2899 - val_acc: 0.6953
+Epoch 55/60
+ - 30s - loss: 2.6077 - acc: 0.9569 - val_loss: 81.0040 - val_acc: 0.6923
+Epoch 56/60
+ - 30s - loss: 2.7333 - acc: 0.9548 - val_loss: 82.2785 - val_acc: 0.7156
+Epoch 57/60
+ - 31s - loss: 3.4556 - acc: 0.9406 - val_loss: 75.3885 - val_acc: 0.6938
+Epoch 58/60
+ - 30s - loss: 3.2157 - acc: 0.9472 - val_loss: 72.2390 - val_acc: 0.6745
+Epoch 59/60
+ - 30s - loss: 2.6378 - acc: 0.9579 - val_loss: 83.2757 - val_acc: 0.7043
+Epoch 60/60
+ - 30s - loss: 2.2280 - acc: 0.9639 - val_loss: 81.0160 - val_acc: 0.6993
+WARNING:tensorflow:From /usr/local/lib/python3.5/dist-packages/tensorflow/python/framework/op_def_library.py:263: colocate_with (from tensorflow.python.framework.ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Colocations handled automatically by placer.
+2019-05-17 08:25:36.939293: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2019-05-17 08:25:38.923157: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2019-05-17 08:25:38.924134: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x555f34652ea0 executing computations on platform CUDA. Devices:
+2019-05-17 08:25:38.924209: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): Tesla K80, Compute Capability 3.7
+2019-05-17 08:25:38.930472: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2300000000 Hz
+2019-05-17 08:25:38.930802: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x555f3457a2c0 executing computations on platform Host. Devices:
+2019-05-17 08:25:38.930833: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
+2019-05-17 08:25:38.931259: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1433] Found device 0 with properties: 
+name: Tesla K80 major: 3 minor: 7 memoryClockRate(GHz): 0.8235
+pciBusID: 0000:00:04.0
+totalMemory: 11.17GiB freeMemory: 11.10GiB
+2019-05-17 08:25:38.931291: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1512] Adding visible gpu devices: 0
+2019-05-17 08:25:39.287593: I tensorflow/core/common_runtime/gpu/gpu_device.cc:984] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-05-17 08:25:39.287658: I tensorflow/core/common_runtime/gpu/gpu_device.cc:990]      0 
+2019-05-17 08:25:39.287669: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1003] 0:   N 
+2019-05-17 08:25:39.288019: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 10754 MB memory) -> physical GPU (device: 0, name: Tesla K80, pci bus id: 0000:00:04.0, compute capability: 3.7)
+WARNING:tensorflow:From /usr/local/lib/python3.5/dist-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
+
+--Testing on chunk 1 out of 1-- 
+
+Load  proc_data/data_17_5_7.55.19/test_data_chunk_0.h5
+loading test ids
+2019-05-17 08:25:41.104700: I tensorflow/stream_executor/dso_loader.cc:152] successfully opened CUDA library libcublas.so.10.0 locally
+Overwriting previous predictions!
+Math domain error in function comput_avg_loss in eval.py, amount:  0 out of 10
+Verified that our environment is calculating metrics correctly.
+
+Loading labels for exercises...
+Loading predictions for exercises...
+Math domain error in function comput_avg_loss in eval.py, amount:  0 out of 1825
+------------------------------------------------------------
+Metric                              Value          
+------------------------------------------------------------
+    AUC                                 0.6499885751152569
+    F1                                  0.3072289156626506
+    MCC                                 0.1578352480604196
+    accuracy                            0.7479452054794521
+    avg_log_loss                        0.9370002718416102
+    correctly predicted 0 (tn)          1263           
+    correctly predicted 1 (tp)          102            
+    incorrectly predicted 0 (fn)        189            
+    incorrectly predicted 1 (fp)        271            
+    precision:  tp / (tp+fp)            0.2734584450402145
+    ratio majority class                0.8405479452054795
+    recall:  tp / (tp+fn)               0.35051546391752575
+------------------------------------------------------------

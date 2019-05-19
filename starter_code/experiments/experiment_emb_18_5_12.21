@@ -1,0 +1,72 @@
+
+
+---- Experiment emb_18_5_12.21 ----
+
+    ------------------ Constant Parameters ----------------------
+    epochs          20             
+    batch_size      64             
+    recurrent_dropout 0.1            
+    lr              0.001          
+    dropout         0.3            
+    time_steps      60             
+    activation      sigmoid        
+    -------------------------------------------------------------
+    -- Data -                                          
+    DEBUG                    True
+    AMOUNT_DATA_USE          0.004
+    PERC_OF_DATA_PER_CHUNK   0.004
+    NUM_CHUNK_FILES          1
+    -------------------------------------------------------------
+    --Features_to_use-                                 
+    user, countries, client, session, format, token
+    threshold      0
+    USE_WORD_EMB   1
+    -------------------------------------------------------------
+    --net_architechture-                     
+    0               128            
+    1               1              
+    -------------------------------------------------------------
+    --class_weights-                         
+    0               15             
+    1               85             
+    -------------------------------------------------------------
+
+
+
+---- Model 18_5_12.21.43 ---- use_word_emb: 0
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.6980560156889625
+    F1                                  0.31044776119402984
+    MCC                                 0.1677143512204354
+    accuracy                            0.6890982503364738
+    avg_log_loss                        0.5540197240024058
+    correctly predicted 0 (tn)          920            
+    correctly predicted 1 (tp)          104            
+    incorrectly predicted 0 (fn)        101            
+    incorrectly predicted 1 (fp)        361            
+    precision:  tp / (tp+fp)            0.22365591397849463
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.5073170731707317
+    --------------------------------------------------------
+
+
+---- Model 18_5_12.31.51 ---- use_word_emb: 1
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.6968488794958207
+    F1                                  0.31638418079096053
+    MCC                                 0.1757146948667183
+    accuracy                            0.6742934051144011
+    avg_log_loss                        0.5673530062557653
+    correctly predicted 0 (tn)          890            
+    correctly predicted 1 (tp)          112            
+    incorrectly predicted 0 (fn)        93             
+    incorrectly predicted 1 (fp)        391            
+    precision:  tp / (tp+fp)            0.22266401590457258
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.5463414634146342
+    --------------------------------------------------------
+

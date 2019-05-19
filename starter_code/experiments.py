@@ -163,7 +163,7 @@ def class_weights_experiment():
         set_params(use_preproc_data=False)
 
     # define the changing parameter and its value
-    changing_param_name = 'lr'
+    changing_param_name = 'class_weights'
     changing_param_value = [{0: 15, 1: 85}, {0: 5, 1: 95}, {0: 1, 1: 99}]
 
     # set constant parameters

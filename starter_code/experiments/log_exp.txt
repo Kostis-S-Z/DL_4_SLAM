@@ -1,0 +1,309 @@
+Using TensorFlow backend.
+-----MEMORY before starting experiment ------ 268042240
+Building dataset...
+Building feature dict .... 
+loading feature dicts...
+loading finished
+Building finished 
+
+--Loading train chunk 1 out of 4-- 
+
+Loading training instances...
+Starting to load from line 1
+Stop loading data...
+Done loading 65450 instances across 20601 exercises.
+
+Writing 65380 train data with 79 features and 70 timesteps
+
+--Loading train chunk 2 out of 4-- 
+
+Loading training instances...
+Starting to load from line 121678
+Stop loading data...
+Done loading 65649 instances across 20601 exercises.
+
+Writing 65579 train data with 79 features and 70 timesteps
+
+--Loading train chunk 3 out of 4-- 
+
+Loading training instances...
+Starting to load from line 243459
+Stop loading data...
+Done loading 64448 instances across 20601 exercises.
+
+Writing 64378 train data with 79 features and 70 timesteps
+
+--Loading train chunk 4 out of 4-- 
+
+Loading training instances...
+Starting to load from line 363915
+Stop loading data...
+Done loading 65821 instances across 20601 exercises.
+
+Writing 65751 train data with 79 features and 70 timesteps
+Dataset built with 261088 train samples
+
+--Loading test chunk 1 out of 4-- 
+
+Loading testing instances...
+Starting to load from line 1
+Stop loading data...
+Done loading 9489 instances across 2895 exercises.
+
+Writing 9419 test data with 79 features and 70 timesteps
+
+--Loading test chunk 2 out of 4-- 
+
+Loading testing instances...
+Starting to load from line 17346
+Stop loading data...
+Done loading 9913 instances across 2895 exercises.
+
+Writing 9843 test data with 79 features and 70 timesteps
+
+--Loading test chunk 3 out of 4-- 
+
+Loading testing instances...
+Starting to load from line 35134
+Stop loading data...
+Done loading 9449 instances across 2895 exercises.
+
+Writing 9379 test data with 79 features and 70 timesteps
+
+--Loading test chunk 4 out of 4-- 
+
+Loading testing instances...
+Starting to load from line 52403
+Stop loading data...
+Done loading 9767 instances across 2895 exercises.
+
+Writing 9697 test data with 79 features and 70 timesteps
+Dataset built with 38338 test samples
+Dataset done!
+-----MEMORY subprocess before 0 ------ 332746752
+
+--Training on chunk 1 out of 4-- 
+
+-----MEMORY before training chunk 0 ------ 322437120
+Load  proc_data/data_16_5_17.33.5/train_data_chunk_0.h5
+loading training labels
+No such model (16_5_17.33.5) found to load! Starting from scratch...
+WARNING:tensorflow:From /usr/local/lib/python3.5/dist-packages/tensorflow/python/framework/op_def_library.py:263: colocate_with (from tensorflow.python.framework.ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Colocations handled automatically by placer.
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+lstm_1 (LSTM)                (None, 128)               106496    
+_________________________________________________________________
+dense_1 (Dense)              (None, 1)                 129       
+=================================================================
+Total params: 106,625
+Trainable params: 106,625
+Non-trainable params: 0
+_________________________________________________________________
+None
+WARNING:tensorflow:From /usr/local/lib/python3.5/dist-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
+Train on 58842 samples, validate on 6538 samples
+Epoch 1/3
+2019-05-16 17:35:56.823073: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2019-05-16 17:35:58.854092: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2019-05-16 17:35:58.854868: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x561276660d10 executing computations on platform CUDA. Devices:
+2019-05-16 17:35:58.854923: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): Tesla K80, Compute Capability 3.7
+2019-05-16 17:35:58.859500: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2300000000 Hz
+2019-05-16 17:35:58.859789: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x561276a43200 executing computations on platform Host. Devices:
+2019-05-16 17:35:58.859814: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
+2019-05-16 17:35:58.860388: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1433] Found device 0 with properties: 
+name: Tesla K80 major: 3 minor: 7 memoryClockRate(GHz): 0.8235
+pciBusID: 0000:00:04.0
+totalMemory: 11.17GiB freeMemory: 11.10GiB
+2019-05-16 17:35:58.860421: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1512] Adding visible gpu devices: 0
+2019-05-16 17:35:59.284827: I tensorflow/core/common_runtime/gpu/gpu_device.cc:984] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-05-16 17:35:59.284893: I tensorflow/core/common_runtime/gpu/gpu_device.cc:990]      0 
+2019-05-16 17:35:59.284904: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1003] 0:   N 
+2019-05-16 17:35:59.285213: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 10754 MB memory) -> physical GPU (device: 0, name: Tesla K80, pci bus id: 0000:00:04.0, compute capability: 3.7)
+2019-05-16 17:36:00.167769: I tensorflow/stream_executor/dso_loader.cc:152] successfully opened CUDA library libcublas.so.10.0 locally
+ - 121s - loss: 176.3927 - acc: 0.2121 - val_loss: 211.8133 - val_acc: 0.1143
+Epoch 2/3
+ - 119s - loss: 208.3954 - acc: 0.1285 - val_loss: 211.8133 - val_acc: 0.1143
+Epoch 3/3
+ - 118s - loss: 208.3954 - acc: 0.1285 - val_loss: 211.8133 - val_acc: 0.1143
+-----MEMORY subprocess before 1 ------ 332783616
+
+--Training on chunk 2 out of 4-- 
+
+-----MEMORY before training chunk 1 ------ 322437120
+Load  proc_data/data_16_5_17.33.5/train_data_chunk_1.h5
+loading training labels
+WARNING:tensorflow:From /usr/local/lib/python3.5/dist-packages/tensorflow/python/framework/op_def_library.py:263: colocate_with (from tensorflow.python.framework.ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Colocations handled automatically by placer.
+2019-05-16 17:42:19.922265: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2019-05-16 17:42:21.917817: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2019-05-16 17:42:21.918474: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x561276c87aa0 executing computations on platform CUDA. Devices:
+2019-05-16 17:42:21.918552: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): Tesla K80, Compute Capability 3.7
+2019-05-16 17:42:21.922210: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2300000000 Hz
+2019-05-16 17:42:21.922649: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x561279594b30 executing computations on platform Host. Devices:
+2019-05-16 17:42:21.922688: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
+2019-05-16 17:42:21.923143: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1433] Found device 0 with properties: 
+name: Tesla K80 major: 3 minor: 7 memoryClockRate(GHz): 0.8235
+pciBusID: 0000:00:04.0
+totalMemory: 11.17GiB freeMemory: 11.10GiB
+2019-05-16 17:42:21.923201: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1512] Adding visible gpu devices: 0
+2019-05-16 17:42:22.353673: I tensorflow/core/common_runtime/gpu/gpu_device.cc:984] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-05-16 17:42:22.353782: I tensorflow/core/common_runtime/gpu/gpu_device.cc:990]      0 
+2019-05-16 17:42:22.353795: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1003] 0:   N 
+2019-05-16 17:42:22.354187: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 10754 MB memory) -> physical GPU (device: 0, name: Tesla K80, pci bus id: 0000:00:04.0, compute capability: 3.7)
+WARNING:tensorflow:From /usr/local/lib/python3.5/dist-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
+Loading pre-existing model...
+Train on 59021 samples, validate on 6558 samples
+Epoch 1/3
+2019-05-16 17:42:25.884435: I tensorflow/stream_executor/dso_loader.cc:152] successfully opened CUDA library libcublas.so.10.0 locally
+ - 122s - loss: 211.9974 - acc: 0.1135 - val_loss: 188.1581 - val_acc: 0.2130
+Epoch 2/3
+ - 120s - loss: 211.9974 - acc: 0.1135 - val_loss: 188.1581 - val_acc: 0.2130
+Epoch 3/3
+ - 121s - loss: 211.9974 - acc: 0.1135 - val_loss: 188.1581 - val_acc: 0.2130
+-----MEMORY subprocess before 2 ------ 332783616
+
+--Training on chunk 3 out of 4-- 
+
+-----MEMORY before training chunk 2 ------ 322437120
+Load  proc_data/data_16_5_17.33.5/train_data_chunk_2.h5
+loading training labels
+WARNING:tensorflow:From /usr/local/lib/python3.5/dist-packages/tensorflow/python/framework/op_def_library.py:263: colocate_with (from tensorflow.python.framework.ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Colocations handled automatically by placer.
+2019-05-16 17:48:50.479448: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2019-05-16 17:48:52.470960: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2019-05-16 17:48:52.471581: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x5612767ffef0 executing computations on platform CUDA. Devices:
+2019-05-16 17:48:52.472141: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): Tesla K80, Compute Capability 3.7
+2019-05-16 17:48:52.475570: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2300000000 Hz
+2019-05-16 17:48:52.475906: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x561277552990 executing computations on platform Host. Devices:
+2019-05-16 17:48:52.475935: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
+2019-05-16 17:48:52.476243: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1433] Found device 0 with properties: 
+name: Tesla K80 major: 3 minor: 7 memoryClockRate(GHz): 0.8235
+pciBusID: 0000:00:04.0
+totalMemory: 11.17GiB freeMemory: 11.10GiB
+2019-05-16 17:48:52.476272: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1512] Adding visible gpu devices: 0
+2019-05-16 17:48:52.911941: I tensorflow/core/common_runtime/gpu/gpu_device.cc:984] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-05-16 17:48:52.912008: I tensorflow/core/common_runtime/gpu/gpu_device.cc:990]      0 
+2019-05-16 17:48:52.912020: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1003] 0:   N 
+2019-05-16 17:48:52.912313: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 10754 MB memory) -> physical GPU (device: 0, name: Tesla K80, pci bus id: 0000:00:04.0, compute capability: 3.7)
+WARNING:tensorflow:From /usr/local/lib/python3.5/dist-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
+Loading pre-existing model...
+Train on 57940 samples, validate on 6438 samples
+Epoch 1/3
+2019-05-16 17:48:56.458792: I tensorflow/stream_executor/dso_loader.cc:152] successfully opened CUDA library libcublas.so.10.0 locally
+ - 118s - loss: 208.7630 - acc: 0.1270 - val_loss: 201.0256 - val_acc: 0.1594
+Epoch 2/3
+ - 116s - loss: 208.7630 - acc: 0.1270 - val_loss: 201.0256 - val_acc: 0.1594
+Epoch 3/3
+ - 116s - loss: 208.7630 - acc: 0.1270 - val_loss: 201.0256 - val_acc: 0.1594
+-----MEMORY subprocess before 3 ------ 332783616
+
+--Training on chunk 4 out of 4-- 
+
+-----MEMORY before training chunk 3 ------ 322437120
+Load  proc_data/data_16_5_17.33.5/train_data_chunk_3.h5
+loading training labels
+WARNING:tensorflow:From /usr/local/lib/python3.5/dist-packages/tensorflow/python/framework/op_def_library.py:263: colocate_with (from tensorflow.python.framework.ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Colocations handled automatically by placer.
+2019-05-16 17:55:01.925116: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2019-05-16 17:55:03.923625: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2019-05-16 17:55:03.924212: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x5612796d3700 executing computations on platform CUDA. Devices:
+2019-05-16 17:55:03.924245: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): Tesla K80, Compute Capability 3.7
+2019-05-16 17:55:03.928043: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2300000000 Hz
+2019-05-16 17:55:03.928533: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x56127abcccb0 executing computations on platform Host. Devices:
+2019-05-16 17:55:03.928564: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
+2019-05-16 17:55:03.928965: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1433] Found device 0 with properties: 
+name: Tesla K80 major: 3 minor: 7 memoryClockRate(GHz): 0.8235
+pciBusID: 0000:00:04.0
+totalMemory: 11.17GiB freeMemory: 11.10GiB
+2019-05-16 17:55:03.928998: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1512] Adding visible gpu devices: 0
+2019-05-16 17:55:04.371922: I tensorflow/core/common_runtime/gpu/gpu_device.cc:984] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-05-16 17:55:04.372008: I tensorflow/core/common_runtime/gpu/gpu_device.cc:990]      0 
+2019-05-16 17:55:04.372021: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1003] 0:   N 
+2019-05-16 17:55:04.372314: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 10754 MB memory) -> physical GPU (device: 0, name: Tesla K80, pci bus id: 0000:00:04.0, compute capability: 3.7)
+WARNING:tensorflow:From /usr/local/lib/python3.5/dist-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
+Loading pre-existing model...
+Train on 59175 samples, validate on 6576 samples
+Epoch 1/3
+2019-05-16 17:55:07.956029: I tensorflow/stream_executor/dso_loader.cc:152] successfully opened CUDA library libcublas.so.10.0 locally
+ - 119s - loss: 208.1643 - acc: 0.1295 - val_loss: 201.8981 - val_acc: 0.1557
+Epoch 2/3
+ - 118s - loss: 208.1643 - acc: 0.1295 - val_loss: 201.8981 - val_acc: 0.1557
+Epoch 3/3
+ - 118s - loss: 208.1643 - acc: 0.1295 - val_loss: 201.8981 - val_acc: 0.1557
+WARNING:tensorflow:From /usr/local/lib/python3.5/dist-packages/tensorflow/python/framework/op_def_library.py:263: colocate_with (from tensorflow.python.framework.ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Colocations handled automatically by placer.
+2019-05-16 18:01:04.455294: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2019-05-16 18:01:06.445996: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2019-05-16 18:01:06.446794: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x56127ac99e50 executing computations on platform CUDA. Devices:
+2019-05-16 18:01:06.446848: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): Tesla K80, Compute Capability 3.7
+2019-05-16 18:01:06.450216: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2300000000 Hz
+2019-05-16 18:01:06.450487: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x561279826930 executing computations on platform Host. Devices:
+2019-05-16 18:01:06.450510: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
+2019-05-16 18:01:06.450877: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1433] Found device 0 with properties: 
+name: Tesla K80 major: 3 minor: 7 memoryClockRate(GHz): 0.8235
+pciBusID: 0000:00:04.0
+totalMemory: 11.17GiB freeMemory: 11.10GiB
+2019-05-16 18:01:06.450913: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1512] Adding visible gpu devices: 0
+2019-05-16 18:01:06.814977: I tensorflow/core/common_runtime/gpu/gpu_device.cc:984] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-05-16 18:01:06.815043: I tensorflow/core/common_runtime/gpu/gpu_device.cc:990]      0 
+2019-05-16 18:01:06.815054: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1003] 0:   N 
+2019-05-16 18:01:06.815425: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 10754 MB memory) -> physical GPU (device: 0, name: Tesla K80, pci bus id: 0000:00:04.0, compute capability: 3.7)
+WARNING:tensorflow:From /usr/local/lib/python3.5/dist-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
+
+--Testing on chunk 1 out of 4-- 
+
+Load  proc_data/data_16_5_17.33.5/test_data_chunk_0.h5
+loading test ids
+2019-05-16 18:01:09.130290: I tensorflow/stream_executor/dso_loader.cc:152] successfully opened CUDA library libcublas.so.10.0 locally
+
+--Testing on chunk 2 out of 4-- 
+
+Load  proc_data/data_16_5_17.33.5/test_data_chunk_1.h5
+loading test ids
+
+--Testing on chunk 3 out of 4-- 
+
+Load  proc_data/data_16_5_17.33.5/test_data_chunk_2.h5
+loading test ids
+
+--Testing on chunk 4 out of 4-- 
+
+Load  proc_data/data_16_5_17.33.5/test_data_chunk_3.h5
+loading test ids
+Overwriting previous predictions!
+Verified that our environment is calculating metrics correctly.
+
+Loading labels for exercises...
+Loading predictions for exercises...
+Process Process-1:
+Traceback (most recent call last):
+  File "/usr/lib/python3.5/multiprocessing/process.py", line 249, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.5/multiprocessing/process.py", line 93, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/kostis_s_z_24/DL_4_SLAM/starter_code/lstm.py", line 334, in run_experiment
+    results = evaluate(pred_path, key_path)
+  File "/home/kostis_s_z_24/DL_4_SLAM/starter_code/eval.py", line 43, in evaluate
+    metrics = evaluate_metrics(actual, predicted)
+  File "/home/kostis_s_z_24/DL_4_SLAM/starter_code/eval.py", line 221, in evaluate_metrics
+    avg_log_loss = compute_avg_log_loss(actual, predicted)
+  File "/home/kostis_s_z_24/DL_4_SLAM/starter_code/eval.py", line 125, in compute_avg_log_loss
+    loss -= math.log(p)
+ValueError: math domain error

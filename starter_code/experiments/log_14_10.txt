@@ -1,0 +1,138 @@
+Using TensorFlow backend.
+
+--Training on chunk 1 out of 10-- 
+
+loading training labels
+No such model (14_5_14.10) found to load! Starting from scratch...
+WARNING:tensorflow:From /usr/local/lib/python3.5/dist-packages/tensorflow/python/framework/op_def_library.py:263: colocate_with (from tensorflow.python.framework.ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Colocations handled automatically by placer.
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+lstm_1 (LSTM)                (None, 128)               105472    
+_________________________________________________________________
+dense_1 (Dense)              (None, 1)                 129       
+=================================================================
+Total params: 105,601
+Trainable params: 105,601
+Non-trainable params: 0
+_________________________________________________________________
+None
+x_train:  (26229, 70, 77)
+x train 0:  10110100110.0
+ÿ_train:  (26229,)
+y_train 0:  0.0
+batch size:  64
+keras verbose:  2
+WARNING:tensorflow:From /usr/local/lib/python3.5/dist-packages/tensorflow/python/ops/math_ops.py:3066: to_int32 (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.cast instead.
+Train on 23606 samples, validate on 2623 samples
+Epoch 1/10
+2019-05-14 14:12:12.523074: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2019-05-14 14:12:14.685083: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2019-05-14 14:12:14.685770: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x55ac2bb71ea0 executing computations on platform CUDA. Devices:
+2019-05-14 14:12:14.685804: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): Tesla K80, Compute Capability 3.7
+2019-05-14 14:12:14.688878: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2300000000 Hz
+2019-05-14 14:12:14.689113: I tensorflow/compiler/xla/service/service.cc:150] XLA service 0x55ac2bbdafc0 executing computations on platform Host. Devices:
+2019-05-14 14:12:14.689137: I tensorflow/compiler/xla/service/service.cc:158]   StreamExecutor device (0): <undefined>, <undefined>
+2019-05-14 14:12:14.689506: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1433] Found device 0 with properties: 
+name: Tesla K80 major: 3 minor: 7 memoryClockRate(GHz): 0.8235
+pciBusID: 0000:00:04.0
+totalMemory: 11.17GiB freeMemory: 11.10GiB
+2019-05-14 14:12:14.689561: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1512] Adding visible gpu devices: 0
+2019-05-14 14:12:15.059522: I tensorflow/core/common_runtime/gpu/gpu_device.cc:984] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-05-14 14:12:15.059591: I tensorflow/core/common_runtime/gpu/gpu_device.cc:990]      0 
+2019-05-14 14:12:15.059603: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1003] 0:   N 
+2019-05-14 14:12:15.059955: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 10754 MB memory) -> physical GPU (device: 0, name: Tesla K80, pci bus id: 0000:00:04.0, compute capability: 3.7)
+2019-05-14 14:12:15.925742: I tensorflow/stream_executor/dso_loader.cc:152] successfully opened CUDA library libcublas.so.10.0 locally
+ - 51s - loss: 16.9256 - acc: 0.6385 - val_loss: 17.0243 - val_acc: 0.8628
+Epoch 2/10
+ - 48s - loss: 16.9254 - acc: 0.6461 - val_loss: 17.0245 - val_acc: 0.8628
+Epoch 3/10
+ - 47s - loss: 16.9258 - acc: 0.6437 - val_loss: 17.0246 - val_acc: 0.8628
+Epoch 4/10
+ - 48s - loss: 16.9259 - acc: 0.6437 - val_loss: 17.0246 - val_acc: 0.8628
+Epoch 5/10
+ - 47s - loss: 16.9260 - acc: 0.6437 - val_loss: 17.0246 - val_acc: 0.8628
+Epoch 6/10
+ - 49s - loss: 16.9260 - acc: 0.6437 - val_loss: 17.0246 - val_acc: 0.8628
+Epoch 7/10
+ - 48s - loss: 16.9261 - acc: 0.6437 - val_loss: 17.0246 - val_acc: 0.8628
+Epoch 8/10
+ - 48s - loss: 16.9261 - acc: 0.6437 - val_loss: 17.0247 - val_acc: 0.8628
+Epoch 9/10
+ - 47s - loss: 16.9261 - acc: 0.6437 - val_loss: 17.0247 - val_acc: 0.8628
+Epoch 10/10
+ - 48s - loss: 16.9261 - acc: 0.6437 - val_loss: 17.0247 - val_acc: 0.8628
+
+--Training on chunk 2 out of 10-- 
+
+loading training labels
+Loading pre-existing model...
+x_train:  (26230, 70, 77)
+x train 0:  1110000010.0
+ÿ_train:  (26230,)
+y_train 0:  0.0
+batch size:  64
+keras verbose:  2
+Train on 23607 samples, validate on 2623 samples
+Epoch 1/10
+ - 49s - loss: 16.2509 - acc: 0.7484 - val_loss: 15.8484 - val_acc: 0.8845
+Epoch 2/10
+ - 48s - loss: 16.2685 - acc: 0.7497 - val_loss: 15.8487 - val_acc: 0.8845
+Epoch 3/10
+ - 48s - loss: 16.2701 - acc: 0.7497 - val_loss: 15.8486 - val_acc: 0.8845
+Epoch 4/10
+ - 48s - loss: 16.2710 - acc: 0.7497 - val_loss: 15.8485 - val_acc: 0.8845
+Epoch 5/10
+ - 48s - loss: 16.2717 - acc: 0.7497 - val_loss: 15.8484 - val_acc: 0.8845
+Epoch 6/10
+ - 49s - loss: 16.2722 - acc: 0.7497 - val_loss: 15.8484 - val_acc: 0.8845
+Epoch 7/10
+ - 49s - loss: 16.2726 - acc: 0.7497 - val_loss: 15.8483 - val_acc: 0.8845
+Epoch 8/10
+ - 48s - loss: 16.2729 - acc: 0.7497 - val_loss: 15.8482 - val_acc: 0.8845
+Epoch 9/10
+ - 49s - loss: 16.2731 - acc: 0.7497 - val_loss: 15.8482 - val_acc: 0.8845
+Epoch 10/10
+ - 48s - loss: 16.2733 - acc: 0.7497 - val_loss: 15.8482 - val_acc: 0.8845
+
+--Training on chunk 3 out of 10-- 
+
+Traceback (most recent call last):
+  File "/home/kostis_s_z_24/.local/lib/python3.5/site-packages/tables/array.py", line 661, in __getitem__
+    startl, stopl, stepl, shape = self._interpret_indexing(key)
+  File "/home/kostis_s_z_24/.local/lib/python3.5/site-packages/tables/array.py", line 416, in _interpret_indexing
+    key.start, key.stop, key.step, dim=dim)
+  File "/home/kostis_s_z_24/.local/lib/python3.5/site-packages/tables/leaf.py", line 431, in _process_range
+    return slice(start, stop, step).indices(int(nrows))
+TypeError: slice indices must be integers or None or have an __index__ method
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/kostis_s_z_24/.local/lib/python3.5/site-packages/tables/array.py", line 666, in __getitem__
+    coords = self._point_selection(key)
+  File "/home/kostis_s_z_24/.local/lib/python3.5/site-packages/tables/leaf.py", line 552, in _point_selection
+    raise TypeError("Invalid index or slice: %r" % (key,))
+TypeError: Invalid index or slice: slice(52459.14, 78688.70999999999, None)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "lstm.py", line 325, in <module>
+    main()
+  File "lstm.py", line 82, in main
+    predictions = run_lstm(data_id)
+  File "lstm.py", line 134, in run_lstm
+    train_data, train_labels = load_preprocessed_data(data_id, "train", i_start=start, i_end=end)
+  File "lstm.py", line 176, in load_preprocessed_data
+    dataset = data_file.root.Dataset[start:end]
+  File "/home/kostis_s_z_24/.local/lib/python3.5/site-packages/tables/array.py", line 671, in __getitem__
+    arr = self._read_selection(selection, reorder, shape)
+  File "/home/kostis_s_z_24/.local/lib/python3.5/site-packages/tables/array.py", line 791, in _read_selection
+    nparr = numpy.empty(dtype=self.atom.dtype, shape=shape)
+MemoryError
+Closing remaining open files:proc_data/data_14_5_13.47/train_data.h5...done

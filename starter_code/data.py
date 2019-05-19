@@ -26,7 +26,7 @@ import os
 from pathlib import Path
 from future.utils import iteritems
 
-LOADING_VERBOSE = 2
+LOADING_VERBOSE = 1
 
 OS = 'unix'  # make sure the paths work for both WINDOWS and unix
 train_path = ""

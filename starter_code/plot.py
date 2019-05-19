@@ -18,8 +18,13 @@ for elem1, elem2, elem3, elem4, elem5, elem6 in zip(f1r1311, f1r1417, f1r1517, f
 mcc = [0.]
 plt.errorbar(x, f1, color='#0000A0', linewidth=2, yerr=f1_std,  ecolor='#43C6DB', elinewidth=1, capsize=3, barsabove=True, capthick=1)
 plt.axhline(0.190, color='gray', linestyle='--',  linewidth = 1, label='Baseline')
-plt.xlabel('Dropout percentage')
-plt.ylabel('F1 score')
+plt.xlabel('Dropout percentage', fontsize = 18)
+plt.ylabel('F1 score', fontsize=18)
 plt.legend()
-plt.title('Dropout')
+plt.tick_params(axis='both', which='major', labelsize=16)
+plt.tick_params(axis='both', which='minor', labelsize=16)
+plt.title('Dropout', fontsize=20)
+plt.tight_layout()
 plt.show()
+
+

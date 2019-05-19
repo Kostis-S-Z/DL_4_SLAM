@@ -1,4 +1,5 @@
-#from lstm import build_dataset, train_path, test_path, run_lstm, write_predictions, evaluate, pred_path, key_path, use_pre_processed_data
+# from lstm import build_dataset, train_path, test_path, run_lstm,
+# write_predictions, evaluate, pred_path, key_path, use_pre_processed_data
 
 
 from lstm import set_params, save_constant_parameters, run_experiment
@@ -11,7 +12,7 @@ import psutil
 import shutil
 
 # import all parameters that we might change in our experiments
-#from lstm import FEATURES_TO_USE, THRESHOLD_OF_OCC, net_architecture, class_weights, model_params
+# from lstm import FEATURES_TO_USE, THRESHOLD_OF_OCC, net_architecture, class_weights, model_params
 '''
 Default Params:
 
@@ -41,11 +42,12 @@ model_params = {
 USE_WORD_EMB = 0
 '''
 
+
 def one_experiment():
-    '''
+    """
     function that runs an example experiment
     writes the used parameters and the results to the file "experiments/experiment_..."
-    '''
+    """
 
     # set the name of the experiment
     now = datetime.datetime.now()
@@ -59,14 +61,14 @@ def one_experiment():
 
     # define the changing parameter and its value
     changing_param_name = 'class_weights'
-    changing_param_value = [{0:15, 1:85}]#, {0:15, 1:85}]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
+    changing_param_value = [{0: 15, 1: 85}]
+    # {0:15, 1:85}]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
 
+    features_to_use = ['user', 'countries', 'session', 'format', 'token']
     # set constant parameters
-    set_params(use_word_emb=0)
-    set_params(epochs=10)
-    #
-    #
-    #...
+    set_params(use_word_emb=1)
+    set_params(epochs=40)
+    set_params(features_to_use=features_to_use)
 
     # save constant parameters to a new "experiment_.." filgithx+P@2ub
     save_constant_parameters(experiment_name, changing_param_name)
@@ -74,7 +76,7 @@ def one_experiment():
     # run experiment for every parameter value
     for value in changing_param_value:
         process = psutil.Process(os.getpid())
-        print("-----MEMORY before starting experiment ------", int(process.memory_info().rss/(8*10**(3))), "KB")
+        print("-----MEMORY before starting experiment ------", int(process.memory_info().rss/(8*10**3)), "KB")
 
         # update the parameter value
         set_params(class_weights_1=value)
@@ -82,18 +84,21 @@ def one_experiment():
         # update the model_id for this new model
         now = datetime.datetime.now()
         new_model_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute) + "." + str(now.second)
-        set_params(model_id = new_model_id)
+
+        set_params(model_id=new_model_id)
 
         # evaluate the new model and save the results in the experiment file
-        oneExperiment = Process(target=run_experiment, args=(experiment_name, new_model_id, changing_param_name, value,))
+        oneExperiment = Process(target=run_experiment, args=(experiment_name,
+                                                             new_model_id, changing_param_name, value,))
         oneExperiment.start()
         oneExperiment.join()
 
+
 def class_weights_binary():
-    '''
+    """
     function that runs an example experiment
     writes the used parameters and the results to the file "experiments/experiment_..."
-    '''
+    """
 
     # set the name of the experiment
     now = datetime.datetime.now()
@@ -107,13 +112,11 @@ def class_weights_binary():
 
     # define the changing parameter and its value
     changing_param_name = 'class_weights'
-    changing_param_value = [{0:1, 1:2}, {0:15, 1:85}]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
+    changing_param_value = [{0: 1, 1: 2}, {0: 15, 1: 85}]
+    # {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
 
     # set constant parameters
     set_params(use_word_emb=0)
-    #
-    #
-    #...
 
     # save constant parameters to a new "experiment_.." file
     save_constant_parameters(experiment_name, changing_param_name)
@@ -138,11 +141,12 @@ def class_weights_binary():
 
         set_params(preproc_data_id=new_model_id)
 
+
 def class_weights_embedding():
-    '''
+    """
     function that runs an example experiment
     writes the used parameters and the results to the file "experiments/experiment_..."
-    '''
+    """
 
     # set the name of the experiment
     now = datetime.datetime.now()
@@ -160,17 +164,11 @@ def class_weights_embedding():
     changing_param_name = 'class_weights'
     changing_param_value = [{0:50, 1:50}, {0:30, 1:70},{0:15, 1:85}, {0:5, 1:95}, {0:1, 1:99}]
 
-
     # set constant parameters
-    set_params(use_word_emb=1)
     set_params(use_word_emb=1)
     set_params(epochs=20)
     set_params(dropout=0.3)
-
-    #
-    #
     #...
-
     # save constant parameters to a new "experiment_.." file
     save_constant_parameters(experiment_name, changing_param_name)
 
@@ -194,11 +192,13 @@ def class_weights_embedding():
 
         set_params(preproc_data_id=new_model_id)
 
+
 def lr_experiment():
-    '''
+    """
     function that runs an example experiment
     writes the used parameters and the results to the file "experiments/experiment_..."
-    '''
+    """
+
     print("LR_EXPERIMENT\n")
 
     # set the name of the experiment
@@ -220,13 +220,9 @@ def lr_experiment():
     # set constant parameters
     set_params(use_word_emb=1)
     set_params(epochs=20)
-    #
-    #
-    #...
 
     # save constant parameters to a new "experiment_.." file
     save_constant_parameters(experiment_name, changing_param_name)
-
 
     # run experiment for every parameter value
     for value in changing_param_value:
@@ -246,11 +242,13 @@ def lr_experiment():
         if value == changing_param_value[0]:
             set_params(preproc_data_id=new_model_id)
 
+
 def timesteps_experiment():
-    '''
+    """
     function that runs an example experiment
     writes the used parameters and the results to the file "experiments/experiment_..."
-    '''
+    """
+
     print("TIMESTEPS EXPERIMENT")
 
     # set the name of the experiment
@@ -267,19 +265,16 @@ def timesteps_experiment():
 
     # define the changing parameter and its value
     changing_param_name = 'time_steps'
-    changing_param_value = [1,2,4,8,16,32,64,128,256]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
+    changing_param_value = [1, 2, 4, 8, 16, 32, 64, 128, 256]
+    # {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
 
     # set constant parameters
     set_params(epochs=20)
     set_params(dropout=0.3)
-    set_params(use_word_emb = 1)
-    #
-    #
-    #...
+    set_params(use_word_emb=1)
 
     # save constant parameters to a new "experiment_.." file
     save_constant_parameters(experiment_name, changing_param_name)
-
 
     # run experiment for every parameter value
     for value in changing_param_value:
@@ -302,11 +297,12 @@ def timesteps_experiment():
         if value == changing_param_value[0]:
             set_params(preproc_data_id=new_model_id)
 
+
 def emb_experiment():
-    '''
+    """
     function that runs an example experiment
     writes the used parameters and the results to the file "experiments/experiment_..."
-    '''
+    """
     print("EMBEDDINGS EXPERIMENT")
 
     # set the name of the experiment
@@ -323,18 +319,15 @@ def emb_experiment():
 
     # define the changing parameter and its value
     changing_param_name = 'use_word_emb'
-    changing_param_value = [0,1]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
+    changing_param_value = [0, 1]
+    # {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]
 
     # set constant parameters
     set_params(epochs=20)
     set_params(dropout=0.3)
-    #
-    #
-    #...
 
     # save constant parameters to a new "experiment_.." file
     save_constant_parameters(experiment_name, changing_param_name)
-
 
     # run experiment for every parameter value
     for value in changing_param_value:
@@ -347,7 +340,7 @@ def emb_experiment():
         # update the model_id for this new model
         now = datetime.datetime.now()
         new_model_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute) + "." + str(now.second)
-        set_params(model_id = new_model_id)
+        set_params(model_id=new_model_id)
 
         # evaluate the new model and save the results in the experiment file
         oneExperiment = Process(target=run_experiment, args=(experiment_name, new_model_id, changing_param_name, value,))
@@ -357,11 +350,12 @@ def emb_experiment():
         if value == changing_param_value[0]:
             set_params(preproc_data_id=new_model_id)
 
+
 def reg_experiment():
-    '''
+    """
     function that runs an example experiment
     writes the used parameters and the results to the file "experiments/experiment_..."
-    '''
+    """
     print("REG_EXPERIMENT")
 
     # set the name of the experiment
@@ -378,18 +372,15 @@ def reg_experiment():
 
     # define the changing parameter and its value
     changing_param_name = 'dropout'
-    changing_param_value = [0.0,0.1, 0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
+    changing_param_value = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    # , {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
 
     # set constant parameters
     set_params(use_word_emb=1)
     set_params(epochs=1)
-    #
-    #
-    #...
 
     # save constant parameters to a new "experiment_.." file
     save_constant_parameters(experiment_name, changing_param_name)
-
 
     # run experiment for every parameter value
     for value in changing_param_value:
@@ -412,13 +403,24 @@ def reg_experiment():
         if value == changing_param_value[0]:
             set_params(preproc_data_id=new_model_id)
 
+
 # specify which experiment you want to run
 if __name__ == '__main__':
+<<<<<<< HEAD
     #one_experiment()
     #class_weights_binary()
     #shutil.rmtree("proc_data/")
     for i in range(5):
         class_weights_embedding()
     #reg_experiment()
+=======
+    one_experiment()
+    # class_weights_binary()
+
+    # shutil.rmtree("proc_data/")
+    # class_weights_embedding()
+    # reg_experiment()
+
+>>>>>>> 0bddb45805c680d7fe7ac2903421a6293c8e38cb
     # for i in range(5):
     #     timesteps_experiment()

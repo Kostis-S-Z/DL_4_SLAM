@@ -148,7 +148,7 @@ def class_weights_experiment():
     writes the used parameters and the results to the file "experiments/experiment_..."
     """
 
-    print("LR_EXPERIMENT\n")
+    print("CLASS_WEIGHTS_EXPERIMENT\n")
 
     # set the name of the experiment
     now = datetime.datetime.now()
@@ -177,7 +177,7 @@ def class_weights_experiment():
     # run experiment for every parameter value
     for value in changing_param_value:
         # update the changing parameter value
-        set_params(lr = value)
+        set_params(class_weights_1 = value)
 
         # update the model_id for this new model
         now = datetime.datetime.now()

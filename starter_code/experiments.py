@@ -142,16 +142,18 @@ def class_weights_binary():
         set_params(preproc_data_id=new_model_id)
 
 
-def class_weights_embedding():
+def class_weight_experiment():
     """
     function that runs an example experiment
     writes the used parameters and the results to the file "experiments/experiment_..."
     """
 
+    print("LR_EXPERIMENT\n")
+
     # set the name of the experiment
     now = datetime.datetime.now()
     experiment_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
-    experiment_name = 'class_weights_' + str(experiment_id)
+    experiment_name = 'class_weight_' + str(experiment_id)
 
     # define if you want to use preprocessed data from file
     use_prep_data = False
@@ -161,24 +163,21 @@ def class_weights_embedding():
         set_params(use_preproc_data=False)
 
     # define the changing parameter and its value
-    changing_param_name = 'class_weights'
-    changing_param_value = [{0:50, 1:50}, {0:30, 1:70},{0:15, 1:85}, {0:5, 1:95}, {0:1, 1:99}]
+    changing_param_name = 'lr'
+    changing_param_value = [{0: 15, 1: 85}, {0: 5, 1: 95}, {0: 1, 1: 99}]
 
     # set constant parameters
     set_params(use_word_emb=1)
     set_params(epochs=20)
     set_params(dropout=0.3)
-    #...
+
     # save constant parameters to a new "experiment_.." file
     save_constant_parameters(experiment_name, changing_param_name)
 
     # run experiment for every parameter value
     for value in changing_param_value:
-        process = psutil.Process(os.getpid())
-        print("-----MEMORY before starting experiment ------", int(process.memory_info().rss/(8*10**(3))), "KB")
-
-        # update the parameter value
-        set_params(class_weights_1=value)
+        # update the changing parameter value
+        set_params(lr = value)
 
         # update the model_id for this new model
         now = datetime.datetime.now()
@@ -190,7 +189,8 @@ def class_weights_embedding():
         oneExperiment.start()
         oneExperiment.join()
 
-        set_params(preproc_data_id=new_model_id)
+        if value == changing_param_value[0]:
+            set_params(preproc_data_id=new_model_id)
 
 
 def lr_experiment():

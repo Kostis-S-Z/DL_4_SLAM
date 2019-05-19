@@ -147,7 +147,7 @@ def class_weights_embedding():
     # set the name of the experiment
     now = datetime.datetime.now()
     experiment_id = str(now.day) + "_" + str(now.month) + "_" + str(now.hour) + "." + str(now.minute)
-    experiment_name = 'class_weights_embedding_' + str(experiment_id)
+    experiment_name = 'class_weights_' + str(experiment_id)
 
     # define if you want to use preprocessed data from file
     use_prep_data = False
@@ -158,10 +158,15 @@ def class_weights_embedding():
 
     # define the changing parameter and its value
     changing_param_name = 'class_weights'
-    changing_param_value = [{0:1, 1:2}, {0:15, 1:85}]#, {0:4, 1:100}, {0:3, 1:100}, {0:2, 1:100}, {0:1, 1:100}] #[{0:1, 1:1}, {0:15, 1:85}]#
+    changing_param_value = [{0:50, 1:50}, {0:30, 1:70},{0:15, 1:85}, {0:5, 1:95}, {0:1, 1:99}]
+
 
     # set constant parameters
     set_params(use_word_emb=1)
+    set_params(use_word_emb=1)
+    set_params(epochs=20)
+    set_params(dropout=0.3)
+
     #
     #
     #...
@@ -412,7 +417,8 @@ if __name__ == '__main__':
     #one_experiment()
     #class_weights_binary()
     #shutil.rmtree("proc_data/")
-    #class_weights_embedding()
-    #reg_experiment()
     for i in range(5):
-        timesteps_experiment()
+        class_weights_embedding()
+    #reg_experiment()
+    # for i in range(5):
+    #     timesteps_experiment()

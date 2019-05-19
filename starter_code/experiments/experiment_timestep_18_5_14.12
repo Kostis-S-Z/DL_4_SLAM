@@ -1,0 +1,205 @@
+
+
+---- Experiment timestep_18_5_14.12 ----
+
+    ------------------ Constant Parameters ----------------------
+    epochs          20             
+    recurrent_dropout 0.1            
+    batch_size      64             
+    lr              0.001          
+    time_steps      -              
+    dropout         0.3            
+    activation      sigmoid        
+    -------------------------------------------------------------
+    -- Data -                                          
+    DEBUG                    True
+    AMOUNT_DATA_USE          0.004
+    PERC_OF_DATA_PER_CHUNK   0.004
+    NUM_CHUNK_FILES          1
+    -------------------------------------------------------------
+    --Features_to_use-                                 
+    user, countries, client, session, format, token
+    threshold      0
+    USE_WORD_EMB   1
+    -------------------------------------------------------------
+    --net_architechture-                     
+    0               128            
+    1               1              
+    -------------------------------------------------------------
+    --class_weights-                         
+    0               15             
+    1               85             
+    -------------------------------------------------------------
+
+
+
+---- Model 18_5_14.12.32 ---- time_steps: 1
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7307553169208507
+    F1                                  0.34432234432234426
+    MCC                                 0.22310185001454474
+    accuracy                            0.6386271870794078
+    avg_log_loss                        0.6229574871534069
+    correctly predicted 0 (tn)          808            
+    correctly predicted 1 (tp)          141            
+    incorrectly predicted 0 (fn)        64             
+    incorrectly predicted 1 (fp)        473            
+    precision:  tp / (tp+fp)            0.2296416938110749
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.6878048780487804
+    --------------------------------------------------------
+
+
+---- Model 18_5_14.19.26 ---- time_steps: 2
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7242360198777632
+    F1                                  0.3278688524590164
+    MCC                                 0.20948544843457287
+    accuracy                            0.5585464333781965
+    avg_log_loss                        0.738797973464837
+    correctly predicted 0 (tn)          670            
+    correctly predicted 1 (tp)          160            
+    incorrectly predicted 0 (fn)        45             
+    incorrectly predicted 1 (fp)        611            
+    precision:  tp / (tp+fp)            0.20752269779507135
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.7804878048780488
+    --------------------------------------------------------
+
+
+---- Model 18_5_14.26.0 ---- time_steps: 4
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7273776203804193
+    F1                                  0.34285714285714286
+    MCC                                 0.22956088900224833
+    accuracy                            0.5975773889636609
+    avg_log_loss                        0.688607311086693
+    correctly predicted 0 (tn)          732            
+    correctly predicted 1 (tp)          156            
+    incorrectly predicted 0 (fn)        49             
+    incorrectly predicted 1 (fp)        549            
+    precision:  tp / (tp+fp)            0.22127659574468084
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.7609756097560976
+    --------------------------------------------------------
+
+
+---- Model 18_5_14.32.32 ---- time_steps: 8
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7392814302850288
+    F1                                  0.354577056778679
+    MCC                                 0.24446227763504993
+    accuracy                            0.6251682368775235
+    avg_log_loss                        0.6575643497699629
+    correctly predicted 0 (tn)          776            
+    correctly predicted 1 (tp)          153            
+    incorrectly predicted 0 (fn)        52             
+    incorrectly predicted 1 (fp)        505            
+    precision:  tp / (tp+fp)            0.23252279635258358
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.7463414634146341
+    --------------------------------------------------------
+
+
+---- Model 18_5_14.39.11 ---- time_steps: 16
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7244340359094458
+    F1                                  0.3464755077658303
+    MCC                                 0.22819427743211693
+    accuracy                            0.6318977119784657
+    avg_log_loss                        0.6367955980923458
+    correctly predicted 0 (tn)          794            
+    correctly predicted 1 (tp)          145            
+    incorrectly predicted 0 (fn)        60             
+    incorrectly predicted 1 (fp)        487            
+    precision:  tp / (tp+fp)            0.22943037974683544
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.7073170731707317
+    --------------------------------------------------------
+
+
+---- Model 18_5_14.45.42 ---- time_steps: 32
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7464937834390053
+    F1                                  0.3579418344519016
+    MCC                                 0.2541584468999167
+    accuracy                            0.6137281292059219
+    avg_log_loss                        0.6712130377293339
+    correctly predicted 0 (tn)          752            
+    correctly predicted 1 (tp)          160            
+    incorrectly predicted 0 (fn)        45             
+    incorrectly predicted 1 (fp)        529            
+    precision:  tp / (tp+fp)            0.23222060957910015
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.7804878048780488
+    --------------------------------------------------------
+
+
+---- Model 18_5_14.52.21 ---- time_steps: 64
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7275927724148435
+    F1                                  0.34072345390898484
+    MCC                                 0.22042752677779293
+    accuracy                            0.6197846567967699
+    avg_log_loss                        0.6392913336099391
+    correctly predicted 0 (tn)          775            
+    correctly predicted 1 (tp)          146            
+    incorrectly predicted 0 (fn)        59             
+    incorrectly predicted 1 (fp)        506            
+    precision:  tp / (tp+fp)            0.22392638036809817
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.7121951219512195
+    --------------------------------------------------------
+
+
+---- Model 18_5_14.58.52 ---- time_steps: 128
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7345861655337865
+    F1                                  0.3493975903614458
+    MCC                                 0.23235122653028947
+    accuracy                            0.6366083445491252
+    avg_log_loss                        0.6277956087969456
+    correctly predicted 0 (tn)          801            
+    correctly predicted 1 (tp)          145            
+    incorrectly predicted 0 (fn)        60             
+    incorrectly predicted 1 (fp)        480            
+    precision:  tp / (tp+fp)            0.232          
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.7073170731707317
+    --------------------------------------------------------
+
+
+---- Model 18_5_15.5.27 ---- time_steps: 256
+    --------------------------------------------------------
+    Metric                              Value          
+    --------------------------------------------------------
+    AUC                                 0.7364063898250224
+    F1                                  0.35266821345707655
+    MCC                                 0.24111347509628964
+    accuracy                            0.6244952893674294
+    avg_log_loss                        0.6526929066576718
+    correctly predicted 0 (tn)          776            
+    correctly predicted 1 (tp)          152            
+    incorrectly predicted 0 (fn)        53             
+    incorrectly predicted 1 (fp)        505            
+    precision:  tp / (tp+fp)            0.2313546423135464
+    ratio majority class                0.8620457604306864
+    recall:  tp / (tp+fn)               0.7414634146341463
+    --------------------------------------------------------
+

@@ -1,7 +1,6 @@
 import os
 from io import open
 from pathlib import Path
-import pickle as pickle
 import json
 
 from future.builtins import range
@@ -160,7 +159,6 @@ def load_data(filename, train_data_use, start_from_line=0, end_line=0):
                     for exercise_parameter in list_of_exercise_parameters:
                         [key, value] = exercise_parameter.split(':')
                         if key == 'countries':
-                            # TODO CHANGE THIS
                             # value = value.split('|')
                             # count features
 

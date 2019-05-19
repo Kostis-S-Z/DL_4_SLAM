@@ -19,15 +19,18 @@ if DEBUG:
     AMOUNT_DATA_USE = 0.004
 else:
     # control how much data to use in one chunk in cloud # max 0.025
-    PERC_OF_DATA_PER_CHUNK = 0.003#025
+    PERC_OF_DATA_PER_CHUNK = 0.003  # 025
     # control how much data use in total
     AMOUNT_DATA_USE = 0.009
 
-# compute how many chunks we get based on how much data we want to use in total and how much data we can use in one chunk
+# compute how many chunks we get based on how much data we want to use
+# in total and how much data we can use in one chunk
 NUM_CHUNK_FILES = int(AMOUNT_DATA_USE / PERC_OF_DATA_PER_CHUNK)
+
 
 # vector length of the word embedding of the token
 EMBED_LENGTH = 50  # 50, 100, 200 or 300: which pre-trained embedding length file you want to use
+
 
 def build_dataset(model_id, train_path, test_path, time_steps, features_to_use, n_threshold, USE_WORD_EMB, verbose=False):
 
@@ -151,7 +154,6 @@ def build_feature_dict(features_to_use, n_threshold, USE_WORD_EMB, verbose):
 
     # load list of all relevant n_attr_dicts
     n_attr_dict_list = load_feature_dict(features_to_use)
-
 
     # initialize final feature dict and set count to zero
     feature_dict = {}

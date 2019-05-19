@@ -40,4 +40,5 @@ plt.ylabel('F1 score')
 #plt.legend()
 plt.ylim(0.30, 0.32)
 plt.title('Word embeddings')
+
 plt.show()

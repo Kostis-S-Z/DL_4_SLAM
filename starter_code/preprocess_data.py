@@ -26,11 +26,10 @@ def preprocess(time_steps, data, feature_dict, USE_WORD_EMB, n_features, labels_
     # Convert features to one-hot encoding
     data_vectors = vectorize(data, feature_dict, USE_WORD_EMB, n_features)
 
-    # TODO maybe put data in time inside build dataset and use directly PyTables
+    # For future: maybe put data in time inside build dataset and use directly PyTables
+
     # Make a 3D matrix of sample x features x history
     data_vectors = data_in_time(time_steps, data_vectors)
-
-
 
     return data_vectors, id_list, labels
 

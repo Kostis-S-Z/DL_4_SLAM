@@ -1,3 +1,14 @@
+"""
+File: lstm.py
+Last edited: 28-05-2019
+
+This file runs the LSTM model with the found optimal parameters.
+The data is loaded, the LSTM is trained, the predictions are written to a file.
+Subsequently, the predictions are evaluated and the performance metrics are written to a file as well.
+If use_preprocessed_data is set to True, previously processed data is used.
+If use_pretrained_model is set to True, a previously trained model is used.
+"""
+
 # Imports
 import numpy as np
 import datetime
@@ -26,7 +37,7 @@ key_path = data.key_path
 pred_path = data.pred_path
 
 VERBOSE = 0  # 0 or 1
-KERAS_VERBOSE = 2  # 0 or 1
+KERAS_VERBOSE = 2  # 0 or 1 or 2
 
 # FEATURES_TO_USE = ['user']  # 2593
 # FEATURES_TO_USE = ['countries']  # 64
@@ -36,7 +47,6 @@ KERAS_VERBOSE = 2  # 0 or 1
 # FEATURES_TO_USE = ['time']  #
 # FEATURES_TO_USE = ['days']  #
 # FEATURES_TO_USE = ['token']  # 2226
-# Watchout! if you input FEATURES_TO_USE in another order then suddenly the values of format become tokens....
 
 FEATURES_TO_USE = ['user', 'countries', 'client', 'session', 'format',  'token']
 THRESHOLD_OF_OCC = 0
@@ -47,7 +57,7 @@ NORMALIZE = 0
 # If you want to build a new data set with you features put preprocessed_data_id = ""
 # If you don't want to build new data and want to use existing preprocess, put their path here. Like: "10_5_16.37"
 use_pre_processed_data = False
-preprocessed_data_id = "14_5_17.16"  # "11_5_21.15"
+preprocessed_data_id = "14_5_17.16"
 
 # Model parameters
 
@@ -73,7 +83,7 @@ model_params = {
     "epochs": 20,  # number of epochs
     "lr": 0.001,
     "time_steps": 60,  # how many time steps to look back to
-    'activation': 'sigmoid',
+    'activation': 'sigmoid',    # activation for the output layer
     'dropout': 0.4,
     'recurrent_dropout': 0.1
 }
@@ -383,7 +393,7 @@ class SimpleLSTM:
             "epochs": 10,  # number of epochs
             "lr": 0.001,
             "time_steps": 50,  # how many time steps to look back to
-            'activation': 'sigmoid',
+            'activation': 'sigmoid', #activation for the output layer
             'dropout': 0.0,
             'recurrent_dropout':0.0
         }
@@ -411,7 +421,7 @@ class SimpleLSTM:
 
         model = Sequential()
 
-        model.add(LSTM(hidden_0, return_sequences=False, input_shape=(self.time_steps, self.input_shape),
+        model.add(LSTM(hidden_0, return_sequences=True, input_shape=(self.time_steps, self.input_shape),
                        dropout=self.dropout, recurrent_dropout=self.recurrent_dropout))
 
         # model.add(BatchNormalization())

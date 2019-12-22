@@ -1,10 +1,17 @@
+"""
+File: count_features.py
+Last edited: 28-05-2019
+
+This file should be run once for a data set.
+Count how many distinct values there are for each categorical attribute. This
+is written in a feature dictionary and saved in a file.
+"""
+
 import os
 from io import open
 from pathlib import Path
 import json
-
 from future.builtins import range
-
 from data import InstanceData
 
 directory = str(Path.cwd().parent)  # Get the parent directory of the current working directory

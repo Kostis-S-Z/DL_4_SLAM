@@ -1,3 +1,14 @@
+"""
+File: preprocess_data.py
+Last edited: 28-05-2019
+
+Preprocess the data.
+Use only the specified features. Possibly normalize the data.
+Encode categorical data by one-hot encoding, binary encoding or word embeddings.
+"""
+
+
+
 import numpy as np
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 
@@ -60,13 +71,9 @@ def data_in_time(time_steps, data_x):
 
     # only add history for samples that have at least t samples before them
     for i in range(time_steps, len(data_x)):
-        # if PREPROCESSING_VERBOSE > 1 and i % 100 == 0:
-        #    print("Build for batch", int(i/100), "out of", (len(data_x) - self.time_steps + 1)/100)
         data_new[i, :, :] = data_x[i - time_steps+1:i+1]
     # delete the first t elements of data_new, since they contain only zeros
-    data_new = data_new[time_steps:,:,:]
-
-    # also then delete the first t elements from the id_list
+    data_new = data_new[time_steps:, :, :]
 
     if PREPROCESSING_VERBOSE > 1:
         print("finished building data in time")
@@ -110,10 +117,6 @@ def create_binary_dict(values_list, vector_length):
         # ignore the first two elements since bin(elem) is of the form 0b010110
         # bin_value = np.array([int(x) for x in bin(elem)[2:]])
         bin_value = format(elem, str(vector_length) + 'b')
-
-        # flip it so that it doesn't matter that all binary arrays are different sizes
-        # (because the zeros are at the end)
-        # bin_value = np.flipud(bin_value)
 
         lst_binary = list(str(bin_value))
         lst_binary = [0 if x==' ' else x for x in lst_binary]
@@ -275,9 +278,6 @@ def vectorize(data, features_to_use, USE_WORD_EMB, n_features):
         if USE_WORD_EMB:
             print("Words embedded: {} \nNOT embedded words: {} \n".format(embedded, len(not_embedded)))
         print("Finished Vectorizing data!")
-
-
-
 
     return data_vector
 

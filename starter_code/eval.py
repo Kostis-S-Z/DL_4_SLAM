@@ -1,8 +1,18 @@
-from __future__ import division
+"""
+File: eval.py
+Last edited: 28-05-2019
 
+This file contains all functions for performance evaluation of the model.
+- evaluate the model (compute predictions)
+- load the true labels
+- count the ratio of the classes
+- compute evaluation metrics: accuracy, avg log loss, auroc, f1, mcc
+- test whether the metrics do not contain bugs by using the known baseline model
+"""
+
+from __future__ import division
 from io import open
 import math
-
 from future.builtins import range
 from future.utils import iterkeys
 

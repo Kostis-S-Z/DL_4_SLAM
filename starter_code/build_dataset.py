@@ -1,3 +1,11 @@
+"""
+File: build_dataset.py
+Last edited: 28-05-2019
+
+Transform the feature dictionary into the input matrices for the LSTM.
+This includes transforming from dict to matrix and preprocessing.
+"""
+
 import os
 import numpy as np
 import math

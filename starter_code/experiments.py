@@ -1,18 +1,18 @@
-# from lstm import build_dataset, train_path, test_path, run_lstm,
-# write_predictions, evaluate, pred_path, key_path, use_pre_processed_data
+"""
+File: experiments.py
+Last edited: 28-05-2019
 
+Runs different experiments for parameter optimization
+and testing the influence of e.g. different feature encodings.
+"""
 
 from lstm import set_params, save_constant_parameters, run_experiment
 import os
 import datetime
-
 from multiprocessing import Process
 import psutil
-
 import shutil
 
-# import all parameters that we might change in our experiments
-# from lstm import FEATURES_TO_USE, THRESHOLD_OF_OCC, net_architecture, class_weights, model_params
 '''
 Default Params:
 
@@ -96,7 +96,7 @@ def one_experiment():
 
 def class_weights_binary():
     """
-    function that runs an example experiment
+    function that runs different values for the class weights (binary encodings for the features)
     writes the used parameters and the results to the file "experiments/experiment_..."
     """
 
@@ -144,7 +144,7 @@ def class_weights_binary():
 
 def class_weights_embedding():
     """
-    function that runs an example experiment
+    function that runs different values for the class weights (word embedding encodings for the features)
     writes the used parameters and the results to the file "experiments/experiment_..."
     """
 
@@ -193,7 +193,7 @@ def class_weights_embedding():
 
 def lr_experiment():
     """
-    function that runs an example experiment
+    tests different values for the learning rate
     writes the used parameters and the results to the file "experiments/experiment_..."
     """
 
@@ -243,7 +243,7 @@ def lr_experiment():
 
 def timesteps_experiment():
     """
-    function that runs an example experiment
+    tests different values for the number of timesteps
     writes the used parameters and the results to the file "experiments/experiment_..."
     """
 
@@ -298,7 +298,7 @@ def timesteps_experiment():
 
 def emb_experiment():
     """
-    function that runs an example experiment
+    tests using word embeddings or not using word embeddings
     writes the used parameters and the results to the file "experiments/experiment_..."
     """
     print("EMBEDDINGS EXPERIMENT")
@@ -351,7 +351,7 @@ def emb_experiment():
 
 def reg_experiment():
     """
-    function that runs an example experiment
+    runs different values for the dropout rate
     writes the used parameters and the results to the file "experiments/experiment_..."
     """
     print("REG_EXPERIMENT")
@@ -403,7 +403,7 @@ def reg_experiment():
 
 def norm_experiment():
     """
-    function that runs an example experiment
+    tests with normalization vs without
     writes the used parameters and the results to the file "experiments/experiment_..."
     """
     print("NORM_EXPERIMENT")

@@ -3,5 +3,5 @@ tables==3.5.1
 future==0.17.1
 psutil==5.6.6
 numpy==1.16.0
-Keras==2.13.1
+Keras==3.9.0
 scikit_learn==0.21.1
